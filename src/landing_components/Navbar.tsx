@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
       initial={{ y: -100, x: "-50%", opacity: 0 }}
       animate={{ y: 0, x: "-50%", opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="fixed top-6 left-1/2 z-50 w-[95%] max-w-5xl h-16 flex md:grid md:grid-cols-3 items-center justify-between md:justify-items-center px-4 md:px-6 rounded-full glass-panel border border-white/20 shadow-lg shadow-blue-900/5 backdrop-blur-xl bg-white/70"
+      className="fixed top-6 left-1/2 z-50 w-[95%] max-w-5xl h-14 flex md:grid md:grid-cols-3 items-center justify-between md:justify-items-center px-5 md:px-6 rounded-2xl border border-slate-200/60 shadow-sm shadow-slate-900/5 backdrop-blur-xl bg-white/80"
     >
       <div className="flex items-center gap-2 cursor-pointer md:justify-self-start" onClick={() => scrollToSection('home')}>
         <Logo className="w-10 h-10 shadow-md shadow-blue-500/20" />
@@ -44,9 +44,9 @@ const Navbar: React.FC = () => {
           // Check if we are already in the app, or need to navigate
           window.location.href = '/app';
         }}
-        className="group relative px-5 py-2 rounded-full bg-slate-900 text-white overflow-hidden shadow-lg shadow-blue-900/20 md:justify-self-end"
+        className="group relative px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white overflow-hidden transition-colors duration-200 md:justify-self-end"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-700 to-slate-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         <div className="relative flex items-center gap-2 font-display font-medium text-sm">
           <span>Launch App</span>
           <Rocket className="w-4 h-4 text-slate-300 group-hover:text-white group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all duration-300" />

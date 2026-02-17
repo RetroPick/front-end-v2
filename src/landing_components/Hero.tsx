@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Activity, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Activity } from 'lucide-react';
 
 // Import ModelViewer directly to prevent context loss
 import ModelViewer from './ModelViewer'; // Re-enabled for 3D model
@@ -14,56 +14,46 @@ const Hero: React.FC = () => {
       {/* Background - Plain White with Top Circular Blue Gradient */}
       {/* Background - Plain White with Top Circular Blue Gradient */}
       <div className="absolute inset-0 z-0 bg-white">
-        <div className="absolute top-0 left-0 w-full h-[800px] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.5),rgba(255,255,255,0))]"></div>
-        <div className="absolute top-0 left-0 w-full h-[600px] bg-[radial-gradient(ellipse_60%_40%_at_50%_-20%,rgba(6,182,212,0.3),rgba(255,255,255,0))]"></div>
+        <div className="absolute top-0 left-0 w-full h-[900px] bg-[radial-gradient(ellipse_70%_55%_at_50%_-15%,rgba(59,130,246,0.08),transparent_60%)]"></div>
+        <div className="absolute top-0 left-0 w-full h-[700px] bg-[radial-gradient(ellipse_50%_35%_at_50%_-10%,rgba(6,182,212,0.05),transparent_55%)]"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
         {/* Left Content */}
-        <div className="text-center lg:text-left space-y-8">
-
+        <div className="text-center lg:text-left space-y-10 lg:space-y-12">
 
           <motion.h1
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-            className="text-5xl lg:text-7xl font-display font-bold leading-tight text-slate-900"
+            transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[2.75rem] sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-[1.08] tracking-tight text-slate-900"
           >
-            Predict the Future with <span className="text-gradient animate-text-shimmer">AI Precision.</span>
+            AI-Orchestrated <span className="text-gradient-animated">Prediction Infrastructure.</span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 leading-[1.7]"
           >
-            The world's first prediction market powered by Chainlink CRE and Autonomous AI Agents. Don't just bet—invest in high-fidelity probability data.
+            Chain-agnostic multi-outcome prediction markets powered by Chainlink CRE, CCIP, and Yellow State Sessions. Adaptive LS-LMSR liquidity, unified vaults, and verifiable off-chain execution.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
+            transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start"
           >
-            <button className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] hover:-translate-y-0.5">
-              Start Trading <ArrowRight className="w-4 h-4" />
+            <button className="w-full sm:w-auto px-7 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-all duration-200 hover:-translate-y-0.5">
+              Start Trading <ArrowRight className="w-4 h-4 opacity-80" />
             </button>
-            <button className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-900 rounded-lg font-medium transition-all border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md">
+            <button className="w-full sm:w-auto px-7 py-3.5 bg-transparent hover:bg-slate-100 text-slate-700 rounded-xl font-medium transition-all duration-200 border border-slate-300/80 hover:border-slate-400">
               View Markets
             </button>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
-            className="pt-8 flex items-center justify-center lg:justify-start gap-8 text-slate-500"
-          >
-            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-blue-500" /> <span className="text-xs font-mono">AUDITED BY CERTIK</span></div>
-            <div className="flex items-center gap-2"><Activity className="w-4 h-4 text-blue-500" /> <span className="text-xs font-mono">$42M TVL</span></div>
-          </motion.div>
         </div>
 
         {/* Right Content: 3D Model */}
@@ -100,8 +90,8 @@ const Hero: React.FC = () => {
                       <Activity className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-slate-800">Live Market Data</div>
-                      <div className="text-xs text-slate-500">Real-time probability updates via Chainlink</div>
+                      <div className="text-sm font-bold text-slate-800">LS-LMSR Pricing</div>
+                      <div className="text-xs text-slate-500">Always-available liquidity via Chainlink CRE</div>
                     </div>
                   </div>
                 </div>
@@ -115,16 +105,6 @@ const Hero: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-400"
-      >
-        <div className="w-[1px] h-12 bg-gradient-to-b from-transparent via-slate-400 to-transparent"></div>
-        <span className="text-[10px] uppercase tracking-[0.2em]">Scroll</span>
-      </motion.div>
     </div>
   );
 };

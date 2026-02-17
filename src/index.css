@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @tailwind base;
@@ -196,5 +197,51 @@
 
   .gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(217 91% 70%));
+  }
+
+  .font-display {
+    font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #2563eb 0%, #0891b2 50%, #6366f1 100%);
+  }
+
+  .text-gradient-animated {
+    @apply inline-block bg-clip-text text-transparent bg-[length:200%_auto];
+    background-image: linear-gradient(
+      90deg,
+      #2563eb 0%,
+      #0891b2 25%,
+      #06b6d4 50%,
+      #6366f1 75%,
+      #8b5cf6 100%
+    );
+    animation: gradient-shift 4s ease-in-out infinite, glow-pulse 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 24px rgba(59, 130, 246, 0.5)) drop-shadow(0 0 48px rgba(99, 102, 241, 0.35));
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.45)) drop-shadow(0 0 40px rgba(99, 102, 241, 0.3));
+    }
+    50% {
+      filter: drop-shadow(0 0 32px rgba(6, 182, 212, 0.6)) drop-shadow(0 0 64px rgba(139, 92, 246, 0.4));
+    }
+  }
+
+  @keyframes text-shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+
+  .animate-text-shimmer {
+    animation: text-shimmer 3s ease-in-out infinite;
   }
 }

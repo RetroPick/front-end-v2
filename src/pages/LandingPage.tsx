@@ -7,10 +7,9 @@ import Footer from '@/landing_components/Footer';
 
 const LandingPage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-slate-50 overflow-x-hidden selection:bg-cyan-500/30 font-sans">
+        <div className="min-h-screen bg-white overflow-x-hidden selection:bg-blue-200/50 font-sans">
             <div className="fixed inset-0 z-0 pointer-events-none">
-                {/* Global Noise/Grain Overlay */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-100 contrast-150 mix-blend-multiply"></div>
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] mix-blend-multiply"></div>
             </div>
 
             <div className="relative z-10 flex flex-col">

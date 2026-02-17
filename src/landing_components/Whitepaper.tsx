@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, ArrowRight, Database, Cpu, Layers, ShieldCheck, Zap, Globe, Download } from 'lucide-react';
+import { BlockMath, InlineMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
+import { FileText, ArrowRight, Database, Cpu, Layers, ShieldCheck, Zap } from 'lucide-react';
 
 const Whitepaper: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'foundations' | 'risk' | 'settlement' | 'market-comparison'>('foundations');
@@ -18,10 +20,10 @@ const Whitepaper: React.FC = () => {
             viewport={{ once: true }}
             className="text-4xl lg:text-5xl font-display font-bold leading-tight text-slate-900 mb-4"
           >
-            ShadowPool <span className="text-gradient">Architecture</span>
+            RetroPick <span className="text-gradient-animated">Architecture</span>
           </motion.h2>
           <p className="text-slate-600 max-w-2xl mx-auto mb-8">
-            The technical foundation of RetroPick: An on-chain prediction market system powered by Chainlink CRE and Autonomous AI Agents.
+            AI-orchestrated prediction infrastructure with adaptive LS-LMSR liquidity, unified vaults, and verifiable off-chain execution. Powered by Chainlink CRE, CCIP, and Yellow State Sessions.
           </p>
 
           <div className="relative inline-block group">
@@ -50,8 +52,8 @@ const Whitepaper: React.FC = () => {
             {[
               { id: 'foundations', label: 'LS-LMSR Foundations', icon: <Database className="w-4 h-4" /> },
               { id: 'risk', label: 'Risk & Liquidity', icon: <ShieldCheck className="w-4 h-4" /> },
-              { id: 'settlement', label: 'Verifiable Settlement', icon: <Cpu className="w-4 h-4" /> },
-              { id: 'market-comparison', label: 'Market Comparison', icon: <Layers className="w-4 h-4" /> },
+              { id: 'settlement', label: 'Yellow Sessions & Resolution', icon: <Cpu className="w-4 h-4" /> },
+              { id: 'market-comparison', label: 'vs Order Books', icon: <Layers className="w-4 h-4" /> },
             ].map((tab, index) => (
               <motion.button
                 key={tab.id}
@@ -90,21 +92,21 @@ const Whitepaper: React.FC = () => {
                     <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">LS-LMSR Foundations</h3>
                     <div className="prose prose-slate max-w-none text-slate-600">
                       <p>
-                        RetroPick implements a <strong>Logarithmic Scoring Rule Market Maker (LS-LMSR)</strong> design.
-                        This mechanism provides continuous liquidity for prediction markets, maintaining a set of outcome prices that always sum to 1 (representing a valid probability distribution).
+                        RetroPick uses the <strong>Logarithmic Market Scoring Rule (LMSR)</strong> baseline with liquidity-sensitive extension.
+                        A cost-function market maker maintains a convex function C(q) mapping outstanding shares to aggregate market value; prices are the gradient.
                       </p>
                       <p>
-                        The core advantage of LS-LMSR is that it bounds the worst-case loss for the market maker while ensuring trades can always occur, even in thin markets.
-                        Unlike traditional order books where liquidity can dry up, the LS-LMSR algorithmically determines the cost of shares based on the current market state.
+                        Properties: continuous prices that sum to 1, bounded worst-case loss <InlineMath math="L_{\max} = b \cdot \ln(n)" />, and always-available liquidity.
+                        The LS policy extends with <InlineMath math="b(q) = b_0 + \alpha \cdot OI(q)" />, enabling shallow liquidity in early markets and deeper liquidity as participation grows.
                       </p>
-                      <div className="my-8 p-6 bg-slate-900 rounded-2xl border border-slate-800 relative overflow-hidden group">
+                      <div className="my-8 p-6 bg-slate-900 rounded-2xl border border-slate-800 relative overflow-hidden group text-slate-100">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-colors"></div>
-                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-2">Cost Function Core</h4>
-                        <div className="font-mono text-lg text-white">
-                          p_i = exp(q_i / b) / Σ exp(q_j / b)
+                        <h4 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Cost Function & Prices</h4>
+                        <div className="[&_.katex-display]:text-lg [&_.katex-display]:overflow-x-auto [&_.katex-display]:overflow-y-hidden">
+                          <BlockMath math="C(q) = b \cdot \ln\left(\sum_{i=1}^n e^{q_i/b}\right) \quad \Rightarrow \quad p_i(q) = \frac{e^{q_i/b}}{\sum_{j=1}^n e^{q_j/b}}" />
                         </div>
-                        <p className="text-slate-400 text-sm mt-2">
-                          Where <code>b</code> modulates liquidity depth versus price sensitivity.
+                        <p className="text-slate-400 text-sm mt-4">
+                          Where <InlineMath math="b" /> is the liquidity parameter; trade cost is <InlineMath math="\Delta C = C(q + \Delta e_k) - C(q)" />.
                         </p>
                       </div>
                     </div>
@@ -123,19 +125,27 @@ const Whitepaper: React.FC = () => {
                     <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Risk Calibration & Liquidity</h3>
                     <div className="prose prose-slate max-w-none text-slate-600">
                       <p>
-                        A critical aspect of the LS-LMSR design is managing the market maker's inventory risk.
-                        The parameter <code>b</code> (liquidity) is calibrated based on a worst-case loss budget <code>L</code>.
+                        The worst-case loss bound is <InlineMath math="L_{\max} \leq b \cdot \log(n)" />. Given a per-market loss budget <InlineMath math="L" /> and <InlineMath math="n" /> outcomes, we select:
                       </p>
                       <div className="grid md:grid-cols-2 gap-6 my-6">
                         <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100">
-                          <h4 className="font-bold text-orange-900 mb-2">Liquidity Formula</h4>
-                          <div className="font-mono text-orange-800 text-lg">b = L / log(n)</div>
+                          <h4 className="font-bold text-orange-900 mb-3">Liquidity Parameter</h4>
+                          <div className="text-orange-800 text-center [&_.katex]:text-xl">
+                            <BlockMath math="b = \frac{L}{\log(n)}" />
+                          </div>
+                          <p className="text-sm text-orange-700 mt-2">Calibrated from loss budget and outcome count.</p>
                         </div>
                         <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                          <h4 className="font-bold text-indigo-900 mb-2">Impact</h4>
-                          <p className="text-sm text-indigo-800">Larger <code>b</code> = Deeper Order Book = Higher Cost to Move Price.</p>
+                          <h4 className="font-bold text-indigo-900 mb-3">Break-Even Turnover</h4>
+                          <div className="text-indigo-800 text-center [&_.katex]:text-xl">
+                            <BlockMath math="V^* \approx \frac{L}{\tau}" />
+                          </div>
+                          <p className="text-sm text-indigo-700 mt-2">Fee income <InlineMath math="\tau \cdot V" /> covers loss budget when volume <InlineMath math="V \gg L/\tau" />.</p>
                         </div>
                       </div>
+                      <p>
+                        Larger <InlineMath math="b" /> implies deeper liquidity—higher cost to move implied probabilities. Coverage ratio <InlineMath math="\kappa = \frac{\text{VaultAssets}}{\sum_m L_m}" /> must stay above threshold for solvency.
+                      </p>
                     </div>
                   </motion.div>
                 )}
@@ -149,26 +159,29 @@ const Whitepaper: React.FC = () => {
                     transition={{ duration: 0.4, ease: "circOut" }}
                     className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-xl space-y-6"
                   >
-                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Verifiable Settlement</h3>
+                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Yellow Sessions & Resolution</h3>
                     <div className="space-y-6">
-                      <p className="text-slate-600 text-lg">
-                        Markets resolve via <strong>Verde's Refereed Delegation</strong>, ensuring mathematical truth rather than human opinion.
+                      <p className="text-slate-600">
+                        Trading executes <strong>off-chain</strong> in hub-and-spoke Yellow sessions. Signed state S = (q, balances, positions, fees, nonce) with deterministic pricing. On-chain contracts retain custody, enforce state commitments, and handle dispute exits—<strong>latest signed state wins</strong> in challenge windows.
                       </p>
                       <ArchitectureDiagram />
                       <div className="grid grid-cols-3 gap-4 text-center mt-6">
                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                          <div className="text-2xl font-bold text-blue-600 mb-1">1. Run</div>
-                          <div className="text-xs text-slate-500 uppercase font-bold">Computation</div>
+                          <div className="text-2xl font-bold text-blue-600 mb-1">Execute</div>
+                          <div className="text-xs text-slate-500 uppercase font-bold">Off-chain Yellow Session</div>
                         </div>
                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                          <div className="text-2xl font-bold text-blue-600 mb-1">2. Verify</div>
-                          <div className="text-xs text-slate-500 uppercase font-bold">Merkle Proofs</div>
+                          <div className="text-2xl font-bold text-blue-600 mb-1">Checkpoint</div>
+                          <div className="text-xs text-slate-500 uppercase font-bold">Netted Deltas to Chain</div>
                         </div>
                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                          <div className="text-2xl font-bold text-blue-600 mb-1">3. Settle</div>
-                          <div className="text-xs text-slate-500 uppercase font-bold">On-Chain</div>
+                          <div className="text-2xl font-bold text-blue-600 mb-1">Resolve</div>
+                          <div className="text-xs text-slate-500 uppercase font-bold">MODRA CRE Workflow</div>
                         </div>
                       </div>
+                      <p className="text-slate-600 text-sm">
+                        Resolution: MODRA fetches evidence via Confidential HTTP, posts bonded outcome proposals, escalates disputes to Senate-style adjudication. Risk Sentinel monitors solvency, concentration, volatility.
+                      </p>
                     </div>
                   </motion.div>
                 )}
@@ -182,14 +195,17 @@ const Whitepaper: React.FC = () => {
                     transition={{ duration: 0.4, ease: "circOut" }}
                     className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-xl space-y-6"
                   >
-                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Market Evolution</h3>
+                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">LS-LMSR vs Order Books</h3>
+                    <div className="prose prose-slate max-w-none text-slate-600 mb-6">
+                      <p>Order-book venues match buyers and sellers; liquidity is endogenous and can dry up in thin markets. CFMMs like LS-LMSR guarantee always-on liquidity with provably bounded risk.</p>
+                    </div>
                     <div className="grid md:grid-cols-2 gap-6 mt-6">
                       <div className="border border-slate-200 bg-slate-50 rounded-2xl p-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                        <h4 className="font-bold text-slate-500 mb-4 text-lg">Legacy: Order Books</h4>
+                        <h4 className="font-bold text-slate-500 mb-4 text-lg">Order Books (CLOBs)</h4>
                         <ul className="space-y-3 text-sm text-slate-500">
-                          <li className="flex items-center gap-2">❌ Liquidity fragments</li>
-                          <li className="flex items-center gap-2">❌ High spread in thin markets</li>
-                          <li className="flex items-center gap-2">❌ Requires active MMs</li>
+                          <li className="flex items-center gap-2">❌ Liquidity fragments in long-tail markets</li>
+                          <li className="flex items-center gap-2">❌ Requires active market makers</li>
+                          <li className="flex items-center gap-2">❌ Spreads widen when participation is low</li>
                         </ul>
                       </div>
                       <div className="border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-lg transform scale-105">
@@ -198,9 +214,9 @@ const Whitepaper: React.FC = () => {
                           RetroPick: LS-LMSR
                         </h4>
                         <ul className="space-y-3 text-sm text-blue-800">
-                          <li className="flex items-center gap-2">✅ Continuous Liquidity (Always Trade)</li>
-                          <li className="flex items-center gap-2">✅ Bounded Inventory Risk</li>
-                          <li className="flex items-center gap-2">✅ Instant Price Discovery</li>
+                          <li className="flex items-center gap-2">✅ Always-available liquidity</li>
+                          <li className="flex items-center gap-2">✅ Bounded worst-case loss (b·log n)</li>
+                          <li className="flex items-center gap-2">✅ Coherent probabilities (prices sum to 1)</li>
                         </ul>
                       </div>
                     </div>
@@ -215,58 +231,91 @@ const Whitepaper: React.FC = () => {
   );
 };
 
+const NODES = [
+  { id: 'cre', label: 'CRE Receiver', sublabel: 'Oracle Ingress', color: 'from-violet-600 to-purple-700', borderColor: 'border-violet-500/50' },
+  { id: 'oc', label: 'Oracle Coordinator', sublabel: 'Validate & Route', color: 'from-blue-600 to-indigo-600', borderColor: 'border-blue-500/50' },
+  { id: 'sr', label: 'Settlement Router', sublabel: 'Hub', color: 'from-cyan-500 to-blue-600', borderColor: 'border-cyan-400/50' },
+  { id: 'cs', label: 'Channel Settlement', sublabel: 'Checkpoint', color: 'from-emerald-600 to-teal-600', borderColor: 'border-emerald-500/50' },
+  { id: 'el', label: 'Execution Ledger', sublabel: 'Positions & Deltas', color: 'from-green-500 to-emerald-600', borderColor: 'border-green-400/50' },
+] as const;
+
 const ArchitectureDiagram = () => {
   return (
-    <div className="w-full bg-slate-900 rounded-2xl p-8 relative overflow-hidden group">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]"></div>
-      {/* Animated Particles via CSS Grid/Flex is harder, keeping SVG for precise paths */}
-      <svg viewBox="0 0 400 120" className="w-full h-auto drop-shadow-2xl relative z-10">
-        <defs>
-          <marker id="arrowhead-glow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa" />
-          </marker>
-          <linearGradient id="line-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-            <stop offset="50%" stopColor="#60a5fa" stopOpacity="1" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
-          </linearGradient>
-        </defs>
+    <div className="w-full bg-slate-900/95 rounded-2xl p-6 md:p-8 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(59,130,246,0.12),transparent_60%)]" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
-        {/* Paths */}
-        <path d="M60 60 L 140 60" stroke="url(#line-gradient)" strokeWidth="2" markerEnd="url(#arrowhead-glow)" />
-        <path d="M220 60 L 300 60" stroke="url(#line-gradient)" strokeWidth="2" markerEnd="url(#arrowhead-glow)" />
+      <div className="relative z-10 flex flex-wrap items-center justify-center gap-2 md:gap-4 min-h-[140px]">
+        {NODES.map((node, i) => (
+          <React.Fragment key={node.id}>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center"
+            >
+              <motion.div
+                whileHover={{ scale: 1.04, transition: { duration: 0.2 } }}
+                className={`
+                  relative px-4 py-3 md:px-5 md:py-3.5 rounded-xl
+                  bg-gradient-to-br ${node.color} border ${node.borderColor}
+                  shadow-lg backdrop-blur-sm
+                  ring-2 ring-white/5
+                `}
+              >
+                {/* Subtle pulse on active node */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl bg-white/10"
+                  animate={{ opacity: [0, 0.15, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
+                />
+                <div className="relative">
+                  <div className="text-sm md:text-base font-bold text-white tracking-tight">{node.label}</div>
+                  <div className="text-[10px] md:text-xs text-white/70 mt-0.5">{node.sublabel}</div>
+                </div>
+              </motion.div>
+            </motion.div>
 
-        {/* Nodes with pulsing effect */}
-        <g transform="translate(10, 40)">
-          <rect width="50" height="40" rx="8" fill="#1e293b" stroke="#475569" strokeWidth="2" />
-          <text x="25" y="25" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="bold">AI</text>
-          <animate attributeName="stroke" values="#475569;#3b82f6;#475569" dur="3s" repeatCount="indefinite" />
-        </g>
+            {i < NODES.length - 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.2 + i * 0.12 }}
+                className="flex items-center shrink-0 min-w-[1.5rem] sm:min-w-[2.5rem]"
+              >
+                <div className="relative w-6 sm:w-10 md:w-12 h-6 flex items-center">
+                  <div className="absolute inset-y-0 left-0 right-4 flex items-center">
+                    <div className="flex-1 h-[2px] bg-gradient-to-r from-slate-600 via-cyan-500/70 to-slate-600 rounded-full" />
+                  </div>
+                  <motion.div
+                    className="absolute left-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.6)]"
+                    animate={{ x: [0, 20] }}
+                    transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', delay: i * 0.2 }}
+                  />
+                  <svg viewBox="0 0 24 24" className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400">
+                    <polyline points="9,18 15,12 9,6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </motion.div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
 
-        <g transform="translate(140, 30)">
-          <rect width="80" height="60" rx="8" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="2" />
-          <text x="40" y="35" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold">Oracle</text>
-          <circle cx="70" cy="15" r="4" fill="#ef4444">
-            <animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite" />
-          </circle>
-        </g>
-
-        <g transform="translate(300, 30)">
-          <rect width="90" height="60" rx="8" fill="#064e3b" stroke="#10b981" strokeWidth="2" />
-          <text x="45" y="35" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="bold">Settlement</text>
-        </g>
-
-        {/* Moving Data Packets */}
-        <circle r="4" fill="#fff" filter="drop-shadow(0 0 4px #3b82f6)">
-          <animateMotion repeatCount="indefinite" dur="2s" path="M60 60 L 140 60" keyPoints="0;1" keyTimes="0;1" calcMode="linear" />
-        </circle>
-
-        <circle r="4" fill="#fff" filter="drop-shadow(0 0 4px #10b981)">
-          <animateMotion repeatCount="indefinite" dur="2s" begin="1s" path="M220 60 L 300 60" keyPoints="0;1" keyTimes="0;1" calcMode="linear" />
-        </circle>
-      </svg>
+      {/* Resolution branch hint */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="mt-4 text-center"
+      >
+        <span className="text-xs text-slate-500">
+          <span className="text-cyan-400/80 font-medium">Settlement Router</span> routes 0x01 result → MarketRegistry (resolve) · session payload → Channel Settlement
+        </span>
+      </motion.div>
     </div>
-  )
-}
+  );
+};
 
 export default Whitepaper;

@@ -11,20 +11,20 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    title: "Event-Driven Execution",
-    description: "Smart contracts that listen to the world. Markets open and close automatically based on real-world data feeds like CPI, Interest Rates, and Sports APIs.",
-    icon: <Zap className="w-8 h-8 text-blue-400" />,
+    title: "AI Market Supply",
+    description: "Chainlink CRE workflows continuously generate MarketDrafts with question, outcomes, resolvability playbook, and trust score. Markets become live only when claimed and funded by a creator.",
+    icon: <BrainCircuit className="w-8 h-8 text-blue-400" />,
     colSpan: "lg:col-span-1",
   },
   {
-    title: "AI Settlement",
-    description: "No human bias. Markets are settled by LLMs via Chainlink CRE, ensuring objective and instant results for every outcome.",
-    icon: <BrainCircuit className="w-8 h-8 text-cyan-400" />,
+    title: "LS-LMSR Pricing",
+    description: "Liquidity-Sensitive LMSR provides always-available liquidity and bounded worst-case loss. Liquidity depth adapts to participation, deepening popular markets while enabling long-tail markets.",
+    icon: <Zap className="w-8 h-8 text-cyan-400" />,
     colSpan: "lg:col-span-1",
   },
   {
-    title: "Yellow Sessions",
-    description: "Gasless, high-frequency trading powered by off-chain sessions with on-chain settlement. Experience the speed of Web2 with the security of Web3.",
+    title: "Yellow State Sessions",
+    description: "Gasless trading in Nitrolite Yellow sessions. Signed state updates enforce max-cost/min-share constraints; on-chain contracts provide custody, dispute exits, and final settlement without re-pricing.",
     icon: <Globe className="w-8 h-8 text-purple-400" />,
     colSpan: "lg:col-span-1",
   },
@@ -44,7 +44,7 @@ const FeatureCard: React.FC<{
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       // Z-index adjustment: Center card (index 1) gets highest, others lower
-      className={`bg-white border border-slate-200 rounded-2xl p-8 hover:border-blue-400 hover:shadow-[0_10px_40px_-10px_rgba(37,99,235,0.15)] transition-all duration-300 group ${feature.colSpan} h-full relative z-${index === 1 ? '20' : '10'}`}
+      className={`bg-white border border-slate-200/80 rounded-2xl p-8 hover:border-slate-300 hover:shadow-[0_8px_30px_-8px_rgba(15,23,42,0.12)] transition-all duration-300 group ${feature.colSpan} h-full relative z-${index === 1 ? '20' : '10'}`}
     >
       <div className="mb-6 inline-block p-3 rounded-lg bg-blue-50 border border-blue-100 group-hover:bg-blue-600/10 group-hover:border-blue-600/20 transition-colors">
         {feature.icon}
@@ -88,7 +88,7 @@ const About: React.FC = () => {
   const scaleRight = useTransform(scrollYProgress, [startScroll, endScroll], [0.8, 1]);
 
   return (
-    <div className="py-24 bg-white relative overflow-hidden">
+    <div className="py-28 bg-slate-50/50 relative overflow-hidden">
       {/* Section Header */}
       <div className="container mx-auto px-6 mb-16">
         <motion.div
@@ -97,7 +97,7 @@ const About: React.FC = () => {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 text-slate-900">Built for the <span className="text-slate-400">Information Age.</span></h2>
+          <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 text-slate-900">Scalable, MEV-Resistant, <span className="text-slate-400">Institution-Ready.</span></h2>
           <div className="h-1 w-20 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full"></div>
         </motion.div>
       </div>
@@ -130,7 +130,7 @@ const About: React.FC = () => {
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           whileHover={{ y: -8, scale: 1.02 }}
-          className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl p-8 shadow-[0_0_40px_-5px_rgba(37,99,235,0.15)] hover:shadow-[0_0_60px_-5px_rgba(37,99,235,0.3)] hover:border-blue-400 transition-all duration-300 group relative overflow-hidden"
+          className="w-full bg-white border border-slate-200/80 rounded-2xl p-8 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.08)] hover:shadow-[0_8px_40px_-8px_rgba(15,23,42,0.12)] hover:border-slate-300 transition-all duration-300 group relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
             <ArrowUpRight className="text-slate-400" />
@@ -142,9 +142,9 @@ const About: React.FC = () => {
               <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center border border-slate-200 shadow-sm">
                 <Cpu className="w-6 h-6 text-emerald-500" />
               </div>
-              <h3 className="text-2xl font-display font-bold text-slate-900">The Probability Engine</h3>
+              <h3 className="text-2xl font-display font-bold text-slate-900">Unified Vault & CCIP</h3>
               <p className="text-slate-600 leading-relaxed max-w-2xl">
-                RetroPick isn't just a betting site. It's a data generation machine. By aggregating crowd wisdom with AI verification, we produce the world's most accurate probability datasets, available via API for institutional investors.
+                Creator UnifiedVaults (ERC-4626) pool collateral across markets, allocate risk budgets, and accept LP deposits. Chainlink CCIP enables cross-chain deposits—users deposit from any supported chain with collateral normalized and credited to the vault's execution chain.
               </p>
             </div>
 
