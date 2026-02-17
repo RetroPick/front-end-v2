@@ -22,6 +22,8 @@ createAppKit({
     networks,
     projectId,
     metadata,
+    enableReconnect: false, // Prevent wallet popup on page load
+    allowUnsupportedChain: true, // Don't show Switch Network modal on load when wallet is on BSC/etc
     features: {
         analytics: true // Optional - defaults to your Cloud configuration
     }
@@ -29,7 +31,7 @@ createAppKit({
 
 export function Web3ModalProvider({ children, cookies }: { children: ReactNode; cookies?: string }) {
     return (
-        <WagmiProvider config={wagmiAdapter.wagmiConfig as any} reconnectOnMount={true}>
+        <WagmiProvider config={wagmiAdapter.wagmiConfig as any} reconnectOnMount={false}>
             <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
         </WagmiProvider>
     )
