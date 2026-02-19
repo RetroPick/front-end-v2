@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BlockMath, InlineMath } from 'react-katex';
+import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { FileText, ArrowRight, Database, Cpu, Layers, ShieldCheck, Zap } from 'lucide-react';
+
+// Custom math components using katex directly (replaces react-katex)
+const InlineMath = ({ math }: { math: string }) => {
+  const html = katex.renderToString(math, { throwOnError: false, displayMode: false });
+  return <span dangerouslySetInnerHTML={{ __html: html }} />;
+};
+
+const BlockMath = ({ math }: { math: string }) => {
+  const html = katex.renderToString(math, { throwOnError: false, displayMode: true });
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+};
 
 const Whitepaper: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'foundations' | 'risk' | 'settlement' | 'market-comparison'>('foundations');
@@ -63,8 +74,8 @@ const Whitepaper: React.FC = () => {
                 transition={{ delay: index * 0.1 }}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`w-full flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold transition-all border ${activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border-blue-500 scale-105'
-                    : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border-blue-500 scale-105'
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
                   }`}
               >
                 {tab.icon}
@@ -76,7 +87,6 @@ const Whitepaper: React.FC = () => {
           {/* Content Area */}
           <div className="lg:col-span-9">
             <div className="relative">
-              {/* Decorative gradients behind content */}
               <div className="absolute -inset-4 bg-gradient-to-r from-blue-100/50 to-purple-100/50 blur-xl rounded-[2rem] -z-10"></div>
 
               <AnimatePresence mode="wait">
@@ -89,7 +99,7 @@ const Whitepaper: React.FC = () => {
                     transition={{ duration: 0.4, ease: "circOut" }}
                     className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-xl space-y-6"
                   >
-                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">LS-LMSR Foundations</h3>
+                    <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">LS-LMSR Foundations</h3>
                     <div className="prose prose-slate max-w-none text-slate-600">
                       <p>
                         RetroPick uses the <strong>Logarithmic Market Scoring Rule (LMSR)</strong> baseline with liquidity-sensitive extension.
@@ -122,7 +132,7 @@ const Whitepaper: React.FC = () => {
                     transition={{ duration: 0.4, ease: "circOut" }}
                     className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-xl space-y-6"
                   >
-                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Risk Calibration & Liquidity</h3>
+                    <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Risk Calibration & Liquidity</h3>
                     <div className="prose prose-slate max-w-none text-slate-600">
                       <p>
                         The worst-case loss bound is <InlineMath math="L_{\max} \leq b \cdot \log(n)" />. Given a per-market loss budget <InlineMath math="L" /> and <InlineMath math="n" /> outcomes, we select:
@@ -144,7 +154,7 @@ const Whitepaper: React.FC = () => {
                         </div>
                       </div>
                       <p>
-                        Larger <InlineMath math="b" /> implies deeper liquidity—higher cost to move implied probabilities. Coverage ratio <InlineMath math="\kappa = \frac{\text{VaultAssets}}{\sum_m L_m}" /> must stay above threshold for solvency.
+                        Larger <InlineMath math="b" /> implies deeper liquidity. Coverage ratio <InlineMath math="\kappa = \frac{\text{VaultAssets}}{\sum_m L_m}" /> must stay above threshold for solvency.
                       </p>
                     </div>
                   </motion.div>
@@ -159,7 +169,7 @@ const Whitepaper: React.FC = () => {
                     transition={{ duration: 0.4, ease: "circOut" }}
                     className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-xl space-y-6"
                   >
-                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Yellow Sessions & Resolution</h3>
+                    <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Yellow Sessions & Resolution</h3>
                     <div className="space-y-6">
                       <p className="text-slate-600">
                         Trading executes <strong>off-chain</strong> in hub-and-spoke Yellow sessions. Signed state S = (q, balances, positions, fees, nonce) with deterministic pricing. On-chain contracts retain custody, enforce state commitments, and handle dispute exits—<strong>latest signed state wins</strong> in challenge windows.
@@ -195,7 +205,7 @@ const Whitepaper: React.FC = () => {
                     transition={{ duration: 0.4, ease: "circOut" }}
                     className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 border border-white/50 shadow-xl space-y-6"
                   >
-                    <h3 className="text-3xl font-bold text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">LS-LMSR vs Order Books</h3>
+                    <h3 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">LS-LMSR vs Order Books</h3>
                     <div className="prose prose-slate max-w-none text-slate-600 mb-6">
                       <p>Order-book venues match buyers and sellers; liquidity is endogenous and can dry up in thin markets. CFMMs like LS-LMSR guarantee always-on liquidity with provably bounded risk.</p>
                     </div>
@@ -242,7 +252,6 @@ const NODES = [
 const ArchitectureDiagram = () => {
   return (
     <div className="w-full bg-slate-900/95 rounded-2xl p-6 md:p-8 relative overflow-hidden">
-      {/* Ambient glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(59,130,246,0.12),transparent_60%)]" />
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
@@ -257,14 +266,8 @@ const ArchitectureDiagram = () => {
             >
               <motion.div
                 whileHover={{ scale: 1.04, transition: { duration: 0.2 } }}
-                className={`
-                  relative px-4 py-3 md:px-5 md:py-3.5 rounded-xl
-                  bg-gradient-to-br ${node.color} border ${node.borderColor}
-                  shadow-lg backdrop-blur-sm
-                  ring-2 ring-white/5
-                `}
+                className={`relative px-4 py-3 md:px-5 md:py-3.5 rounded-xl bg-gradient-to-br ${node.color} border ${node.borderColor} shadow-lg backdrop-blur-sm ring-2 ring-white/5`}
               >
-                {/* Subtle pulse on active node */}
                 <motion.div
                   className="absolute inset-0 rounded-xl bg-white/10"
                   animate={{ opacity: [0, 0.15, 0] }}
@@ -303,7 +306,6 @@ const ArchitectureDiagram = () => {
         ))}
       </div>
 
-      {/* Resolution branch hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Retropick: Market Detail Resolved</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#3b82f6",
+                "accent-green": "#10b981",
+                "accent-magenta": "#d946ef",
+                "accent-cyan": "#22d3ee",
+                "background-dark": "#0B0B0B",
+                "card-dark": "#161618",
+                "obsidian": "#0B0B0B",
+                "glass": "rgba(255, 255, 255, 0.03)",
+                "glass-hover": "rgba(255, 255, 255, 0.06)",
+                "market-green": "#00E096",
+                "market-blue": "#3B82F6",
+                "market-white": "#FFFFFF",
+                "buy-yes": "#3B82F6",
+                "buy-no": "#8B5CF6",
+                "resolved-gold": "#F59E0B",
+              },
+              fontFamily: {
+                "sans": ["Inter", "sans-serif"],
+                "mono": ["JetBrains Mono", "monospace"]
+              },
+              boxShadow: {
+                'glow': '0 0 20px rgba(59, 130, 246, 0.15)',
+                'glow-gold': '0 0 20px rgba(245, 158, 11, 0.15)',
+              }
+            },
+          },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0B0B;
+            color: #ffffff;
+        }::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0B0B; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444; 
+        }
+        .chart-gradient-blue {
+            stroke: #3B82F6;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.3));
+        }
+        .chart-gradient-green {
+            stroke: #00E096;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 4px rgba(0, 224, 150, 0.3));
+        }
+        .chart-gradient-white {
+            stroke: #FFFFFF;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.8;
+        }
+        .outcome-row {
+            transition: background-color 0.2s ease;
+        }
+        .outcome-row:hover {
+            background-color: rgba(255,255,255,0.03);
+        }
+        .price-pill-yes {
+            background-color: #266df0; 
+            color: white;
+            transition: all 0.2s;
+        }
+        .price-pill-yes:hover {
+            background-color: #1d4ed8;
+        }
+        .price-pill-no {
+            background-color: #5b21b6;background-image: linear-gradient(to right, #4c1d95, #5b21b6);
+            color: #e9d5ff;
+            transition: all 0.2s;
+        }
+        .price-pill-no:hover {
+            filter: brightness(1.2);
+        }
+        .tab-active {
+            color: #22d3ee;
+            border-bottom: 2px solid #22d3ee;
+            background: rgba(34, 211, 238, 0.05);
+        }
+        .tab-inactive {
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-inactive:hover {
+            color: #9ca3af;
+            background: rgba(255, 255, 255, 0.02);
+        }.avatar-img {
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .winning-gradient {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-obsidian min-h-screen flex flex-col">
+<header class="fixed top-0 w-full z-50 bg-obsidian/95 backdrop-blur-md border-b border-white/5">
+<div class="px-4 lg:px-6 py-3">
+<div class="max-w-[1200px] mx-auto flex items-center justify-between gap-8">
+<div class="flex items-center gap-8 shrink-0">
+<div class="flex items-center gap-2 cursor-pointer">
+<div class="size-8 bg-gradient-to-tr from-primary to-blue-400 rounded flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+<span class="material-symbols-outlined text-white text-xl">query_stats</span>
+</div>
+<h2 class="text-xl font-extrabold tracking-tight">Retropick</h2>
+</div>
+<div class="hidden md:flex items-center bg-white/5 rounded-lg border border-white/10 px-3 py-1.5 gap-2 w-96">
+<span class="material-symbols-outlined text-white/40 text-lg">search</span>
+<input class="bg-transparent border-none text-sm text-white focus:ring-0 w-full p-0 placeholder-white/30" placeholder="Search markets..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right hidden sm:block">
+<div class="text-[10px] text-white/40 font-bold uppercase">Balance</div>
+<div class="text-sm font-bold text-accent-cyan">$12,450.00 USDC</div>
+</div>
+<div class="size-9 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-white/80 text-xl">person</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 pt-24 pb-20 px-4 md:px-8">
+<div class="max-w-[1200px] mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-8">
+<div class="mb-6">
+<div class="flex items-center gap-3 text-sm text-gray-500 mb-4 font-medium">
+<a class="hover:text-white transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-base">arrow_back</span>
+                                Back
+                            </a>
+<span class="text-gray-700">/</span>
+<span class="hover:text-gray-300 cursor-pointer">Space</span>
+<span class="text-gray-700">•</span>
+<span class="text-white">Starship</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-6">
+<div class="flex gap-5">
+<div class="size-20 rounded-lg overflow-hidden shrink-0 border border-white/10 relative">
+<img alt="Market Icon" class="w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArENkH3dIgwiFeLm8vZpfceAUcrAzrYJUsovNb_dF0mIK5_ICriWZt_9tOjIdQZHDa61CJmL_8cFPdYepKVALNah1XWi714BCKI9x-QwOpPefZsoigi5xjXN85ramrN7cjQ7otd_sRXL8BFbQ4CUs7Nrl0xqh6tmhNQ4g883g-XcotV4_EZ5rwdX08lKd-GJRUM0zDksUarm2Qdf1VTTDBboH6HLtWPX8d1Nz6QtULWXAHPxAwRjIS4hTCEf-S5T-dWKwWfRDVq_k"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/80 text-3xl">lock</span>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2 py-0.5 rounded bg-white/10 border border-white/10 text-[10px] font-bold uppercase text-white tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                                        Resolved
+                                    </span>
+<span class="text-xs text-gray-500 font-mono">ID: 882910</span>
+</div>
+<h1 class="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">Will SpaceX Starship reach orbit?</h1>
+<div class="text-gray-400 text-sm">Resolved on <span class="text-white font-medium">Mar 14, 2024 at 09:25 AM UTC</span></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="size-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white/60 hover:text-white">
+<span class="material-symbols-outlined text-xl">share</span>
+</button>
+</div>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl border border-accent-green/30 winning-gradient p-8 flex flex-col items-center justify-center text-center mb-8">
+<div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-9xl text-accent-green">emoji_events</span>
+</div>
+<h3 class="text-sm font-bold text-accent-green uppercase tracking-[0.2em] mb-2">Winning Outcome</h3>
+<div class="text-5xl md:text-6xl font-black text-white tracking-tight mb-2 flex items-center gap-4">
+<span class="material-symbols-outlined text-4xl md:text-5xl text-accent-green">check_circle</span>
+                            YES
+                        </div>
+<p class="text-gray-400 max-w-lg mx-auto text-sm mt-2">
+                            The market has resolved to "YES" based on official confirmation from SpaceX and independent telemetry data indicating orbital insertion.
+                        </p>
+</div>
+<div class="bg-card-dark rounded-xl border border-white/5 p-6 mb-8">
+<h4 class="text-sm font-bold uppercase tracking-wider text-white mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-base">gavel</span>
+                            Resolution Details
+                        </h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<div class="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Source</div>
+<div class="flex items-center gap-3 bg-white/5 rounded-lg p-3 border border-white/5">
+<div class="size-10 bg-black rounded flex items-center justify-center border border-white/10">
+<span class="font-bold text-white">X</span>
+</div>
+<div>
+<div class="text-sm font-bold text-white">SpaceX Official</div>
+<div class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer">
+                                            @SpaceX
+                                            <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Resolver</div>
+<div class="flex items-center gap-3 bg-white/5 rounded-lg p-3 border border-white/5">
+<div class="size-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-white">policy</span>
+</div>
+<div>
+<div class="text-sm font-bold text-white">Retropick Oracle V2</div>
+<div class="text-xs text-gray-400 font-mono">0x71...92a1</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-white/5">
+<div class="text-xs text-gray-500 uppercase tracking-wider font-bold mb-3">Resolution Proof</div>
+<div class="bg-black/40 rounded border border-white/5 p-3 font-mono text-xs text-gray-400 break-all">
+                            https://x.com/SpaceX/status/1768205467382910392
+                        </div>
+</div>
+</div>
+<div class="opacity-60 hover:opacity-100 transition-opacity">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-medium text-white/90">Market History</h3>
+<button class="text-xs text-gray-500 hover:text-white transition-colors flex items-center gap-1">
+                                View Full Chart <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<div class="relative w-full h-[150px] mb-4 group grayscale hover:grayscale-0 transition-all duration-500">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 1000 150">
+<path class="chart-gradient-green vector-effect-non-scaling-stroke" d="M0 120 L100 120 L150 110 L250 110 L300 80 L400 80 L450 60 L600 60 L700 40 L850 40 L900 10 L950 10 L980 5 L1000 5" stroke-linecap="round" stroke-linejoin="round"></path>
+<path class="chart-gradient-blue vector-effect-non-scaling-stroke" d="M0 30 L100 30 L150 40 L250 40 L300 70 L400 70 L450 90 L600 90 L700 110 L850 110 L900 140 L950 140 L980 145 L1000 145" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="1000" cy="5" fill="#10b981" r="4" stroke="#0B0B0B" stroke-width="2"></circle>
+</svg>
+<div class="absolute inset-x-0 bottom-0 h-px bg-white/10"></div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-card-dark rounded-2xl border border-white/10 overflow-hidden sticky top-24 shadow-2xl ring-1 ring-white/5">
+<div class="bg-gradient-to-r from-accent-green/20 to-emerald-900/20 p-6 border-b border-accent-green/20">
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-lg font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-accent-green">account_balance_wallet</span>
+                                    Your Position
+                                </h2>
+<span class="px-2 py-0.5 bg-accent-green/20 text-accent-green text-xs font-bold rounded uppercase tracking-wider">Winner</span>
+</div>
+<div class="text-3xl font-mono font-bold text-white tracking-tight">1,500 <span class="text-lg text-gray-400 font-sans font-normal">Shares (YES)</span></div>
+<div class="text-sm text-green-400 mt-1 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                                +124.5% Return
+                            </div>
+</div>
+<div class="p-6">
+<div class="space-y-4 mb-8">
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<span class="text-gray-400 text-sm">Initial Investment</span>
+<span class="text-white font-mono">$668.25 USDC</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<span class="text-gray-400 text-sm">Winning Value</span>
+<span class="text-white font-mono text-lg font-bold">$1,500.00 USDC</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-white/5">
+<span class="text-gray-400 text-sm">Settlement Asset</span>
+<div class="flex items-center gap-2">
+<div class="size-5 rounded-full bg-[#2775CA] flex items-center justify-center text-[10px] font-bold text-white">
+                                            $
+                                        </div>
+<span class="text-white font-medium">USDC</span>
+</div>
+</div>
+</div>
+<button class="w-full py-4 bg-accent-green hover:bg-emerald-400 text-black font-extrabold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined group-hover:animate-bounce">redeem</span>
+                                CLAIM WINNINGS
+                            </button>
+<div class="mt-4 text-center">
+<p class="text-xs text-gray-500">
+                                Winnings are automatically deposited to your connected wallet after claiming. 
+                                <a class="text-gray-400 hover:text-white underline decoration-dotted" href="#">Learn more</a>
+</p>
+</div>
+</div>
+</div>
+<div class="bg-card-dark rounded-xl border border-white/5 overflow-hidden">
+<div class="p-4 border-b border-white/5 flex justify-between items-center">
+<h4 class="text-sm font-bold uppercase tracking-wider text-white">Final Standings</h4>
+</div>
+<div class="divide-y divide-white/5">
+<div class="p-4 flex items-center justify-between bg-accent-green/5">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-accent-green flex items-center justify-center text-black font-bold text-xs">
+                                        YES
+                                    </div>
+<span class="text-white font-bold">Yes</span>
+</div>
+<div class="text-right">
+<div class="text-accent-green font-bold">100%</div>
+<div class="text-xs text-gray-500">Winner</div>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between opacity-50">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded bg-gray-700 flex items-center justify-center text-gray-400 font-bold text-xs">
+                                        NO
+                                    </div>
+<span class="text-gray-400 font-medium">No</span>
+</div>
+<div class="text-right">
+<div class="text-gray-500 font-bold">0%</div>
+<div class="text-xs text-gray-600">Lost</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

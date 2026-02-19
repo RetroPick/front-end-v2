@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Retropick: Modern LP Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: "#060606",
+                        charcoal: "#111111",
+                        "charcoal-light": "#1A1A1A",
+                        neon: {
+                            cyan: "#00F0FF",
+                            magenta: "#FF00F5"
+                        },
+                        glass: {
+                            surface: "rgba(255, 255, 255, 0.03)",
+                            border: "rgba(255, 255, 255, 0.08)"
+                        }
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["IBM Plex Mono", "monospace"],
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 10px rgba(0, 240, 255, 0.3)',
+                        'neon-magenta': '0 0 10px rgba(255, 0, 245, 0.3)',
+                        'glass-glow': 'inset 0 0 20px rgba(255, 255, 255, 0.02)',
+                    },
+                    borderRadius: {
+                        'card': '16px',
+                        'btn': '12px',
+                    }
+                },
+            },
+        };
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .glass-card {
+                @apply bg-glass-surface border border-glass-border backdrop-blur-sm shadow-glass-glow rounded-card;
+            }
+            .text-neon-cyan {
+                color: #00F0FF;
+            }
+            .text-neon-magenta {
+                color: #FF00F5;
+            }
+            .border-neon-cyan {
+                border-color: #00F0FF;
+            }
+            .btn-primary {
+                @apply bg-[rgba(0,240,255,0.1)] text-neon-cyan border border-neon-cyan hover:bg-[rgba(0,240,255,0.2)] transition-all duration-200 shadow-[0_0_15px_rgba(0,240,255,0.15)] rounded-btn;
+            }
+            .btn-secondary {
+                @apply bg-[rgba(255,0,245,0.1)] text-neon-magenta border border-neon-magenta hover:bg-[rgba(255,0,245,0.2)] transition-all duration-200 rounded-btn;
+            }
+            .table-header {
+                @apply font-mono text-xs uppercase tracking-wider text-gray-500 font-medium py-4 px-6 text-left border-b border-glass-border;
+            }
+            .table-cell {
+                @apply py-5 px-6 border-b border-glass-border/50 align-middle text-gray-300;
+            }
+        }
+        body {
+            background-color: #060606;
+            color: #E5E7EB;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased selection:bg-neon-cyan selection:text-black">
+<nav class="sticky top-0 z-50 w-full bg-obsidian/95 backdrop-blur-md border-b border-glass-border h-16">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+<div class="flex items-center justify-between h-full gap-8">
+<div class="flex items-center gap-8 min-w-fit">
+<div class="flex-shrink-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-cyan text-[24px]">token</span>
+<span class="font-bold text-xl tracking-tight text-white">Retropick</span>
+</div>
+<div class="hidden md:flex items-center space-x-6">
+<a class="text-sm font-medium text-gray-400 hover:text-white transition-colors" href="#">Markets</a>
+<a class="text-sm font-medium text-gray-400 hover:text-white transition-colors" href="#">Portfolio</a>
+<a class="text-sm font-bold text-neon-cyan border-b border-neon-cyan pb-0.5" href="#">Vaults</a>
+<a class="text-sm font-medium text-gray-400 hover:text-white transition-colors" href="#">Governance</a>
+</div>
+</div>
+<div class="flex-1 max-w-lg hidden lg:block">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 group-focus-within:text-neon-cyan transition-colors text-[20px]">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border border-glass-border rounded-full leading-5 bg-charcoal text-gray-300 placeholder-gray-600 focus:outline-none focus:bg-charcoal-light focus:border-neon-cyan focus:ring-0 sm:text-sm font-mono transition-colors" placeholder="Search markets, vaults, or tokens..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 min-w-fit justify-end">
+<div class="flex items-center gap-2 px-3 py-1.5 border border-glass-border bg-charcoal text-sm rounded-lg">
+<div class="w-2 h-2 rounded-full bg-neon-cyan shadow-[0_0_8px_#00F0FF]"></div>
+<span class="font-mono text-xs text-gray-400">Mainnet</span>
+</div>
+<div class="flex items-center gap-3 border border-glass-border bg-charcoal px-4 py-1.5 hover:border-gray-600 cursor-pointer transition-colors group rounded-lg">
+<span class="text-xs font-mono text-gray-400 group-hover:text-white">0x4a...9f2</span>
+<span class="text-sm font-bold text-white">$12,450.00</span>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="mb-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h1 class="text-3xl font-bold text-white tracking-tight mb-2">Liquidity Provider Dashboard</h1>
+<p class="text-gray-400 max-w-2xl font-light">Manage your liquidity positions across ERC-4626 Vaults. Earn yield from trading fees.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 text-sm font-medium flex items-center gap-2 text-gray-400 hover:text-white border border-glass-border hover:bg-glass-surface rounded-btn transition-all">
+<span class="material-symbols-outlined text-[18px]">history</span> History
+                    </button>
+<button class="btn-primary px-6 py-2.5 text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span> New Position
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-card p-6 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px] text-white">account_balance</span>
+</div>
+<h3 class="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Total LP TVL</h3>
+<div class="flex items-baseline gap-3 mb-2">
+<span class="text-3xl font-bold font-mono text-white tracking-tight">$4,291,040.25</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-neon-cyan flex items-center bg-[rgba(0,240,255,0.05)] px-2 py-0.5 rounded border border-neon-cyan/20">
+<span class="material-symbols-outlined text-[12px] mr-0.5">arrow_upward</span> 2.4%
+                        </span>
+<span class="text-xs text-gray-500">Global liquidity</span>
+</div>
+</div>
+<div class="glass-card p-6 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px] text-white">payments</span>
+</div>
+<h3 class="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Fees Generated</h3>
+<div class="flex items-baseline gap-3 mb-2">
+<span class="text-3xl font-bold font-mono text-white tracking-tight">$182,304.11</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-gray-500">Distributed to LPs since inception</span>
+</div>
+</div>
+<div class="glass-card p-6 relative overflow-hidden group border-l-[3px] border-l-neon-cyan">
+<div class="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[120px] text-white">wallet</span>
+</div>
+<h3 class="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">My LP Value</h3>
+<div class="flex items-baseline gap-3 mb-2">
+<span class="text-3xl font-bold font-mono text-white tracking-tight">$12,450.00</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-neon-cyan flex items-center bg-[rgba(0,240,255,0.05)] px-2 py-0.5 rounded border border-neon-cyan/20">
+                            +$340.20 (24h)
+                        </span>
+<span class="text-xs text-gray-500">3 active positions</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-12">
+<div class="flex items-center justify-between mb-4 px-1">
+<h2 class="text-lg font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-cyan">pie_chart</span>
+                    My LP Positions
+                </h2>
+</div>
+<div class="glass-card overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left border-collapse">
+<thead>
+<tr>
+<th class="table-header">Market Name</th>
+<th class="table-header text-right">Shares Owned</th>
+<th class="table-header text-right">Underlying Value</th>
+<th class="table-header text-right">Share Price</th>
+<th class="table-header text-right">PnL</th>
+<th class="table-header text-center">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-glass-border/30">
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="table-cell">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-charcoal border border-glass-border flex items-center justify-center rounded-lg group-hover:border-neon-cyan/50 transition-colors">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-neon-cyan text-base">rocket_launch</span>
+</div>
+<div>
+<div class="font-bold text-gray-200 group-hover:text-white">SpaceX Starship Orbit 2025</div>
+<div class="text-xs text-gray-500 font-mono mt-0.5">Vault: 0x82...91</div>
+</div>
+</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-400">4,200.00 LP</td>
+<td class="table-cell text-right font-mono font-bold text-white">$4,305.00</td>
+<td class="table-cell text-right font-mono text-gray-400">1.025 USDC</td>
+<td class="table-cell text-right font-mono text-neon-cyan">+$105.00</td>
+<td class="table-cell text-center">
+<button class="btn-primary text-xs px-4 py-2 font-bold uppercase tracking-wider">Manage</button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="table-cell">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-charcoal border border-glass-border flex items-center justify-center rounded-lg group-hover:border-neon-cyan/50 transition-colors">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-neon-cyan text-base">psychology</span>
+</div>
+<div>
+<div class="font-bold text-gray-200 group-hover:text-white">GPT-5 Release Q4 2024</div>
+<div class="text-xs text-gray-500 font-mono mt-0.5">Vault: 0x33...42</div>
+</div>
+</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-400">2,500.00 LP</td>
+<td class="table-cell text-right font-mono font-bold text-white">$2,512.50</td>
+<td class="table-cell text-right font-mono text-gray-400">1.005 USDC</td>
+<td class="table-cell text-right font-mono text-neon-cyan">+$12.50</td>
+<td class="table-cell text-center">
+<button class="btn-primary text-xs px-4 py-2 font-bold uppercase tracking-wider">Manage</button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="table-cell border-b-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-charcoal border border-glass-border flex items-center justify-center rounded-lg group-hover:border-neon-cyan/50 transition-colors">
+<span class="material-symbols-outlined text-gray-400 group-hover:text-neon-cyan text-base">currency_bitcoin</span>
+</div>
+<div>
+<div class="font-bold text-gray-200 group-hover:text-white">Bitcoin &gt; $100k 2024</div>
+<div class="text-xs text-gray-500 font-mono mt-0.5">Vault: 0x72...21</div>
+</div>
+</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-400 border-b-0">5,500.00 LP</td>
+<td class="table-cell text-right font-mono font-bold text-white border-b-0">$5,632.50</td>
+<td class="table-cell text-right font-mono text-gray-400 border-b-0">1.024 USDC</td>
+<td class="table-cell text-right font-mono text-neon-cyan border-b-0">+$132.50</td>
+<td class="table-cell text-center border-b-0">
+<button class="btn-primary text-xs px-4 py-2 font-bold uppercase tracking-wider">Manage</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-charcoal/50 px-6 py-4 border-t border-glass-border text-xs text-gray-500 flex justify-between items-center backdrop-blur-md">
+<span>Total Invested Capital: <span class="font-mono font-bold text-gray-300">$12,200.00</span></span>
+<span>Net APY: <span class="font-mono font-bold text-neon-cyan">~8.2%</span></span>
+</div>
+</div>
+</div>
+<div>
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4 px-1">
+<h2 class="text-lg font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-neon-cyan">dataset</span>
+                    All LP Vaults
+                </h2>
+<div class="flex flex-wrap md:flex-nowrap gap-3">
+<div class="flex border border-glass-border bg-charcoal rounded-lg overflow-hidden">
+<button class="px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-white/5 border-r border-glass-border text-white transition-colors">Binary</button>
+<button class="px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-white/5 text-gray-500 transition-colors">Categorical</button>
+<button class="px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-white/5 text-gray-500 border-l border-glass-border transition-colors">Scalar</button>
+</div>
+</div>
+</div>
+<div class="glass-card overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left border-collapse">
+<thead>
+<tr>
+<th class="table-header">Market / Vault</th>
+<th class="table-header text-right">TVL</th>
+<th class="table-header text-right">Share Price</th>
+<th class="table-header text-right">24h Fees</th>
+<th class="table-header text-center">Status</th>
+<th class="table-header text-center">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-glass-border/30">
+<tr class="hover:bg-white/[0.02] transition-colors group cursor-pointer">
+<td class="table-cell py-5">
+<div class="font-bold text-gray-200 group-hover:text-white">US Presidential Election 2024</div>
+<div class="text-xs text-gray-500 font-mono mt-1">ID: 0x99...2a • Categorical (3)</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-300">$1,205,000</td>
+<td class="table-cell text-right font-mono text-gray-500">1.082 USDC</td>
+<td class="table-cell text-right font-mono text-neon-cyan font-bold shadow-neon-cyan/5">$1,240.50</td>
+<td class="table-cell text-center">
+<span class="inline-flex items-center px-2.5 py-1 border border-neon-cyan/30 bg-[rgba(0,240,255,0.05)] text-neon-cyan text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
+</td>
+<td class="table-cell text-center">
+<button class="opacity-0 group-hover:opacity-100 btn-primary px-4 py-2 text-xs uppercase font-bold tracking-wider">Deposit</button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group cursor-pointer">
+<td class="table-cell py-5">
+<div class="font-bold text-gray-200 group-hover:text-white">Fed Interest Rate Decision Dec 2024</div>
+<div class="text-xs text-gray-500 font-mono mt-1">ID: 0x12...bb • Binary</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-300">$850,000</td>
+<td class="table-cell text-right font-mono text-gray-500">1.045 USDC</td>
+<td class="table-cell text-right font-mono text-neon-cyan font-bold">$890.20</td>
+<td class="table-cell text-center">
+<span class="inline-flex items-center px-2.5 py-1 border border-neon-cyan/30 bg-[rgba(0,240,255,0.05)] text-neon-cyan text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
+</td>
+<td class="table-cell text-center">
+<button class="opacity-0 group-hover:opacity-100 btn-primary px-4 py-2 text-xs uppercase font-bold tracking-wider">Deposit</button>
+</td>
+</tr>
+<tr class="bg-charcoal-light/30 hover:bg-charcoal-light/50 transition-colors group">
+<td class="table-cell py-5 opacity-75">
+<div class="font-bold text-gray-400">Super Bowl LIX Halftime Show First Song</div>
+<div class="text-xs text-gray-600 font-mono mt-1">ID: 0x55...cc • Categorical (10)</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-600">$0.00</td>
+<td class="table-cell text-right font-mono text-gray-600">1.000 USDC</td>
+<td class="table-cell text-right font-mono text-gray-600">$0.00</td>
+<td class="table-cell text-center">
+<span class="inline-flex items-center px-2.5 py-1 border border-gray-700 bg-gray-800 text-gray-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Empty</span>
+</td>
+<td class="table-cell text-center">
+<button class="btn-primary bg-transparent text-xs px-4 py-2 font-bold uppercase tracking-wider">Seed Liquidity</button>
+</td>
+</tr>
+<tr class="bg-[rgba(255,165,0,0.05)] border-b-0 border-glass-border">
+<td class="py-3 px-6 text-center border-b border-glass-border/30" colspan="6">
+<div class="flex items-center justify-center gap-2 text-xs text-orange-400/80 italic">
+<span class="material-symbols-outlined text-[16px] text-orange-400/60">info</span>
+                                        Vaults with no liquidity: No LPs - LP fees route to treasury until seeded.
+                                    </div>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group cursor-pointer">
+<td class="table-cell py-5">
+<div class="font-bold text-gray-200 group-hover:text-white">Euro 2024 Winner</div>
+<div class="text-xs text-gray-500 font-mono mt-1">ID: 0x78...ee • Categorical (5)</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-300">$420,500</td>
+<td class="table-cell text-right font-mono text-gray-500">1.120 USDC</td>
+<td class="table-cell text-right font-mono text-neon-cyan font-bold">$310.00</td>
+<td class="table-cell text-center">
+<span class="inline-flex items-center px-2.5 py-1 border border-neon-cyan/30 bg-[rgba(0,240,255,0.05)] text-neon-cyan text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
+</td>
+<td class="table-cell text-center">
+<button class="opacity-0 group-hover:opacity-100 btn-primary px-4 py-2 text-xs uppercase font-bold tracking-wider">Deposit</button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group cursor-pointer">
+<td class="table-cell py-5 border-b-0">
+<div class="font-bold text-gray-200 group-hover:text-white">Ethereum Shanghai Upgrade Delay</div>
+<div class="text-xs text-gray-500 font-mono mt-1">ID: 0x88...ff • Binary</div>
+</td>
+<td class="table-cell text-right font-mono text-gray-300 border-b-0">$2,100,200</td>
+<td class="table-cell text-right font-mono text-gray-500 border-b-0">1.015 ETH</td>
+<td class="table-cell text-right font-mono text-neon-cyan font-bold border-b-0">$1,540.10</td>
+<td class="table-cell text-center border-b-0">
+<span class="inline-flex items-center px-2.5 py-1 border border-neon-cyan/30 bg-[rgba(0,240,255,0.05)] text-neon-cyan text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
+</td>
+<td class="table-cell text-center border-b-0">
+<button class="opacity-0 group-hover:opacity-100 btn-primary px-4 py-2 text-xs uppercase font-bold tracking-wider">Deposit</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-glass-border bg-charcoal/50 flex items-center justify-between backdrop-blur-md">
+<div class="text-xs text-gray-500">
+                        Showing <span class="font-bold text-white">1-5</span> of <span class="font-bold text-white">24</span> vaults
+                    </div>
+<div class="flex gap-2">
+<button class="p-2 border border-glass-border rounded-lg hover:bg-white/10 disabled:opacity-30 text-gray-400" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="p-2 border border-glass-border rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-obsidian border-t border-glass-border mt-12 py-10">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-gray-600">architecture</span>
+<span class="text-xs text-gray-500">© 2024 Retropick • ERC-4626 Standard</span>
+</div>
+<div class="flex gap-6 text-xs text-gray-500 font-medium">
+<a class="hover:text-neon-cyan transition-colors" href="#">Documentation</a>
+<a class="hover:text-neon-cyan transition-colors" href="#">Risk Disclosure</a>
+<a class="hover:text-neon-cyan transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+
+</body></html>

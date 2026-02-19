@@ -7,6 +7,7 @@ import WalletButton from "./WalletButton";
 import { ModeToggle } from "./mode-toggle";
 
 import retropickLogo from "@/assets/retropick-logo.png";
+import Logo from "@/landing_components/Logo";
 import { useOnboarding } from "@/context/OnboardingContext";
 
 
@@ -31,6 +32,8 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
     { name: t('nav.markets'), path: "/app" },
     { name: t('nav.activity'), path: "/app/activity" },
     { name: t('nav.portfolio'), path: "/app/portfolio" },
+    { name: "Draft", path: "/app/vault" },
+    { name: "Liquidity", path: "/app/liquidity" },
   ];
 
   return (
@@ -41,10 +44,10 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
         {/* Left: Logo & Nav */}
         <div className="flex items-center gap-8 pl-2">
           <Link to="/app" className="flex items-center gap-3 group">
-            <div className="size-10 gradient-primary rounded-xl flex items-center justify-center neon-glow-primary group-hover:scale-110 transition-transform duration-300">
-              <Icon name="query_stats" className="text-white text-xl" />
+            <div className="group-hover:scale-110 transition-transform duration-300">
+              <Logo className="size-10 shadow-md shadow-blue-500/20 rounded-xl" />
             </div>
-            <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Retropick</h2>
+            <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Retropick</h2>
           </Link>
           <nav className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1 border border-border/50">
             {navItems.map((item) => (

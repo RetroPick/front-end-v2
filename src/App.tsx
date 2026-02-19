@@ -18,6 +18,10 @@ import { OnboardingProvider } from "@/context/OnboardingContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import Activity from "./pages/Activity";
 import Leaderboard from "./pages/Leaderboard";
+import Vault from "./pages/Vault";
+import VaultDetail from "./pages/VaultDetail";
+import VaultLiquidity from "./pages/VaultLiquidity";
+import VaultSuccess from "./pages/VaultSuccess";
 
 const App = () => (
   <Web3ModalProvider>
@@ -38,6 +42,10 @@ const App = () => (
               <Route path="/app/portfolio" element={<Portfolio />} />
               <Route path="/app/activity" element={<Activity />} />
               <Route path="/app/leaderboard" element={<Leaderboard />} />
+              <Route path="/app/vault" element={<Vault />} />
+              <Route path="/app/liquidity" element={<VaultLiquidity />} />
+              <Route path="/app/vault/success" element={<VaultSuccess />} />
+              <Route path="/app/vault/:id" element={<VaultDetail />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

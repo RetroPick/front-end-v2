@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Retropick: Unified Vault Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#060606",
+                        surface: "#121212",
+                        "surface-highlight": "#1A1A1A",
+                        border: "#262626",
+                        "neon-cyan": "#00F0FF",
+                        "neon-cyan-dim": "rgba(0, 240, 255, 0.1)",
+                        "neon-magenta": "#FF00F5",
+                        "neon-magenta-dim": "rgba(255, 0, 245, 0.1)",
+                        "text-primary": "#E5E5E5",
+                        "text-secondary": "#A3A3A3",
+                        "text-tertiary": "#525252",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["Fira Code", "monospace"],
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 10px rgba(0, 240, 255, 0.3)',
+                        'neon-magenta': '0 0 10px rgba(255, 0, 245, 0.3)',
+                        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                        'glass-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                    },
+                    borderRadius: {
+                        'card': '16px',
+                        'panel': '20px',
+                        'field': '12px',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            background-color: #060606;
+            color: #E5E5E5;
+        }
+        .glass-panel {
+            background: linear-gradient(145deg, rgba(18, 18, 18, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid #262626;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .glass-panel:hover {
+            border-color: #333;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+        }::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060606;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262626;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #404040;
+        }
+        .btn-neon-cyan {
+            background-color: #00F0FF;
+            color: #000;
+            transition: all 0.2s ease;
+        }
+        .btn-neon-cyan:hover {
+            background-color: #66F6FF;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+        .btn-neon-magenta {
+            background-color: transparent;
+            border: 1px solid #FF00F5;
+            color: #FF00F5;
+            transition: all 0.2s ease;
+        }
+        .btn-neon-magenta:hover {
+            background-color: rgba(255, 0, 245, 0.1);
+            box-shadow: 0 0 10px rgba(255, 0, 245, 0.2);
+        }
+        .input-dark {
+            background-color: #0A0A0A;
+            border: 1px solid #262626;
+            color: #E5E5E5;
+        }
+        .input-dark:focus {
+            border-color: #00F0FF;
+            ring: 1px solid #00F0FF;
+            outline: none;
+        }
+        .tab-active {
+            border-bottom: 2px solid #00F0FF;
+            color: #00F0FF;
+        }
+        .tab-inactive {
+            border-bottom: 2px solid transparent;
+            color: #737373;
+        }
+        .tab-inactive:hover {
+            color: #E5E5E5;
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased text-sm">
+<nav class="sticky top-0 z-50 w-full bg-[#060606]/90 backdrop-blur-md border-b border-[#262626]">
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center gap-8 w-1/4">
+<div class="flex-shrink-0 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-gradient-to-br from-[#111] to-[#000] border border-[#333] flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[18px] text-neon-cyan">layers</span>
+</div>
+<span class="font-bold text-lg tracking-tight text-white font-sans">Retropick</span>
+</div>
+<div class="hidden xl:flex items-center space-x-1">
+<a class="px-3 py-2 rounded-md text-xs font-medium text-text-secondary hover:text-white transition-colors" href="#">Dashboard</a>
+<a class="px-3 py-2 rounded-md text-xs font-medium text-white bg-[#1A1A1A] border border-[#262626]" href="#">Vaults</a>
+<a class="px-3 py-2 rounded-md text-xs font-medium text-text-secondary hover:text-white transition-colors" href="#">Governance</a>
+</div>
+</div>
+<div class="flex-1 max-w-lg px-4">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-500 text-[18px] group-focus-within:text-neon-cyan transition-colors">search</span>
+</div>
+<input class="block w-full bg-[#0A0A0A] border border-[#262626] rounded-md py-2 pl-10 pr-3 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-neon-cyan focus:ring-1 focus:ring-neon-cyan transition-all" placeholder="Search markets, vaults, or assets..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+<span class="text-[10px] text-gray-600 border border-[#262626] rounded px-1.5 py-0.5">⌘K</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-4 w-1/4">
+<div class="hidden md:flex flex-col items-end mr-2">
+<span class="text-[10px] text-text-secondary uppercase tracking-wider">Balance</span>
+<span class="text-xs font-mono text-neon-cyan">12,500.00 USDC</span>
+</div>
+<div class="h-8 w-[1px] bg-[#262626]"></div>
+<div class="flex items-center gap-2 bg-[#121212] border border-[#262626] rounded-md py-1.5 px-3 hover:border-[#404040] transition-colors cursor-pointer group">
+<div class="w-2 h-2 rounded-full bg-neon-cyan shadow-[0_0_8px_rgba(0,240,255,0.6)]"></div>
+<span class="text-xs font-mono text-white group-hover:text-neon-cyan transition-colors">0x71...8a92</span>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+<div class="mb-8 border-b border-[#262626] pb-6">
+<div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+<div>
+<div class="flex items-center gap-3 mb-3">
+<h1 class="text-3xl font-bold text-white tracking-tight font-sans">USDC Market Liquidity Vault</h1>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#1A1A1A] text-neon-cyan border border-neon-cyan/20">ERC-4626</span>
+</div>
+<div class="flex items-center gap-6 text-sm text-text-secondary font-mono">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] font-bold">$</span>
+<span>Asset: <span class="text-white">USDC</span></span>
+</div>
+<span class="text-[#262626]">|</span>
+<div class="flex items-center gap-2 cursor-pointer hover:text-neon-cyan transition-colors group">
+<span>Contract: 0x8f3C...291a</span>
+<span class="material-symbols-outlined text-[14px] opacity-0 group-hover:opacity-100 transition-opacity">content_copy</span>
+</div>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-[#121212] hover:bg-[#1A1A1A] text-text-secondary hover:text-white rounded border border-[#262626] text-xs font-medium flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">description</span> Contract
+                    </button>
+<button class="px-4 py-2 bg-[#121212] hover:bg-[#1A1A1A] text-text-secondary hover:text-white rounded border border-[#262626] text-xs font-medium flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">analytics</span> Analytics
+                    </button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<div class="lg:col-span-2 space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="glass-panel p-6 rounded-card relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-neon-cyan">trending_up</span>
+</div>
+<p class="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2">Share Price</p>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="text-3xl font-mono font-medium text-white tracking-tighter">1.0428</span>
+<span class="text-[10px] font-mono text-text-secondary">USDC</span>
+</div>
+<div class="flex items-center gap-1 text-[10px] text-neon-cyan font-medium bg-neon-cyan/10 w-fit px-1.5 py-0.5 rounded border border-neon-cyan/20">
+<span class="material-symbols-outlined text-[12px]">arrow_upward</span>
+<span>2.4% (30d)</span>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-card relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-white">account_balance_wallet</span>
+</div>
+<p class="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2">Total Assets (TVL)</p>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="text-3xl font-mono font-medium text-white tracking-tighter">4.82M</span>
+<span class="text-[10px] font-mono text-text-secondary">USDC</span>
+</div>
+<div class="text-[10px] text-text-secondary mt-1">
+                            Across <span class="text-white font-bold">14</span> Active Markets
+                        </div>
+</div>
+<div class="glass-panel p-6 rounded-card relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-4xl text-neon-magenta">pie_chart</span>
+</div>
+<p class="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2">Total Supply</p>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="text-3xl font-mono font-medium text-white tracking-tighter">4.62M</span>
+<span class="text-[10px] font-mono text-text-secondary">LP-USDC</span>
+</div>
+<div class="w-full bg-[#1A1A1A] h-1 rounded-full mt-2 overflow-hidden">
+<div class="bg-gradient-to-r from-neon-cyan to-blue-600 h-full rounded-full" style="width: 96%"></div>
+</div>
+<div class="text-[10px] text-text-secondary mt-1 text-right">96% Utilized</div>
+</div>
+</div>
+<div class="glass-panel rounded-card p-6 min-h-[250px] flex flex-col justify-between relative overflow-hidden">
+<div class="flex justify-between items-center mb-4 z-10">
+<h3 class="text-xs font-bold text-white uppercase tracking-wider">Performance (APY)</h3>
+<div class="flex gap-2">
+<button class="text-[10px] px-2 py-0.5 rounded bg-[#1A1A1A] text-white border border-[#333]">1W</button>
+<button class="text-[10px] px-2 py-0.5 rounded text-text-secondary hover:text-white transition-colors">1M</button>
+<button class="text-[10px] px-2 py-0.5 rounded text-text-secondary hover:text-white transition-colors">1Y</button>
+</div>
+</div>
+<div class="relative flex-grow w-full h-full flex items-end">
+<div class="absolute inset-0 grid grid-cols-6 grid-rows-4 gap-4 pointer-events-none">
+<div class="border-b border-[#262626] border-dashed"></div>
+<div class="border-b border-[#262626] border-dashed"></div>
+<div class="border-b border-[#262626] border-dashed"></div>
+<div class="border-b border-[#262626] border-dashed"></div>
+<div class="border-b border-[#262626] border-dashed"></div>
+<div class="border-b border-[#262626] border-dashed"></div>
+<div class="border-r border-[#262626] border-dashed row-span-4"></div>
+<div class="border-r border-[#262626] border-dashed row-span-4"></div>
+<div class="border-r border-[#262626] border-dashed row-span-4"></div>
+<div class="border-r border-[#262626] border-dashed row-span-4"></div>
+<div class="border-r border-[#262626] border-dashed row-span-4"></div>
+<div class="border-r border-[#262626] border-dashed row-span-4"></div>
+</div>
+<svg class="w-full h-48 z-10 overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#00F0FF;stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:#00F0FF;stop-opacity:0"></stop>
+</linearGradient>
+</defs>
+<path class="drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]" d="M0,80 Q10,75 20,78 T40,60 T60,50 T80,45 T100,20" fill="url(#gradient)" stroke="#00F0FF" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="glass-panel rounded-card overflow-hidden">
+<div class="border-b border-[#262626] px-6 py-5 flex items-center justify-between">
+<h3 class="text-sm font-bold text-white uppercase tracking-wider">Activity History</h3>
+<div class="flex space-x-4 text-[11px] font-medium text-text-secondary">
+<button class="text-white border-b border-neon-cyan pb-0.5">All</button>
+<button class="hover:text-white transition-colors">Deposits</button>
+<button class="hover:text-white transition-colors">Fees</button>
+<button class="hover:text-white transition-colors">Ledger Payouts</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+<thead>
+<tr class="text-[10px] uppercase tracking-wider text-text-tertiary border-b border-[#262626]">
+<th class="px-6 py-4 font-semibold">Tx Hash</th>
+<th class="px-6 py-4 font-semibold">Type</th>
+<th class="px-6 py-4 font-semibold text-right">Amount (USDC)</th>
+<th class="px-6 py-4 font-semibold text-right">Shares</th>
+<th class="px-6 py-4 font-semibold text-right">Time</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#1A1A1A]/0">
+<tr class="group hover:bg-[#121212] transition-colors rounded-lg">
+<td class="px-6 py-4 font-mono text-xs text-neon-cyan cursor-pointer group-hover:underline first:rounded-l-lg">0x3a...91f2</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold text-green-400 uppercase tracking-wide">Deposit</span>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-white text-right">50,000.00</td>
+<td class="px-6 py-4 font-mono text-xs text-text-secondary text-right">47,932.12</td>
+<td class="px-6 py-4 text-right text-text-tertiary text-[10px] last:rounded-r-lg">2m ago</td>
+</tr>
+<tr class="group hover:bg-[#121212] transition-colors rounded-lg">
+<td class="px-6 py-4 font-mono text-xs text-neon-cyan cursor-pointer group-hover:underline first:rounded-l-lg">0x8b...22c1</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold text-blue-400 uppercase tracking-wide">Fee Accrual</span>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-white text-right">1,240.55</td>
+<td class="px-6 py-4 font-mono text-xs text-text-secondary text-right">-</td>
+<td class="px-6 py-4 text-right text-text-tertiary text-[10px] last:rounded-r-lg">15m ago</td>
+</tr>
+<tr class="group hover:bg-[#121212] transition-colors rounded-lg">
+<td class="px-6 py-4 font-mono text-xs text-neon-cyan cursor-pointer group-hover:underline first:rounded-l-lg">0x1c...55d9</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold text-neon-magenta uppercase tracking-wide">Withdraw</span>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-white text-right">10,000.00</td>
+<td class="px-6 py-4 font-mono text-xs text-text-secondary text-right">9,588.42</td>
+<td class="px-6 py-4 text-right text-text-tertiary text-[10px] last:rounded-r-lg">1h ago</td>
+</tr>
+<tr class="group hover:bg-[#121212] transition-colors rounded-lg">
+<td class="px-6 py-4 font-mono text-xs text-neon-cyan cursor-pointer group-hover:underline first:rounded-l-lg">0x9f...11a2</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold text-purple-400 uppercase tracking-wide">Paid to Ledger</span>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-white text-right">5,000.00</td>
+<td class="px-6 py-4 font-mono text-xs text-text-secondary text-right">-</td>
+<td class="px-6 py-4 text-right text-text-tertiary text-[10px] last:rounded-r-lg">3h ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="glass-panel rounded-card p-6">
+<h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-yellow-500 text-[16px]">warning</span>
+                        Risk &amp; Explanation
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-text-secondary leading-relaxed">
+<div>
+<p class="mb-4">
+<strong class="text-white block mb-1">Liquidity Provision</strong>
+                                Assets deposited into this ERC-4626 vault serve as counterparty liquidity. Your capital is at risk if market outcomes favor traders excessively over the house.
+                            </p>
+<p>
+<strong class="text-white block mb-1">Share Class</strong>
+                                You receive <span class="font-mono text-neon-cyan bg-neon-cyan/5 px-1 py-0.5 rounded border border-neon-cyan/20">LP-USDC</span> tokens. The exchange rate increases as trading fees are collected.
+                            </p>
+</div>
+<div>
+<p class="mb-4">
+<strong class="text-white block mb-1">Fee Logic</strong>
+                                2% fee on winning positions. 1.5% to vault (share price ↑), 0.5% to protocol treasury.
+                            </p>
+<div class="bg-[#0A0A0A] p-4 rounded border border-[#262626] flex justify-between items-center">
+<div>
+<span class="block text-[10px] text-text-tertiary uppercase">Target Util.</span>
+<span class="text-white font-mono">80%</span>
+</div>
+<div class="h-8 w-[1px] bg-[#262626]"></div>
+<div>
+<span class="block text-[10px] text-text-tertiary uppercase">Max Drawdown</span>
+<span class="text-neon-magenta font-mono">-4.2%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-1">
+<div class="glass-panel rounded-panel sticky top-24 border border-[#262626] overflow-hidden">
+<div class="grid grid-cols-2 text-center text-sm font-medium border-b border-[#262626]">
+<button class="py-4 hover:bg-[#1A1A1A]/50 tab-active transition-all">Deposit</button>
+<button class="py-4 hover:bg-[#1A1A1A]/50 tab-inactive transition-all">Withdraw</button>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-center mb-4 text-xs">
+<span class="text-text-secondary">Available to Deposit</span>
+<span class="text-white font-mono bg-[#1A1A1A] px-2 py-1 rounded border border-[#262626]">12,500.00 USDC</span>
+</div>
+<div class="mb-6 space-y-3">
+<div class="relative group">
+<input class="block w-full bg-[#0A0A0A] border border-[#262626] rounded-field py-4 pl-4 pr-20 text-white placeholder-text-tertiary focus:ring-1 focus:ring-neon-cyan focus:border-neon-cyan text-xl font-mono transition-all" placeholder="0.00" type="number"/>
+<div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none gap-2">
+<div class="h-6 w-[1px] bg-[#262626]"></div>
+<span class="text-white font-bold text-sm">USDC</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 text-[10px] font-mono bg-[#1A1A1A] hover:bg-[#262626] text-text-secondary hover:text-white py-2 rounded-field border border-[#262626] transition-colors">25%</button>
+<button class="flex-1 text-[10px] font-mono bg-[#1A1A1A] hover:bg-[#262626] text-text-secondary hover:text-white py-2 rounded-field border border-[#262626] transition-colors">50%</button>
+<button class="flex-1 text-[10px] font-mono bg-[#1A1A1A] hover:bg-[#262626] text-text-secondary hover:text-white py-2 rounded-field border border-[#262626] transition-colors">75%</button>
+<button class="flex-1 text-[10px] font-mono bg-[#1A1A1A] hover:bg-[#262626] text-neon-cyan border border-[#262626] py-2 rounded-field transition-colors">MAX</button>
+</div>
+</div>
+<div class="bg-[#121212] rounded-field p-4 border border-[#262626] mb-6 space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-text-secondary">Receive (Est.)</span>
+<span class="font-mono font-bold text-neon-cyan text-lg">0.00 LP</span>
+</div>
+<div class="w-full h-[1px] bg-[#262626]"></div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-text-tertiary">Exchange Rate</span>
+<span class="font-mono text-text-secondary">1 USDC = 0.9589 LP</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="text-text-tertiary">Slippage</span>
+<span class="font-mono text-text-secondary flex items-center gap-1 cursor-pointer hover:text-white">
+                                    0.5% <span class="material-symbols-outlined text-[10px]">edit</span>
+</span>
+</div>
+</div>
+<div class="space-y-3 relative">
+<div class="relative z-10">
+<button class="w-full py-3 bg-[#0A0A0A] border border-[#262626] rounded-field text-text-secondary font-medium text-xs flex items-center justify-between px-4 group transition-all opacity-60 cursor-not-allowed">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-[#1A1A1A] border border-green-500 text-green-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<span>1. Approve USDC</span>
+</div>
+<span class="text-[10px] text-green-500 font-mono font-bold uppercase tracking-wider">Completed</span>
+</button>
+<div class="absolute left-[27px] top-10 bottom-[-14px] w-[1px] bg-neon-cyan/30 z-0"></div>
+</div>
+<button class="relative z-10 w-full py-4 btn-neon-cyan text-black rounded-field font-bold text-sm shadow-[0_0_20px_rgba(0,240,255,0.15)] flex justify-center items-center gap-2 group">
+<span>2. Confirm Deposit</span>
+<span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="mt-6 text-center">
+<p class="text-[10px] text-text-tertiary">
+                                By depositing, you agree to the <a class="text-neon-cyan hover:underline" href="#">Risks &amp; Terms</a>.
+                            </p>
+</div>
+</div>
+</div>
+<div class="mt-4 bg-[#121212] rounded-card border border-blue-900/30 p-4 flex items-start gap-3">
+<span class="material-symbols-outlined text-blue-400 mt-0.5 text-[18px]">info</span>
+<div>
+<h4 class="text-xs font-bold text-white mb-1">Epoch Rebalance</h4>
+<p class="text-[10px] text-text-secondary leading-relaxed">
+                            This vault rebalances every 24h. Deposits made now will be deployed in the next epoch (approx. 4h 12m).
+                        </p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="border-t border-[#262626] mt-12 py-8 bg-[#060606]">
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-[#1A1A1A] rounded flex items-center justify-center text-neon-cyan border border-[#333] text-[10px] font-bold">R</div>
+<span class="text-[10px] text-text-tertiary font-mono tracking-widest">RETROPICK PROTOCOL v2.1.0</span>
+</div>
+<div class="flex gap-6 text-[10px] text-text-secondary font-mono uppercase tracking-wider">
+<a class="hover:text-neon-cyan transition-colors" href="#">Documentation</a>
+<a class="hover:text-neon-cyan transition-colors" href="#">Audits</a>
+<a class="hover:text-neon-cyan transition-colors" href="#">System Status</a>
+</div>
+</div>
+</footer>
+</body></html>

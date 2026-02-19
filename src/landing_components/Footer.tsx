@@ -10,10 +10,10 @@ const Footer: React.FC = () => {
       whileInView={{ y: 0, opacity: 1 }}
       viewport={{ once: true, amount: 0.1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="relative mx-4 md:mx-10 mb-6 rounded-2xl md:rounded-3xl bg-slate-900 text-white py-16 md:py-20 overflow-hidden border-2 border-blue-500/30 shadow-2xl shadow-blue-900/20"
+      className="relative mx-4 md:mx-10 mb-6 rounded-2xl md:rounded-3xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white py-16 md:py-20 overflow-hidden border-2 border-blue-400/30 shadow-2xl shadow-blue-500/30"
     >
       {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-slate-700/30 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[400px] bg-white/10 blur-[100px] rounded-full pointer-events-none"></div>
 
       <div className="container mx-auto px-6 relative z-10">
 
