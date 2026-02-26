@@ -1,6 +1,6 @@
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, MouseEvent } from "react";
+import { useState, memo , MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { Box, Hammer, Coins } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,7 +9,7 @@ interface CommoditiesMarketCardProps {
     market: Market;
 }
 
-const CommoditiesMarketCard = ({ market }: CommoditiesMarketCardProps) => {
+const CommoditiesMarketCard = memo(({ market }: CommoditiesMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -67,13 +67,13 @@ const CommoditiesMarketCard = ({ market }: CommoditiesMarketCardProps) => {
                                 <div key={outcome.id}>
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase">{outcome.label}</span>
-                                        <span className={cn("text-sm font-bold", themeColor)}>{outcome.probability}%</span>
+                                        <span className={cn("text-sm font-bold", themeColor)}>{Math.round(outcome.probability)}%</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1 h-3 bg-slate-100 dark:bg-black rounded-sm overflow-hidden border border-slate-200 dark:border-white/10 relative">
                                             <div
                                                 className={cn("absolute left-0 top-0 bottom-0 transition-all duration-500 opacity-60", themeBg.replace("bg-", "bg-"))}
-                                                style={{ width: `${outcome.probability}%`, backgroundColor: isGold ? '#eab308' : isSilver ? '#94a3b8' : '#b45309' }}
+                                                style={{ width: `${Math.round(outcome.probability)}%`, backgroundColor: isGold ? '#eab308' : isSilver ? '#94a3b8' : '#b45309' }}
                                             />
                                         </div>
                                         <div className="flex gap-1">
@@ -110,6 +110,6 @@ const CommoditiesMarketCard = ({ market }: CommoditiesMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default CommoditiesMarketCard;

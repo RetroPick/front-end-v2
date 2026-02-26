@@ -1,7 +1,7 @@
 
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, MouseEvent } from "react";
+import { useState, memo , MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { Cpu, Bot, Sparkles, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,7 +10,7 @@ interface AIMarketCardProps {
     market: Market;
 }
 
-const AIMarketCard = ({ market }: AIMarketCardProps) => {
+const AIMarketCard = memo(({ market }: AIMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -65,7 +65,7 @@ const AIMarketCard = ({ market }: AIMarketCardProps) => {
                                 <div key={outcome.id} className="group/item">
                                     <div className="flex justify-between text-xs mb-1 font-mono">
                                         <span className="text-slate-600 dark:text-slate-300">{outcome.label}</span>
-                                        <span className="text-purple-600 dark:text-cyan-400 font-bold tracking-widest">{outcome.probability}%</span>
+                                        <span className="text-purple-600 dark:text-cyan-400 font-bold tracking-widest">{Math.round(outcome.probability)}%</span>
                                     </div>
                                     <div className="relative h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden mb-2">
                                         <div
@@ -106,6 +106,6 @@ const AIMarketCard = ({ market }: AIMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default AIMarketCard;

@@ -144,7 +144,7 @@ const CustomTooltip = ({ active, payload, label, mode }: any) => {
               />
               <span className="font-medium text-foreground">{entry.name}:</span>
               <span className="font-bold font-mono" style={{ color: entry.color }}>
-                {entry.value}%
+                {Math.round(entry.value)}%
               </span>
             </div>
           ))}
@@ -341,7 +341,7 @@ const ProbabilityChart = ({ outcomes, volume }: ProbabilityChartProps) => {
               <YAxis axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} tick={{ fontSize: 10, fill: '#888' }} domain={[0, 100]} dx={-10} />
               <Tooltip content={<CustomTooltip mode="area" />} />
               {chartData.topOutcomes.map((outcome, i) => {
-                const color = i === 0 ? "#0EA5E9" : i === 1 ? "#10B981" : "#6B7280";
+                const color = i === 0 ? "#10B981" : i === 1 ? "#EF4444" : "#6B7280";
                 return (
                   <Area
                     key={outcome.id}

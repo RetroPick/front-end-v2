@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      '/api/polymarket': {
+        target: 'https://gamma-api.polymarket.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/polymarket/, '')
+      }
+    }
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

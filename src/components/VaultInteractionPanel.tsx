@@ -2,51 +2,84 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Icon from "@/components/Icon";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { useVault } from "@/hooks/useVault";
+import { useAccount } from "wagmi";
 
 const VaultInteractionPanel = () => {
+    const { isConnected } = useAccount();
     const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
     const [amount, setAmount] = useState("");
-    const [selectedToken, setSelectedToken] = useState("USDC");
+    const [selectedToken] = useState("USDC");
     const [step, setStep] = useState<"approve" | "confirm" | "success">("approve");
-    const [isProcessing, setIsProcessing] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // Mock Tokens
-    const tokens = [
-        { symbol: "USDC", name: "USD Coin", balance: 12500.00, icon: "attach_money" },
-        { symbol: "ETH", name: "Ethereum", balance: 4.25, icon: "currency_bitcoin" }, // Using generic icon for now
-        { symbol: "WBTC", name: "Wrapped BTC", balance: 0.15, icon: "currency_bitcoin" },
-    ];
+    // Smart Contract Hooks
+    const {
+        tokenBalance,
+        lpBalance,
+        allowance,
+        approveToken,
+        isApproving,
+        deposit,
+        withdraw,
+        isVaultTxPending,
+        refetchAll
+    } = useVault(selectedToken);
 
-    const currentToken = tokens.find(t => t.symbol === selectedToken) || tokens[0];
+    // Define "processing" state
+    const isProcessing = isApproving || isVaultTxPending;
+
+    // Check if allowance is sufficient
+    const amountVal = parseFloat(amount || "0");
+    const needsApproval = activeTab === "deposit" && (amountVal > allowance);
+
+    useEffect(() => {
+        if (!needsApproval && step === "approve") {
+            setStep("confirm");
+        } else if (needsApproval && step === "confirm") {
+            setStep("approve");
+        }
+    }, [needsApproval, amount, step]);
 
     const handleMaxClick = () => {
-        setAmount(currentToken.balance.toString());
+        if (activeTab === "deposit") setAmount(tokenBalance.toString());
+        else setAmount(lpBalance.toString());
     };
 
-    const handleApprove = () => {
-        setIsProcessing(true);
-        setTimeout(() => {
-            setIsProcessing(false);
+    const handleApprove = async () => {
+        if (!amount || amountVal <= 0) return;
+        try {
+            await approveToken(amount);
+            // In a real app we'd wait for receipt, but for demo:
             setStep("confirm");
-        }, 1500); // Simulate network delay
+        } catch (e) {
+            console.error("Approve failed", e);
+        }
     };
 
-    const handleConfirm = () => {
-        setIsProcessing(true);
-        setTimeout(() => {
-            setIsProcessing(false);
+    const handleConfirm = async () => {
+        if (!amount || amountVal <= 0) return;
+        try {
+            if (activeTab === "deposit") {
+                await deposit(amount);
+            } else {
+                await withdraw(amount);
+            }
             setStep("success");
             setShowSuccessModal(true);
-        }, 2000); // Simulate network delay
+            refetchAll();
+        } catch (e) {
+            console.error("Tx failed", e);
+        }
     };
 
     const resetFlow = () => {
-        setStep("approve");
+        setStep(needsApproval ? "approve" : "confirm");
         setAmount("");
         setShowSuccessModal(false);
     };
+
+    const displayBalance = activeTab === "deposit" ? tokenBalance : lpBalance;
 
     return (
         <div className="bg-white dark:bg-[#15181D] rounded-2xl border border-slate-200 dark:border-white/5 shadow-xl relative overflow-hidden">
@@ -82,7 +115,7 @@ const VaultInteractionPanel = () => {
                 <div className="flex justify-between items-center mb-6 text-xs">
                     <span className="text-slate-500 dark:text-gray-500 font-medium">Available to {activeTab === "deposit" ? "Deposit" : "Withdraw"}</span>
                     <span className="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5 px-2 py-1 rounded border border-slate-200 dark:border-white/10">
-                        {activeTab === "deposit" ? `${currentToken.balance.toLocaleString()} ${currentToken.symbol}` : "4,892.12 LP-USDC"}
+                        {activeTab === "deposit" ? `${displayBalance.toLocaleString()} ${selectedToken}` : `${displayBalance.toLocaleString()} LP-${selectedToken}`}
                     </span>
                 </div>
 
@@ -113,10 +146,9 @@ const VaultInteractionPanel = () => {
                                             <span className="font-bold text-sm text-slate-900 dark:text-white">{selectedToken}</span>
                                             <Icon name="expand_more" className="text-sm text-slate-400" />
                                         </button>
-                                        {/* Dropdown would go here, simplified for now */}
                                     </div>
                                 ) : (
-                                    <span className="font-bold text-sm text-slate-900 dark:text-white px-2">LP-{currentToken.symbol}</span>
+                                    <span className="font-bold text-sm text-slate-900 dark:text-white px-2">LP-{selectedToken}</span>
                                 )}
                             </div>
                         </div>
@@ -127,7 +159,10 @@ const VaultInteractionPanel = () => {
                         {["25%", "50%", "75%", "MAX"].map((percent) => (
                             <button
                                 key={percent}
-                                onClick={percent === "MAX" ? handleMaxClick : () => { }}
+                                onClick={percent === "MAX" ? handleMaxClick : () => {
+                                    const perc = parseInt(percent.replace("%", ""));
+                                    setAmount((displayBalance * (perc / 100)).toString());
+                                }}
                                 className={cn(
                                     "flex-1 text-[10px] font-mono py-2 rounded-lg border transition-all",
                                     percent === "MAX"
@@ -149,80 +184,92 @@ const VaultInteractionPanel = () => {
                             "font-mono font-bold text-lg",
                             activeTab === "deposit" ? "text-blue-600 dark:text-blue-400" : "text-purple-600 dark:text-purple-400"
                         )}>
-                            {amount ? (parseFloat(amount) * 0.9589).toFixed(2) : "0.00"} {activeTab === "deposit" ? "LP" : currentToken.symbol}
+                            {amount ? (parseFloat(amount) * 1.0).toFixed(2) : "0.00"} {activeTab === "deposit" ? "LP" : selectedToken}
                         </span>
                     </div>
                     <div className="w-full h-[1px] bg-slate-200 dark:bg-white/5"></div>
                     <div className="flex justify-between items-center text-xs">
                         <span className="text-slate-400 dark:text-gray-500">Exchange Rate</span>
-                        <span className="font-mono text-slate-600 dark:text-gray-300">1 {currentToken.symbol} = 0.9589 LP</span>
+                        <span className="font-mono text-slate-600 dark:text-gray-300">1 {selectedToken} = 1 LP</span>
                     </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="space-y-3 relative">
-                    {/* Approve Step (Only for Deposit) */}
-                    {activeTab === "deposit" && (
-                        <div className="relative">
+                    {!isConnected ? (
+                        <button
+                            className="w-full py-4 rounded-xl font-bold text-sm shadow-lg flex justify-center items-center gap-2 transition-all bg-slate-800 text-white"
+                        >
+                            Connect Wallet
+                        </button>
+                    ) : (
+                        <>
+                            {/* Approve Step (Only for Deposit) */}
+                            {activeTab === "deposit" && (
+                                <div className="relative">
+                                    <button
+                                        onClick={step === "approve" ? handleApprove : undefined}
+                                        disabled={step !== "approve" || isProcessing}
+                                        className={cn(
+                                            "w-full py-3.5 border rounded-xl text-xs font-bold flex items-center justify-between px-4 transition-all",
+                                            step === "approve"
+                                                ? "bg-white dark:bg-[#15181D] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5"
+                                                : "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-500/30 text-green-700 dark:text-green-400 opacity-80 cursor-default"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "w-6 h-6 rounded-full flex items-center justify-center border transition-all",
+                                                step === "approve"
+                                                    ? "border-slate-300 dark:border-white/20 text-slate-400"
+                                                    : "bg-green-100 dark:bg-green-500/20 border-green-500 text-green-600 dark:text-green-400"
+                                            )}>
+                                                {isApproving && step === "approve" ? (
+                                                    <Icon name="progress_activity" className="animate-spin text-xs" />
+                                                ) : step === "approve" ? (
+                                                    <span className="text-[10px]">1</span>
+                                                ) : (
+                                                    <Icon name="check" className="text-xs" />
+                                                )}
+                                            </div>
+                                            <span>1. Approve {selectedToken}</span>
+                                        </div>
+                                        {step !== "approve" && (
+                                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Completed</span>
+                                        )}
+                                    </button>
+                                    {/* Connector Line */}
+                                    <div className={cn(
+                                        "absolute left-[27px] top-10 bottom-[-14px] w-[1px] z-0 transition-colors",
+                                        step === "approve" ? "bg-slate-200 dark:bg-white/10" : "bg-blue-500/30"
+                                    )}></div>
+                                </div>
+                            )}
+
+                            {/* Confirm Step */}
                             <button
-                                onClick={step === "approve" ? handleApprove : undefined}
-                                disabled={step !== "approve" || isProcessing}
+                                onClick={handleConfirm}
+                                disabled={(activeTab === "deposit" && step === "approve") || amountVal <= 0 || isProcessing}
                                 className={cn(
-                                    "w-full py-3.5 border rounded-xl text-xs font-bold flex items-center justify-between px-4 transition-all",
-                                    step === "approve"
-                                        ? "bg-white dark:bg-[#15181D] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5"
-                                        : "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-500/30 text-green-700 dark:text-green-400 opacity-80 cursor-default"
+                                    "relative z-10 w-full py-4 rounded-xl font-bold text-sm shadow-lg flex justify-center items-center gap-2 transition-all transform active:scale-[0.98]",
+                                    (activeTab === "deposit" && step === "approve") || amountVal <= 0
+                                        ? "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-600 border border-slate-200 dark:border-white/5 cursor-not-allowed shadow-none"
+                                        : activeTab === "deposit"
+                                            ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25"
+                                            : "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25"
                                 )}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className={cn(
-                                        "w-6 h-6 rounded-full flex items-center justify-center border transition-all",
-                                        step === "approve"
-                                            ? "border-slate-300 dark:border-white/20 text-slate-400"
-                                            : "bg-green-100 dark:bg-green-500/20 border-green-500 text-green-600 dark:text-green-400"
-                                    )}>
-                                        {isProcessing && step === "approve" ? (
-                                            <Icon name="progress_activity" className="animate-spin text-xs" />
-                                        ) : step === "approve" ? (
-                                            <span className="text-[10px]">1</span>
-                                        ) : (
-                                            <Icon name="check" className="text-xs" />
-                                        )}
-                                    </div>
-                                    <span>1. Approve {currentToken.symbol}</span>
-                                </div>
-                                {step !== "approve" && (
-                                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Completed</span>
+                                {isVaultTxPending && step === "confirm" ? (
+                                    <Icon name="progress_activity" className="animate-spin text-lg" />
+                                ) : (
+                                    <>
+                                        <span>{activeTab === "deposit" ? "2. Confirm Deposit" : "Confirm Withdraw"}</span>
+                                        <Icon name="arrow_forward" className="text-lg" />
+                                    </>
                                 )}
                             </button>
-                            {/* Connector Line */}
-                            <div className={cn(
-                                "absolute left-[27px] top-10 bottom-[-14px] w-[1px] z-0 transition-colors",
-                                step === "approve" ? "bg-slate-200 dark:bg-white/10" : "bg-blue-500/30"
-                            )}></div>
-                        </div>
+                        </>
                     )}
-
-                    {/* Confirm Step */}
-                    <button
-                        onClick={handleConfirm}
-                        disabled={activeTab === "deposit" && step === "approve"}
-                        className={cn(
-                            "relative z-10 w-full py-4 rounded-xl font-bold text-sm shadow-lg flex justify-center items-center gap-2 transition-all transform active:scale-[0.98]",
-                            activeTab === "deposit"
-                                ? (step === "approve" ? "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-600 border border-slate-200 dark:border-white/5 cursor-not-allowed shadow-none" : "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25")
-                                : "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25"
-                        )}
-                    >
-                        {isProcessing && (step === "confirm" || activeTab === "withdraw") ? (
-                            <Icon name="progress_activity" className="animate-spin text-lg" />
-                        ) : (
-                            <>
-                                <span>{activeTab === "deposit" ? "2. Confirm Deposit" : "Confirm Withdraw"}</span>
-                                <Icon name="arrow_forward" className="text-lg" />
-                            </>
-                        )}
-                    </button>
 
                     <p className="text-[10px] text-center text-slate-400 dark:text-gray-500 mt-4">
                         By interacting, you agree to the <a href="#" className="text-blue-500 hover:underline">Risks & Terms</a>.

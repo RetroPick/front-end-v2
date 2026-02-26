@@ -1,0 +1,269 @@
+// src/lib/polymarket.ts
+import { POLYMARKET_CONFIG } from '@/config/polymarket';
+import { Market } from '@/types/market';
+
+export interface PolymarketEvent {
+    id: string;
+    ticker: string;
+    slug: string;
+    title: string;
+    description: string;
+    startDate: string;
+    creationDate: string;
+    endDate: string;
+    image: string;
+    icon: string;
+    active: boolean;
+    closed: boolean;
+    archived: boolean;
+    markets: any[];
+}
+
+export async function fetchTrendingEvents(limit: number = POLYMARKET_CONFIG.NEWS.DEFAULT_LIMIT, targetCategory?: string): Promise<PolymarketEvent[]> {
+    try {
+        const url = new URL(
+            `${POLYMARKET_CONFIG.GAMMA_API_URL}${POLYMARKET_CONFIG.ENDPOINTS.EVENTS}`,
+            window.location.origin
+        );
+        url.searchParams.append('limit', '500'); // Fetch more to ensure we have enough post-filtering
+        url.searchParams.append('active', 'true');
+        url.searchParams.append('closed', 'false');
+        if (POLYMARKET_CONFIG.API_KEY) {
+            url.searchParams.append('api_key', POLYMARKET_CONFIG.API_KEY);
+        }
+
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'x-api-key': POLYMARKET_CONFIG.API_KEY || '',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Polymarket API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Fallback image if null
+        let events = data.map((item: any) => ({
+            ...item,
+            image: item.image || item.icon || 'https://polymarket.com/images/polymarket-logo.png'
+        }));
+
+        if (targetCategory) {
+            events = events.filter((event: any) => {
+                let eventCategory = "Trending";
+                if (event.tags && Array.isArray(event.tags) && event.tags.length > 0) {
+                    for (const tag of event.tags) {
+                        const tagLabel = typeof tag === 'string' ? tag : tag.label;
+                        if (categoryMap[tagLabel]) {
+                            eventCategory = categoryMap[tagLabel];
+                            break;
+                        }
+                    }
+                } else if (event.category && categoryMap[event.category]) {
+                    eventCategory = categoryMap[event.category];
+                }
+                return eventCategory === targetCategory;
+            });
+        }
+
+        return events.slice(0, limit);
+    } catch (error) {
+        console.error('Failed to fetch Polymarket events:', error);
+        return []; // Return empty array on failure so UI doesn't crash
+    }
+}
+
+// Map Polymarket categories/tags to our internal categories
+const categoryMap: Record<string, string> = {
+    // Politics
+    'Politics': 'Politics',
+    'Elections': 'Politics',
+    'US Politics': 'Politics',
+    'Global Politics': 'Politics',
+    'UK Politics': 'Politics',
+    'European Politics': 'Politics',
+    'Middle East': 'Politics',
+    'Biden': 'Politics',
+    'Trump': 'Politics',
+    'Congress': 'Politics',
+
+    // Crypto
+    'Crypto': 'Crypto',
+    'Cryptocurrency': 'Crypto',
+    'Prices': 'Crypto',
+    'Bitcoin': 'Crypto',
+    'Ethereum': 'Crypto',
+    'Solana': 'Crypto',
+    'DeFi': 'Crypto',
+    'NFTs': 'Crypto',
+    'Airdrops': 'Crypto',
+    'Layer 2': 'Crypto',
+
+    // Sports (includes all major sub-sports)
+    'Sports': 'Sports',
+    'NFL': 'Sports',
+    'NBA': 'Sports',
+    'MLB': 'Sports',
+    'NHL': 'Sports',
+    'Soccer': 'Sports',
+    'Premier League': 'Sports',
+    'Champions League': 'Sports',
+    'Tennis': 'Sports',
+    'Golf': 'Sports',
+    'MMA': 'Sports',
+    'UFC': 'Sports',
+    'Boxing': 'Sports',
+    'F1': 'Sports',
+    'Olympics': 'Sports',
+    'Cricket': 'Sports',
+    'Esports': 'Sports',
+    'CS2': 'Sports',
+    'Dota 2': 'Sports',
+    'League of Legends': 'Sports',
+
+    // Space / Science
+    'Science': 'Space',
+    'Space': 'Space',
+    'SpaceX': 'Space',
+    'NASA': 'Space',
+
+    // AI
+    'AI': 'AI',
+    'Artificial Intelligence': 'AI',
+    'ChatGPT': 'AI',
+    'OpenAI': 'AI',
+
+    // Macro / Economics
+    'Economics': 'Macro',
+    'Macro': 'Macro',
+    'Interest Rates': 'Macro',
+    'Inflation': 'Macro',
+    'Fed': 'Macro',
+
+    // Corporate / Business
+    'Business': 'Corporate',
+    'Corporate': 'Corporate',
+    'Stocks': 'Corporate',
+    'Earnings': 'Corporate',
+
+    // Commodities
+    'Commodities': 'Commodities',
+    'Gold': 'Commodities',
+    'Oil': 'Commodities',
+    'Silver': 'Commodities',
+
+    // Trending / Pop Culture
+    'Pop Culture': 'Trending',
+    'Entertainment': 'Trending',
+    'Movies': 'Trending',
+    'Music': 'Trending',
+    'Twitch': 'Trending',
+    'YouTube': 'Trending',
+    'Creators': 'Trending'
+};
+
+export async function fetchLiveMarkets(limit: number = 100, offset: number = 0): Promise<Market[]> {
+    try {
+        const url = new URL(
+            `${POLYMARKET_CONFIG.GAMMA_API_URL}${POLYMARKET_CONFIG.ENDPOINTS.EVENTS}`,
+            window.location.origin
+        );
+        url.searchParams.append('limit', limit.toString());
+        url.searchParams.append('active', 'true');
+        url.searchParams.append('closed', 'false');
+        if (offset > 0) url.searchParams.append('offset', offset.toString());
+        if (POLYMARKET_CONFIG.API_KEY) {
+            url.searchParams.append('api_key', POLYMARKET_CONFIG.API_KEY);
+        }
+
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'x-api-key': POLYMARKET_CONFIG.API_KEY || '',
+            }
+        });
+
+        if (!response.ok) throw new Error(`Polymarket API Error: ${response.status}`);
+
+        const data = await response.json();
+        const formattedMarkets: Market[] = [];
+
+        for (const event of data) {
+            if (!event.markets || event.markets.length === 0) continue;
+
+            // Usually the primary market is the first one
+            const primaryMarket = event.markets[0];
+
+            // Extract prices
+            let yesPrice = 0.50; // Default fallback
+            let noPrice = 0.50;
+
+            try {
+                if (primaryMarket.outcomePrices) {
+                    const prices = JSON.parse(primaryMarket.outcomePrices);
+                    // Outcomes are usually ["Yes", "No"]
+                    yesPrice = parseFloat(prices[0]) || 0.50;
+                    noPrice = parseFloat(prices[1]) || (1 - yesPrice);
+                }
+            } catch (e) {
+                console.error("Error parsing prices for", event.id);
+            }
+
+            // Map Category (Fallback to Trending if unknown or unmapped)
+            let category = "Trending";
+            if (event.tags && Array.isArray(event.tags) && event.tags.length > 0) {
+                // Find the first tag that matches our category map
+                for (const tag of event.tags) {
+                    const tagLabel = typeof tag === 'string' ? tag : tag.label;
+                    if (categoryMap[tagLabel]) {
+                        category = categoryMap[tagLabel];
+                        break;
+                    }
+                }
+            } else if (event.category && categoryMap[event.category]) {
+                category = categoryMap[event.category];
+            } else {
+                category = "Trending";
+            }
+            formattedMarkets.push({
+                id: primaryMarket.id || event.id,
+                title: event.title,
+                category: category,
+                volume: `$${(parseFloat(primaryMarket.volume || '0')).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                outcomes: [
+                    { id: 'yes', label: 'Yes', probability: Number((yesPrice * 100).toFixed(1)) },
+                    { id: 'no', label: 'No', probability: Number((noPrice * 100).toFixed(1)) }
+                ],
+                expiry: new Date(event.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                image: event.image || event.icon || 'https://polymarket.com/images/polymarket-logo.png',
+                icon: 'public', // Generic material icon fallback
+                isFeatured: event.featured || false
+            });
+        }
+
+        return formattedMarkets;
+
+    } catch (error) {
+        console.error('Failed to fetch live markets:', error);
+        return [];
+    }
+}
+
+// Helper to generate a realistic looking sparkline array ending at the current price
+function generateMockHistory(currentPrice: number): number[] {
+    const history = [];
+    let price = currentPrice * 0.8; // Start a bit lower or higher
+    for (let i = 0; i < 20; i++) {
+        history.push(price);
+        // Random walk towards current price
+        price += (Math.random() - 0.5) * 0.05 + (currentPrice - price) * 0.1;
+        price = Math.max(0.01, Math.min(0.99, price));
+    }
+    history.push(currentPrice); // End exactly at current price
+    return history;
+}

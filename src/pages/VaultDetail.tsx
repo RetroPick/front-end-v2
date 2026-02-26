@@ -5,13 +5,29 @@ import Footer from "@/components/Footer";
 import Icon from "@/components/Icon";
 import VaultInteractionPanel from "@/components/VaultInteractionPanel";
 import VaultPerformanceChart from "@/components/VaultPerformanceChart";
+import { useMarkets } from "@/context/MarketContext";
 
 const VaultDetail = () => {
     const { id } = useParams();
+    const { markets, loading } = useMarkets();
     const [timeRange, setTimeRange] = useState<"1W" | "1M" | "1Y">("1W");
 
-    // Mock Data simulating an Active Vault
-    const vaultData = {
+    // Find corresponding market if it exists
+    const market = markets.find(m => m.id === id);
+
+    // Mock Data simulating an Active Vault or Live Data mapping
+    const vaultData = market ? {
+        name: market.title,
+        type: market.category,
+        asset: "USDC",
+        contract: `0x${market.id.substring(0, 4)}...${market.id.substring(market.id.length - 4)}`,
+        tvl: market.volume || 4820000,
+        sharePrice: 1.0428,
+        totalSupply: (market.volume || 4820000) * 0.95,
+        utilization: 96,
+        apy: 12.4,
+        myBalance: 0
+    } : {
         name: "USDC Market Liquidity Vault",
         type: "ERC-4626",
         asset: "USDC",
@@ -53,7 +69,7 @@ const VaultDetail = () => {
                                 <Icon name="chevron_right" className="text-xs" />
                                 <Link to="/app/liquidity" className="hover:text-blue-500 transition-colors">Liquidity</Link>
                                 <Icon name="chevron_right" className="text-xs" />
-                                <span className="text-slate-900 dark:text-white font-medium">Vault #{id}</span>
+                                <span className="text-slate-900 dark:text-white font-medium line-clamp-1 max-w-[200px]" title={`Vault #${id}`}>Vault #{id}</span>
                             </div>
                             <div className="flex items-center gap-3 mb-3">
                                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{vaultData.name}</h1>

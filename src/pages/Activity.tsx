@@ -2,7 +2,8 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/context/LanguageContext";
-import { categories } from "@/data/markets";
+import { sampleActivities, samplePositions, categories } from "@/data/markets";
+import { useMarkets } from "@/context/MarketContext";
 import { cn } from "@/lib/utils";
 import Icon from "@/components/Icon";
 
@@ -19,12 +20,13 @@ const mockActivity = [
 
 const Activity = () => {
     const { t } = useLanguage();
-    const [filter, setFilter] = useState("All");
+    const { markets } = useMarkets();
+    const [activeTab, setActiveTab] = useState("global");
 
     // Filter Logic
-    const filteredData = filter === "All"
+    const filteredData = activeTab === "All"
         ? mockActivity
-        : mockActivity.filter(item => item.category === filter);
+        : mockActivity.filter(item => item.category === activeTab);
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
@@ -40,10 +42,10 @@ const Activity = () => {
                 {/* Filters */}
                 <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
                     <button
-                        onClick={() => setFilter("All")}
+                        onClick={() => setActiveTab("All")}
                         className={cn(
                             "px-4 py-2 rounded-full text-sm font-bold transition-all border",
-                            filter === "All"
+                            activeTab === "All"
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
                         )}
@@ -53,10 +55,10 @@ const Activity = () => {
                     {categories.map((cat) => (
                         <button
                             key={cat}
-                            onClick={() => setFilter(cat)}
+                            onClick={() => setActiveTab(cat)}
                             className={cn(
                                 "px-4 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap",
-                                filter === cat
+                                activeTab === cat
                                     ? "bg-primary text-primary-foreground border-primary"
                                     : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
                             )}

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Icon from "@/components/Icon";
-import { sampleActivities } from "@/data/markets";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,16 +10,6 @@ interface TradingSidebarProps {
 }
 
 // --- Authentic Crypto Icons (SVGs) ---
-const SolanaLogo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 396 311" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <linearGradient id="solana_grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#9945FF" />
-      <stop offset="100%" stopColor="#14F195" />
-    </linearGradient>
-    <path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7zm260.1-164.8c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h309.1c5.8 0 8.7-7 4.6-11.1l-62.7-62.7zM64.6 3.8C67 1.4 70.3 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z" fill="url(#solana_grad)" />
-  </svg>
-);
-
 const UsdcLogo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="12" cy="12" r="10" fill="#2775CA" />
@@ -28,247 +17,130 @@ const UsdcLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const UsdtLogo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 32 32" className={className} xmlns="http://www.w3.org/2000/svg">
-    <g fill="none" fillRule="evenodd">
-      <circle cx="16" cy="16" r="16" fill="#26A17B" />
-      <path fill="#FFF" d="M17.922 17.383v-.002c-.11.008-.677.042-1.942.042-1.01 0-1.721-.03-1.971-.042v.003c-3.888-.171-6.79-.848-6.79-1.658 0-.809 2.902-1.486 6.79-1.66v2.644c.254.018.982.061 1.988.061 1.207 0 1.812-.05 1.925-.061v-2.643c3.88.173 6.775.85 6.775 1.658 0 .81-2.895 1.485-6.775 1.657m0-3.59v-2.366h5.414V7.819H8.595v3.608h5.414v2.365c-4.4.202-7.709 1.074-7.709 2.118 0 1.044 3.309 1.915 7.709 2.118v7.582h3.913v-7.584c4.393-.202 7.694-1.073 7.694-2.116 0-1.043-3.301-1.914-7.694-2.117" />
-    </g>
-  </svg>
-);
-
-const TOKENS = [
-  { symbol: "SOL", name: "Solana", Icon: SolanaLogo, balance: 14.24 },
-  { symbol: "USDC", name: "USD Coin", Icon: UsdcLogo, balance: 1000.00 },
-  { symbol: "USDT", name: "Tether", Icon: UsdtLogo, balance: 50.00 },
-];
-
-const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Leading Candidate" }: TradingSidebarProps) => {
+const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: TradingSidebarProps) => {
+  const [tab, setTab] = useState<'Buy' | 'Sell'>('Buy');
   const [side, setSide] = useState<'YES' | 'NO'>('YES');
-  const [amount, setAmount] = useState(0.65);
-  const [selectedToken, setSelectedToken] = useState(TOKENS[0]); // Default SOL
+  const [amount, setAmount] = useState<string>("0");
   const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
 
-  const price = side === 'YES' ? 0.51 : 0.49;
-  const shares = amount / price;
-  const potentialWin = shares * 1; // Assuming outcome pays out 1 unit per share
-  const profit = potentialWin - amount;
-  const profitPercent = amount > 0 ? ((profit / amount) * 100).toFixed(1) : "0.0";
+  // Assuming price fetched from market outcomes, hardcoded for UI demo
+  const yesPrice = 51;
+  const noPrice = 49;
+  const currentPrice = side === 'YES' ? yesPrice : noPrice;
 
-  const isYes = side === 'YES';
-
-  const adjustAmount = (delta: number) => {
-    const newAmount = Math.max(0, amount + delta);
-    setAmount(parseFloat(newAmount.toFixed(selectedToken.symbol === 'SOL' ? 4 : 2)));
-  };
+  // Polymarket colors
+  const activeYesClass = "bg-[#22c55e] text-white";
+  const activeNoClass = "bg-[#ef4444] text-white"; // Assuming red for No, but screenshot shows green for Up. We'll use green/red standard.
+  const inactiveClass = "bg-[#2b2b2b] text-slate-300 hover:bg-[#333]";
 
   return (
     <div className="space-y-4">
-      {/* Trading Panel */}
-      <div className="bg-white dark:bg-[#1a1b23] border border-border/50 rounded-2xl p-5 shadow-sm relative z-50">
-        {/* Outcome Selector */}
-        <div className="mb-4">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Selected Outcome</label>
-          <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-[#2a2b35] rounded-xl border border-border/50">
-            <span className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[200px]">
-              {selectedOutcome}
-            </span>
-            <Icon name="expand_more" className="text-slate-400" />
+      {/* Trading Panel - Dark Polymarket Style */}
+      <div className="bg-[#1a1b1e] border border-[#2b2b2b] rounded-xl p-4 shadow-xl relative z-50">
+
+        {/* Header Tabs: Buy / Sell & Market Select */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setTab('Buy')}
+              className={cn(
+                "text-[15px] font-bold pb-1 transition-colors",
+                tab === 'Buy' ? "text-white border-b-2 border-white" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              Buy
+            </button>
+            <button
+              onClick={() => setTab('Sell')}
+              className={cn(
+                "text-[15px] font-bold pb-1 transition-colors",
+                tab === 'Sell' ? "text-white border-b-2 border-white" : "text-slate-500 hover:text-slate-300"
+              )}
+            >
+              Sell
+            </button>
           </div>
+
+          <button className="flex items-center gap-1 text-sm font-medium text-slate-300 bg-[#2b2b2b] hover:bg-[#333] px-2.5 py-1 rounded transition-colors">
+            Market
+            <Icon name="expand_more" className="text-[16px]" />
+          </button>
         </div>
 
-        {/* YES/NO Toggle */}
-        <div className="flex rounded-xl overflow-hidden border border-border/50 mb-5 bg-slate-50 dark:bg-[#2a2b35] p-1">
+        {/* YES/NO Buttons (Up/Down) */}
+        <div className="flex gap-2 mb-6">
           <button
             onClick={() => setSide('YES')}
             className={cn(
-              "flex-1 py-3 text-sm font-bold transition-all rounded-lg",
-              isYes
-                ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+              "flex-1 py-3 px-4 rounded-lg text-sm font-bold flex justify-between items-center transition-colors shadow-sm",
+              side === 'YES' ? activeYesClass : inactiveClass
             )}
           >
-            YES
+            <span>Yes</span>
+            <span>{yesPrice}¢</span>
           </button>
+
           <button
             onClick={() => setSide('NO')}
             className={cn(
-              "flex-1 py-3 text-sm font-bold transition-all rounded-lg",
-              !isYes
-                ? "bg-rose-500 text-white shadow-md shadow-rose-500/25"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+              "flex-1 py-3 px-4 rounded-lg text-sm font-bold flex justify-between items-center transition-colors shadow-sm",
+              side === 'NO' ? activeNoClass : inactiveClass
             )}
           >
-            NO
+            <span>No</span>
+            <span>{noPrice}¢</span>
           </button>
         </div>
 
-        {/* Price Display */}
-        <div className="text-sm text-slate-500 dark:text-slate-400 mb-4 px-1">
-          Buying <span className={cn("font-bold", isYes ? "text-blue-600 dark:text-blue-400" : "text-rose-500 dark:text-rose-400")}>{side}</span> at{' '}
-          <span className="text-slate-900 dark:text-white font-bold">{price.toFixed(2)} {selectedToken.symbol}</span>
-        </div>
-
-        {/* Balance Display */}
-        <div className="flex items-center justify-between mb-2 px-1">
-          <span className="text-xs text-slate-500 dark:text-slate-400">Available Balance</span>
-          <span className="text-xs font-mono text-slate-700 dark:text-slate-300 font-medium">
-            {selectedToken.balance} {selectedToken.symbol}
-          </span>
-        </div>
-
-        {/* Amount Input with Token Selector */}
-        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-[#22232e] rounded-xl border border-border/30 mb-4 relative z-40">
-          <button
-            onClick={() => adjustAmount(selectedToken.symbol === 'SOL' ? -0.1 : -1)}
-            className="size-9 rounded-lg bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors border border-border/30 shadow-sm"
-          >
-            <Icon name="remove" className="text-slate-400" />
-          </button>
-
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))}
-              className="w-full bg-transparent text-center text-xl font-bold font-mono text-slate-900 dark:text-white focus:outline-none p-0 no-spinner"
-              step={selectedToken.symbol === 'SOL' ? "0.01" : "1"}
-            />
-          </div>
-
-          <div className="relative">
-            <button
-              onClick={() => setIsTokenDropdownOpen(!isTokenDropdownOpen)}
-              className="flex items-center gap-2 bg-white dark:bg-white/5 border border-border/30 rounded-lg px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
-            >
-              <selectedToken.Icon className="w-5 h-5" />
-              <span className="font-bold text-sm text-slate-900 dark:text-white">{selectedToken.symbol}</span>
-              <Icon name="expand_more" className="text-slate-400 text-sm" />
-            </button>
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {isTokenDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#2a2b35] rounded-xl shadow-xl border border-border/50 overflow-hidden py-1 z-[60]"
-                >
-                  <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Token</div>
-                  {TOKENS.map((token) => (
-                    <button
-                      key={token.symbol}
-                      onClick={() => {
-                        setSelectedToken(token);
-                        setIsTokenDropdownOpen(false);
-                        setAmount(token.symbol === 'SOL' ? 0.65 : 10);
-                      }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
-                    >
-                      <token.Icon className="w-5 h-5" />
-                      <div>
-                        <div className="text-sm font-bold text-slate-700 dark:text-slate-200">{token.symbol}</div>
-                        <div className="text-[10px] text-slate-400">{token.balance}</div>
-                      </div>
-                      {selectedToken.symbol === token.symbol && (
-                        <Icon name="check" className="ml-auto text-blue-500 text-xs" />
-                      )}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <button
-            onClick={() => adjustAmount(selectedToken.symbol === 'SOL' ? 0.1 : 1)}
-            className="size-9 rounded-lg bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center transition-colors border border-border/30 shadow-sm"
-          >
-            <Icon name="add" className="text-slate-400" />
-          </button>
-        </div>
-
-        {/* Quick Amount Buttons */}
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {[0.25, 0.5, 0.75, 1].map((ratio) => (
-            <button
-              key={ratio}
-              onClick={() => setAmount(parseFloat((selectedToken.balance * ratio).toFixed(selectedToken.symbol === 'SOL' ? 4 : 2)))}
-              className="py-1.5 rounded-lg text-[10px] font-bold bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-white/10"
-            >
-              {ratio * 100}%
-            </button>
-          ))}
-        </div>
-
-        {/* Target Price Link */}
-        <div className="flex justify-center mb-5">
-          <button className="text-xs text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 font-medium">
-            <Icon name="tune" className="text-sm" />
-            Set Limit Order
-          </button>
-        </div>
-
-        {/* Win Info */}
-        <div className="p-4 bg-slate-50 dark:bg-[#22232e] border border-border/50 rounded-xl mb-5">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-sm text-slate-500 dark:text-slate-400">To Win:</span>
-            <span className={cn("text-xl font-bold font-mono", isYes ? "text-blue-600 dark:text-blue-400" : "text-rose-500 dark:text-rose-400")}>
-              {profit.toFixed(2)} {selectedToken.symbol}
+        {/* Amount Input */}
+        <div className="mb-4 relative">
+          <div className="flex justify-between items-center mb-1">
+            <label className="text-sm font-medium text-slate-300">Amount</label>
+            {/* Big Currency Display tied to input */}
+            <span className="text-3xl font-bold text-slate-400 absolute right-0 top-6 select-none pointer-events-none">
+              ${amount || '0'}
             </span>
           </div>
-          <div className="text-right text-xs text-green-500 dark:text-green-400 font-medium">+{profitPercent}% Profit</div>
+          <div className="text-[12px] text-slate-500 mb-2">Balance $0.00</div>
+
+          <input
+            type="text"
+            value={amount === "0" ? "" : amount}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9.]/g, '');
+              setAmount(val);
+            }}
+            placeholder="0"
+            className="w-full bg-transparent border-b border-[#2b2b2b] text-transparent focus:outline-none py-2 text-3xl font-bold caret-white"
+            style={{ paddingRight: '120px' }} // Room for the fake big text
+          />
+
+          {/* Quick Add Buttons */}
+          <div className="flex gap-2 mt-4 justify-end">
+            {['+1', '+5', '+10', '+100'].map(val => (
+              <button
+                key={val}
+                onClick={() => setAmount((Number(amount || 0) + Number(val.replace('+', ''))).toString())}
+                className="px-2.5 py-1 rounded-md bg-[#2b2b2b] hover:bg-[#3a3a3a] text-xs font-bold text-slate-300 transition-colors"
+              >
+                ${val.replace('+', '')}
+              </button>
+            ))}
+            <button className="px-2.5 py-1 rounded-md bg-[#2b2b2b] hover:bg-[#3a3a3a] text-xs font-bold text-slate-300 transition-colors">Max</button>
+          </div>
         </div>
 
-        {/* Buy Button */}
+        {/* Action Button */}
         <button
           onClick={() => onBet(side, selectedOutcome)}
-          className={cn(
-            "w-full py-4 rounded-xl text-sm font-bold transition-all shadow-lg relative overflow-hidden group",
-            isYes
-              ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20"
-              : "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20"
-          )}
+          className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-[#0099ff] hover:bg-[#33adff] text-white transition-colors shadow-sm"
         >
-          <span className="relative z-10">Buy {side}</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:animate-shimmer" />
+          Deposit
         </button>
 
-        <div className="mt-3 text-center text-[10px] text-slate-400">
-          Est. Network Fee 0.00005 {selectedToken.symbol}
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white dark:bg-[#1a1b23] border border-border/50 rounded-2xl p-5 shadow-sm">
-        <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-slate-900 dark:text-white">
-          <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-          Recent Activity
-        </h4>
-        <div className="space-y-4">
-          {sampleActivities.slice(0, 3).map((activity) => (
-            <div
-              key={activity.id}
-              className="flex items-center justify-between text-sm"
-            >
-              <div className="flex items-center gap-2">
-                <span className={cn(
-                  "text-xs font-medium px-2 py-0.5 rounded",
-                  activity.action === 'Bought'
-                    ? "bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400"
-                    : "bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400"
-                )}>
-                  {activity.action} {activity.side}
-                </span>
-                <span className="text-slate-600 dark:text-slate-400 text-xs truncate max-w-[80px]">{activity.outcome}</span>
-              </div>
-              <div className="text-right">
-                <div className="font-bold font-mono text-xs text-slate-900 dark:text-white">{activity.amount}</div>
-                <div className="text-[10px] text-slate-400">{activity.time}</div>
-              </div>
-            </div>
-          ))}
+        {/* Terms text */}
+        <div className="mt-5 text-center text-[10px] sm:text-xs text-slate-500">
+          By trading, you agree to the <a href="#" className="underline hover:text-slate-300 transition-colors">Terms of Use</a>.
         </div>
       </div>
     </div>

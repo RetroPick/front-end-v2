@@ -1,13 +1,36 @@
-import { useState } from "react";
-import { markets } from "@/data/markets";
+import { useState, useEffect } from "react";
+import { useMarkets } from "@/context/MarketContext";
 import MacroMarketCard from "./MacroMarketCard";
 import { cn } from "@/lib/utils";
 import { Globe } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { fetchTrendingEvents } from "@/lib/polymarket";
 
 const MacroDashboard = () => {
     const { t } = useLanguage();
-    const macroMarkets = markets.filter(m => m.category === "Macro");
+    const { markets } = useMarkets();
+    const [activeNewsIndex, setActiveNewsIndex] = useState(0);
+    const [newsItems, setNewsItems] = useState<string[]>(["Loading live macroeconomic data..."]);
+
+    const macroMarkets = markets.filter((m) => m.category === "Macro" || m.category === "Economics");
+
+    useEffect(() => {
+        const loadLiveNews = async () => {
+            const events = await fetchTrendingEvents(10, 'Macro');
+            if (events.length > 0) {
+                setNewsItems(events.map(e => e.title));
+            } else {
+                setNewsItems(["Awaiting macroeconomic updates..."]);
+            }
+        };
+
+        loadLiveNews();
+
+        const interval = setInterval(() => {
+            setActiveNewsIndex((prev) => (prev + 1) % (newsItems.length || 1));
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [newsItems.length]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#05080f] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
@@ -29,6 +52,12 @@ const MacroDashboard = () => {
                 <p className="text-slate-600 dark:text-slate-400 max-w-2xl font-light text-lg">
                     {t('dashboard.macro_subtitle')}
                 </p>
+                {/* Scrolling News - Clean Text */}
+                <div className="h-6 overflow-hidden relative mt-6 w-full max-w-2xl bg-white/50 dark:bg-black/20 rounded-lg py-1 backdrop-blur-sm border border-slate-200 dark:border-white/5 mx-auto">
+                    <p key={activeNewsIndex} className="text-sm text-slate-600 dark:text-slate-300 font-mono animate-fade-in-up">
+                        {">"} {newsItems[activeNewsIndex]}
+                    </p>
+                </div>
             </div>
 
             {/* Main Grid */}

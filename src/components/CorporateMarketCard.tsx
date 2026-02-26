@@ -1,6 +1,6 @@
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, MouseEvent } from "react";
+import { useState, memo , MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { Building2, TrendingUp, DollarSign } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,7 +9,7 @@ interface CorporateMarketCardProps {
     market: Market;
 }
 
-const CorporateMarketCard = ({ market }: CorporateMarketCardProps) => {
+const CorporateMarketCard = memo(({ market }: CorporateMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -53,11 +53,11 @@ const CorporateMarketCard = ({ market }: CorporateMarketCardProps) => {
                     <div className="flex gap-2 h-24 items-end mb-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                         {market.outcomes.map((outcome, idx) => (
                             <div key={outcome.id} className="flex-1 flex flex-col items-center gap-2 group/bar relative">
-                                <span className={cn("text-xs font-bold", idx === 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400")}>{outcome.probability}%</span>
+                                <span className={cn("text-xs font-bold", idx === 0 ? "text-blue-600 dark:text-blue-400" : "text-slate-400")}>{Math.round(outcome.probability)}%</span>
                                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-t-sm relative overflow-hidden h-full flex items-end transition-all group-hover/bar:bg-slate-200 dark:group-hover/bar:bg-slate-700">
                                     <div
                                         className={cn("w-full transition-all duration-500", idx === 0 ? "bg-blue-600 hover:bg-blue-500" : "bg-slate-300 dark:bg-slate-600 hover:bg-slate-400")}
-                                        style={{ height: `${outcome.probability}%` }}
+                                        style={{ height: `${Math.round(outcome.probability)}%` }}
                                     />
                                     {/* Hover Buttons Overlay */}
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 opacity-0 group-hover/bar:opacity-100 transition-opacity bg-black/60 backdrop-blur-[1px] z-10">
@@ -99,6 +99,6 @@ const CorporateMarketCard = ({ market }: CorporateMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default CorporateMarketCard;

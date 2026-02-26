@@ -63,7 +63,7 @@ const Footer: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 text-right max-w-md leading-relaxed">
+            <p className="text-xs text-slate-500 text-left md:text-right max-w-md leading-relaxed">
               Residents of restricted jurisdictions are not eligible for certain functionalities of the game. <a href="#" className="underline hover:text-white">See full terms</a>
             </p>
 

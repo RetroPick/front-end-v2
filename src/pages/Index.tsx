@@ -2,7 +2,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FeaturedMarket from "@/components/FeaturedMarket";
 import MarketCard from "@/components/MarketCard";
-import { featuredMarket, markets } from "@/data/markets";
+import { useMarkets } from "@/context/MarketContext";
+import Icon from "@/components/Icon";
 
 
 import { useState } from "react";
@@ -25,10 +26,20 @@ import { useLanguage } from "@/context/LanguageContext";
 const Index = () => {
   const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("Trending");
+  const { markets, isLoading } = useMarkets();
+
+  // Find dynamic featured market (highest volume or arbitrarily the first)
+  const dynamicFeaturedMarket = markets.length > 0 ? markets.reduce((prev, current) => {
+    const prevVol = parseFloat(prev.volume.replace(/[^0-9.-]+/g, "")) || 0;
+    const currVol = parseFloat(current.volume.replace(/[^0-9.-]+/g, "")) || 0;
+    return (currVol > prevVol) ? current : prev;
+  }) : null;
 
   const filteredMarkets = activeCategory === "Trending"
     ? markets
-    : markets.filter(market => market.category === activeCategory);
+    : activeCategory === "New"
+      ? [...markets].sort((a, b) => new Date(b.expiry).getTime() - new Date(a.expiry).getTime()) // Sort by latest (approx "New")
+      : markets.filter(market => market.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden transition-colors duration-500">
@@ -70,22 +81,33 @@ const Index = () => {
           </PageTransition>
         ) : (
           <PageTransition key="trending" className="pt-48 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto relative z-10">
-            {/* Featured Market */}
-            <FeaturedMarket market={featuredMarket} />
+            {/* Dynamic Featured Market */}
+            {dynamicFeaturedMarket && <FeaturedMarket market={dynamicFeaturedMarket} />}
 
-            {/* Markets Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredMarkets.map((market) => (
-                <MarketCard key={market.id} market={market} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="w-full h-48 flex items-center justify-center">
+                <span className="text-white/50 text-sm font-medium uppercase tracking-widest flex items-center gap-2">
+                  <Icon name="sync" className="animate-spin" />
+                  Loading Polymarket Data...
+                </span>
+              </div>
+            ) : (
+              <>
+                {/* Markets Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {filteredMarkets.map((market) => (
+                    <MarketCard key={market.id} market={market} />
+                  ))}
+                </div>
 
-            {/* Load More */}
-            <div className="mt-12 flex justify-center">
-              <button className="px-8 py-3 bg-secondary hover:bg-secondary/80 border border-border rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">
-                {t('home.load_more')}
-              </button>
-            </div>
+                {/* Load More */}
+                <div className="mt-12 flex justify-center">
+                  <button className="px-8 py-3 bg-secondary hover:bg-secondary/80 border border-border rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">
+                    {t('home.load_more')}
+                  </button>
+                </div>
+              </>
+            )}
           </PageTransition>
         )}
       </AnimatePresence>

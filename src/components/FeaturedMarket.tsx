@@ -59,7 +59,7 @@ const FeaturedMarket = ({ market }: FeaturedMarketProps) => {
                     </span>
                     <div className="flex items-center gap-4">
                       <span className="text-sm font-bold w-12 text-right text-accent-cyan">
-                        {outcome.probability}%
+                        {Math.round(outcome.probability)}%
                       </span>
                       <div className="flex rounded overflow-hidden border border-border">
                         <button

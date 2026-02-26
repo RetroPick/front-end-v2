@@ -1,12 +1,35 @@
-import { useState } from "react";
-import { markets } from "@/data/markets";
+import { useState, useEffect } from "react";
+import { useMarkets } from "@/context/MarketContext";
 import PoliticsMarketCard from "./PoliticsMarketCard";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
+import { fetchTrendingEvents } from "@/lib/polymarket";
 
 const PoliticsDashboard = () => {
     const { t } = useLanguage();
-    const politicsMarkets = markets.filter(m => m.category === "Politics");
+    const { markets } = useMarkets();
+    const [activeNewsIndex, setActiveNewsIndex] = useState(0);
+    const [newsItems, setNewsItems] = useState<string[]>(["Fetching live political developments..."]);
+
+    const politicsMarkets = markets.filter(m => m.category === "Politics" || m.category === "Elections");
+
+    useEffect(() => {
+        const loadLiveNews = async () => {
+            const events = await fetchTrendingEvents(10, 'Politics');
+            if (events.length > 0) {
+                setNewsItems(events.map(e => e.title));
+            } else {
+                setNewsItems(["Awaiting political updates..."]);
+            }
+        };
+
+        loadLiveNews();
+
+        const interval = setInterval(() => {
+            setActiveNewsIndex((prev) => (prev + 1) % (newsItems.length || 1));
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [newsItems.length]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative overflow-hidden font-sans selection:bg-red-100 dark:selection:bg-red-900/30 selection:text-red-900 dark:selection:text-red-100 transition-colors duration-500">
@@ -40,9 +63,16 @@ const PoliticsDashboard = () => {
                         {t('dashboard.politics_title')}
                     </h1>
 
-                    <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg md:text-xl font-light leading-relaxed font-serif italic">
+                    <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg md:text-xl font-light leading-relaxed font-serif italic mb-6">
                         "{t('dashboard.politics_subtitle')}"
                     </p>
+
+                    {/* Scrolling News - Clean Text */}
+                    <div className="h-6 overflow-hidden relative w-full max-w-2xl bg-white/50 dark:bg-black/20 rounded-lg py-1 backdrop-blur-sm border border-slate-200 dark:border-white/5 mx-auto">
+                        <p key={activeNewsIndex} className="text-sm text-slate-600 dark:text-slate-300 font-mono animate-fade-in-up">
+                            {">"} {newsItems[activeNewsIndex]}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Categories / Filter Tabs (Visual Only for now) */}

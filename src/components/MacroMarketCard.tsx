@@ -1,6 +1,6 @@
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, MouseEvent } from "react";
+import { useState, memo , MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { TrendingUp, TrendingDown, Activity, Globe, ArrowUpRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,7 +9,7 @@ interface MacroMarketCardProps {
     market: Market;
 }
 
-const MacroMarketCard = ({ market }: MacroMarketCardProps) => {
+const MacroMarketCard = memo(({ market }: MacroMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -65,7 +65,7 @@ const MacroMarketCard = ({ market }: MacroMarketCardProps) => {
                                 <div key={outcome.id} className="group/item">
                                     <div className="flex justify-between text-xs mb-1.5 font-mono">
                                         <span className="text-slate-500 dark:text-slate-400">{outcome.label}</span>
-                                        <span className={cn("font-bold", accentColor)}>{outcome.probability}%</span>
+                                        <span className={cn("font-bold", accentColor)}>{Math.round(outcome.probability)}%</span>
                                     </div>
                                     <div className="relative h-6 w-full bg-slate-100 dark:bg-white/5 rounded-sm overflow-hidden flex items-center cursor-pointer"
                                         onClick={(e) => handleBetClick(e as any, outcome.label)}>
@@ -73,7 +73,7 @@ const MacroMarketCard = ({ market }: MacroMarketCardProps) => {
                                         {/* Progress Bar */}
                                         <div
                                             className={cn("absolute left-0 top-0 bottom-0 opacity-30 transition-all duration-500", accentBg)}
-                                            style={{ width: `${outcome.probability}%` }}
+                                            style={{ width: `${Math.round(outcome.probability)}%` }}
                                         />
 
                                         {/* Hover Effect: "Trade" Text */}
@@ -114,6 +114,6 @@ const MacroMarketCard = ({ market }: MacroMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default MacroMarketCard;

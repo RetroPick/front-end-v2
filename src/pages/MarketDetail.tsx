@@ -1,35 +1,30 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useMarkets } from "@/context/MarketContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Icon from "@/components/Icon";
 import BetModal from "@/components/BetModal";
-import OutcomesTable from "@/components/market/OutcomesTable";
-import MarketInsights from "@/components/market/MarketInsights";
-import MarketRules from "@/components/market/MarketRules";
-import ResolutionSource from "@/components/market/ResolutionSource";
-import TimelineSection from "@/components/market/TimelineSection";
-import RelatedMarkets from "@/components/market/RelatedMarkets";
 import TradingSidebar from "@/components/market/TradingSidebar";
 import ProbabilityChart from "@/components/market/ProbabilityChart";
 import IdeasActivityPanel from "@/components/market/IdeasActivityPanel";
-import { markets } from "@/data/markets";
+import RelatedMarkets from "@/components/market/RelatedMarkets";
 
 const MarketDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { markets } = useMarkets();
   const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
-  // Find market or use a sample
   const market = markets.find(m => m.id === id) || {
-    id: "trump-fed-chair",
-    title: "Who will Trump nominate as Fed Chair?",
-    category: "Politics",
-    icon: "account_balance",
+    id: "bitcoin-up-or-down-5-minutes",
+    title: "Bitcoin Up or Down - 5 Minutes?",
+    category: "Crypto",
+    icon: "currency_bitcoin",
+    image: "/icons/btc.svg", // mock
     outcomes: [
-      { id: "rieder", label: "Rick Rieder", probability: 51 },
-      { id: "warsh", label: "Kevin Warsh", probability: 27 },
-      { id: "hassett", label: "Kevin Hassett", probability: 7 },
+      { id: "yes", label: "Yes", probability: 51 },
+      { id: "no", label: "No", probability: 49 },
     ],
     volume: "$62,487,113",
     expiry: "Jan 31, 2025",
@@ -40,92 +35,94 @@ const MarketDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#111116]">
       <Header />
 
-      <main className="pt-24 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 mb-6 text-sm">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors group"
-          >
-            <Icon name="arrow_back" className="text-lg group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back</span>
-          </button>
-          <span className="text-muted-foreground/40">/</span>
-          <span className="text-muted-foreground/60">{market.category}</span>
-          <span className="text-muted-foreground/40">•</span>
-          <span className="text-muted-foreground/60">{market.title.split(' ').slice(0, 2).join(' ')}</span>
-        </div>
+      <main className="pt-24 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto text-slate-200">
 
-        {/* Market Header */}
-        <div className="flex items-start justify-between gap-6 mb-8">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold mb-4 leading-tight">{market.title}</h1>
-            <div className="flex flex-wrap gap-4">
-              {market.outcomes.slice(0, 3).map((outcome, i) => (
-                <div key={outcome.id} className="flex items-center gap-2">
-                  <span className={`size-2 rounded-full ${
-                    i === 0 ? 'bg-primary' : i === 1 ? 'bg-accent-green' : 'bg-muted-foreground/50'
-                  }`} />
-                  <span className={`text-sm font-bold ${
-                    i === 0 ? 'text-primary' : i === 1 ? 'text-accent-green' : 'text-muted-foreground'
-                  }`}>
-                    {outcome.label} {outcome.probability}%
-                  </span>
+        {/* Main Grid: Left (Chart & Info) | Right (TradingSidebar) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+
+          {/* Left Column (Main Content) */}
+          <div className="lg:col-span-8 flex flex-col pt-4">
+
+            {/* Market Header Row */}
+            <div className="flex gap-4 items-start mb-6">
+              {/* Token Logo */}
+              <div className="w-[60px] h-[60px] shrink-0 bg-[#2b2b2b] rounded-full overflow-hidden flex items-center justify-center p-0.5 border border-[#3b3b3b]">
+                {market.image ? (
+                  <img src={market.image} alt={market.title} className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <Icon name={market.icon || "explore"} className="text-3xl text-slate-400" />
+                )}
+              </div>
+
+              {/* Title & Info */}
+              <div className="flex flex-col flex-1 pl-1">
+                <div className="flex justify-between items-start">
+                  <h1 className="text-[28px] lg:text-[34px] font-bold text-white tracking-tight leading-tight max-w-[90%]">
+                    {market.title}
+                  </h1>
                 </div>
-              ))}
+
+                {/* Secondary Header Info: Price To Beat, etc. */}
+                <div className="mt-3 flex gap-8 items-center text-sm">
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 font-medium">Price to beat</span>
+                    <span className="text-white font-bold text-[17px] mt-0.5 flex items-center gap-1">
+                      <span className="text-green-500">Up 0¢</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 font-medium">Final price</span>
+                    <span className="text-white font-bold text-[17px] mt-0.5 whitespace-nowrap">
+                      Waiting ...
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 font-medium">Vol</span>
+                    <span className="text-white font-bold text-[17px] mt-0.5">
+                      {market.volume}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button className="p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/30 transition-all hover:border-border/50">
-              <Icon name="notifications" className="text-muted-foreground text-lg" />
-            </button>
-            <button className="p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/30 transition-all hover:border-border/50">
-              <Icon name="bookmark_border" className="text-muted-foreground text-lg" />
-            </button>
-            <button className="p-2.5 rounded-xl bg-secondary/50 hover:bg-secondary border border-border/30 transition-all hover:border-border/50">
-              <Icon name="ios_share" className="text-muted-foreground text-lg" />
-            </button>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Chart, Outcomes, Info */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Probability Chart */}
-            <ProbabilityChart outcomes={market.outcomes} volume={market.volume} />
+            {/* Probability Chart (Clean) */}
+            <div className="mt-2 min-h-[400px]">
+              <ProbabilityChart outcomes={market.outcomes} volume={market.volume} />
+            </div>
 
-            {/* Outcomes Table */}
-            <OutcomesTable outcomes={market.outcomes} onBet={handleBet} />
+            {/* Rules / Extra Section */}
+            <div className="mt-8 border border-[#2b2b2b] rounded-xl p-5 bg-[#1a1b1e]">
+              <h2 className="text-lg font-bold text-white mb-2">Rules</h2>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                This market will resolve to "Yes" if the referenced asset class meets the predefined conditions at the designated expiry time.
+                Trading may halt prior to the final outcome. The resolution source shall be the official API data provided by leading index providers.
+              </p>
+            </div>
 
-            {/* AI Insights */}
-            <MarketInsights marketTitle={market.title} />
+            {/* Activity Panel */}
+            <div className="mt-8">
+              <IdeasActivityPanel />
+            </div>
 
-            {/* Rules */}
-            <MarketRules category={market.category} />
+            {/* Related Markets Panel */}
+            <div className="mt-8">
+              <RelatedMarkets currentMarket={market} />
+            </div>
 
-            {/* Resolution Source */}
-            <ResolutionSource />
-
-            {/* Timeline */}
-            <TimelineSection expiry={market.expiry} />
-
-            {/* Ideas/Activity Panel - Now at bottom left */}
-            <IdeasActivityPanel />
-
-            {/* Related Markets */}
-            <RelatedMarkets />
           </div>
 
-          {/* Right Column: Trading Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-28">
-              <TradingSidebar 
-                marketTitle={market.title} 
+          {/* Right Column (Sidebar) */}
+          <div className="lg:col-span-4 lg:pt-4">
+            {/* Sticky Trading Sidebar Area */}
+            <div className="sticky top-24">
+              <TradingSidebar
+                marketTitle={market.title}
                 onBet={handleBet}
-                selectedOutcome={market.outcomes[0]?.label}
+                selectedOutcome={market.outcomes[0]?.label || "Yes"}
               />
             </div>
           </div>
@@ -134,7 +131,7 @@ const MarketDetail = () => {
 
       <Footer />
 
-      {/* Bet Modal */}
+      {/* Bet Modal (Fallback Mobile/Global) */}
       {betModal && (
         <BetModal
           open={betModal.open}

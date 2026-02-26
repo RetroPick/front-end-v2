@@ -4,9 +4,14 @@ import { Link } from "react-router-dom";
 import Icon from "@/components/Icon";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useMarkets } from "@/context/MarketContext";
 
 const VaultLiquidity = () => {
     const [filter, setFilter] = useState("all");
+    const { markets } = useMarkets();
+
+    // Take top 10 markets for the vault table
+    const vaultMarkets = markets.slice(0, 10);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#060606] text-slate-900 dark:text-gray-100 font-sans transition-colors duration-300 pb-20">
@@ -239,54 +244,40 @@ const VaultLiquidity = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                    {/* Vault 1 */}
-                                    <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group cursor-pointer">
-                                        <td className="py-5 px-6 align-middle">
-                                            <div className="font-bold text-slate-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-white">US Presidential Election 2024</div>
-                                            <div className="text-xs text-slate-500 dark:text-gray-500 font-mono mt-1">ID: 0x99...2a • Categorical (3)</div>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-600 dark:text-gray-300">$1,205,000</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-500">1.082 USDC</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-blue-600 dark:text-blue-400 font-bold shadow-blue-500/5 dark:shadow-blue-500/5">$1,240.50</td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <span className="inline-flex items-center px-2.5 py-1 border border-blue-500/30 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <Link to="/app/vault/1" className="inline-block opacity-0 group-hover:opacity-100 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all px-4 py-2 text-xs uppercase font-bold tracking-wider rounded-lg">Deposit</Link>
-                                        </td>
-                                    </tr>
-                                    {/* Vault 2 */}
-                                    <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group cursor-pointer">
-                                        <td className="py-5 px-6 align-middle">
-                                            <div className="font-bold text-slate-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-white">Fed Interest Rate Decision Dec 2024</div>
-                                            <div className="text-xs text-slate-500 dark:text-gray-500 font-mono mt-1">ID: 0x12...bb • Binary</div>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-600 dark:text-gray-300">$850,000</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-500">1.045 USDC</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-blue-600 dark:text-blue-400 font-bold">$890.20</td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <span className="inline-flex items-center px-2.5 py-1 border border-blue-500/30 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <button className="opacity-0 group-hover:opacity-100 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all px-4 py-2 text-xs uppercase font-bold tracking-wider rounded-lg">Deposit</button>
-                                        </td>
-                                    </tr>
-                                    {/* Vault 3 (Empty) */}
-                                    <tr className="bg-slate-50/50 dark:bg-[#1A1A1A]/30 hover:bg-slate-100/50 dark:hover:bg-[#1A1A1A]/50 transition-colors group">
-                                        <td className="py-5 px-6 align-middle opacity-75">
-                                            <div className="font-bold text-slate-700 dark:text-gray-400">Super Bowl LIX Halftime Show First Song</div>
-                                            <div className="text-xs text-slate-500 dark:text-gray-600 font-mono mt-1">ID: 0x55...cc • Categorical (10)</div>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-600">$0.00</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-600">1.000 USDC</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-600">$0.00</td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <span className="inline-flex items-center px-2.5 py-1 border border-slate-300 dark:border-gray-700 bg-slate-200 dark:bg-gray-800 text-slate-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Empty</span>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <Link to="/app/vault/1" className="inline-block bg-transparent text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-50 dark:hover:bg-white/5 px-4 py-2 text-xs uppercase font-bold tracking-wider rounded-lg transition-all">Seed Liquidity</Link>
-                                        </td>
-                                    </tr>
+                                    {vaultMarkets.map((market, index) => {
+                                        // Mock some vault-specific stats based on Polymarket volume
+                                        const mockTvl = market.volume;
+                                        const isSeeded = index % 4 !== 0; // Randomly make some unseeded
+
+                                        return (
+                                            <tr key={market.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group cursor-pointer">
+                                                <td className="py-5 px-6 align-middle">
+                                                    <div className="font-bold text-slate-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-white line-clamp-1">{market.title}</div>
+                                                    <div className="text-xs text-slate-500 dark:text-gray-500 font-mono mt-1">ID: 0x{market.id.substring(0, 4)}...{market.id.substring(market.id.length - 2)} • {market.category} ({market.outcomes.length})</div>
+                                                </td>
+                                                <td className="py-5 px-6 align-middle text-right font-mono text-slate-600 dark:text-gray-300">{isSeeded ? mockTvl : "$0.00"}</td>
+                                                <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-500">{(Math.random() * (1.1 - 0.9) + 0.9).toFixed(3)} USDC</td>
+                                                <td className="py-5 px-6 align-middle text-right font-mono text-blue-600 dark:text-blue-400 font-bold">
+                                                    {isSeeded ? `$${(Math.random() * 5000 + 100).toFixed(2)}` : "$0.00"}
+                                                </td>
+                                                <td className="py-5 px-6 align-middle text-center">
+                                                    {isSeeded ? (
+                                                        <span className="inline-flex items-center px-2.5 py-1 border border-blue-500/30 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center px-2.5 py-1 border border-slate-300 dark:border-gray-700 bg-slate-200 dark:bg-gray-800 text-slate-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Empty</span>
+                                                    )}
+                                                </td>
+                                                <td className="py-5 px-6 align-middle text-center">
+                                                    {isSeeded ? (
+                                                        <Link to={`/app/vault/${market.id}`} className="inline-block opacity-0 group-hover:opacity-100 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all px-4 py-2 text-xs uppercase font-bold tracking-wider rounded-lg">Deposit</Link>
+                                                    ) : (
+                                                        <Link to={`/app/vault/${market.id}`} className="inline-block bg-transparent text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-50 dark:hover:bg-white/5 px-4 py-2 text-xs uppercase font-bold tracking-wider rounded-lg transition-all">Seed Liquidity</Link>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+
                                     {/* Info Row */}
                                     <tr className="bg-amber-50 dark:bg-[rgba(255,165,0,0.05)] border-b-0 border-slate-200 dark:border-white/10">
                                         <td className="py-3 px-6 text-center border-b border-slate-200 dark:border-white/10" colSpan={6}>
@@ -296,29 +287,13 @@ const VaultLiquidity = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                    {/* Vault 4 */}
-                                    <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group cursor-pointer">
-                                        <td className="py-5 px-6 align-middle">
-                                            <div className="font-bold text-slate-900 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-white">Euro 2024 Winner</div>
-                                            <div className="text-xs text-slate-500 dark:text-gray-500 font-mono mt-1">ID: 0x78...ee • Categorical (5)</div>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-600 dark:text-gray-300">$420,500</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-slate-500 dark:text-gray-500">1.120 USDC</td>
-                                        <td className="py-5 px-6 align-middle text-right font-mono text-blue-600 dark:text-blue-400 font-bold">$310.00</td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <span className="inline-flex items-center px-2.5 py-1 border border-blue-500/30 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-md">Active</span>
-                                        </td>
-                                        <td className="py-5 px-6 align-middle text-center">
-                                            <button className="opacity-0 group-hover:opacity-100 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all px-4 py-2 text-xs uppercase font-bold tracking-wider rounded-lg">Deposit</button>
-                                        </td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                         {/* Pagination */}
                         <div className="px-6 py-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#111111]/50 flex items-center justify-between backdrop-blur-md">
                             <div className="text-xs text-slate-500 dark:text-gray-500">
-                                Showing <span className="font-bold text-slate-900 dark:text-white">1-5</span> of <span className="font-bold text-slate-900 dark:text-white">24</span> vaults
+                                Showing <span className="font-bold text-slate-900 dark:text-white">1-{vaultMarkets.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{markets.length}</span> vaults
                             </div>
                             <div className="flex gap-2">
                                 <button className="p-2 border border-slate-200 dark:border-white/10 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-30 text-slate-400 dark:text-gray-400" disabled>

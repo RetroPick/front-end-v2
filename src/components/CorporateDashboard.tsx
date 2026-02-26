@@ -1,5 +1,5 @@
 
-// 2: import { markets } from "@/data/markets";
+// 2: import { useMarkets } from "@/context/MarketContext";
 // 3: import CorporateMarketCard from "./CorporateMarketCard";
 // 4: import { Building2 } from "lucide-react";
 // 5: 
@@ -23,17 +23,38 @@
 // 23:                     CORPORATE <span className="text-blue-600">INSIGHTS</span>
 // 24:                 </h1>
 // 25:                 <p className="text-slate-600 dark:text-slate-400 max-w-xl font-normal text-lg">
-// 26:                     Predicting quarterly earnings, M&A activity, and C-suite shuffles for the Fortune 500.
-// 27:                 </p>
-// 28:             </div>
-import { markets } from "@/data/markets";
+import { useMarkets } from "@/context/MarketContext";
 import CorporateMarketCard from "./CorporateMarketCard";
 import { Building2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useState, useEffect } from "react";
+import { fetchTrendingEvents } from "@/lib/polymarket";
 
 const CorporateDashboard = () => {
     const { t } = useLanguage();
-    const corporateMarkets = markets.filter(m => m.category === "Corporate");
+    const { markets } = useMarkets();
+    const [activeNewsIndex, setActiveNewsIndex] = useState(0);
+    const [newsItems, setNewsItems] = useState<string[]>(["Analyzing quarterly earnings..."]);
+
+    const corporateMarkets = markets.filter((m) => m.category === "Corporate" || m.category === "Business");
+
+    useEffect(() => {
+        const loadLiveNews = async () => {
+            const events = await fetchTrendingEvents(10, 'Corporate');
+            if (events.length > 0) {
+                setNewsItems(events.map(e => e.title));
+            } else {
+                setNewsItems(["Analyzing quarterly earnings..."]);
+            }
+        };
+
+        loadLiveNews();
+
+        const interval = setInterval(() => {
+            setActiveNewsIndex((prev) => (prev + 1) % (newsItems.length || 1));
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [newsItems.length]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
@@ -51,9 +72,16 @@ const CorporateDashboard = () => {
                 <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">
                     {t('dashboard.corporate_title')}
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400 max-w-xl font-normal text-lg">
+                <p className="text-slate-600 dark:text-slate-400 max-w-xl font-normal text-lg mb-6">
                     {t('dashboard.corporate_subtitle')}
                 </p>
+
+                {/* Scrolling News - Clean Text */}
+                <div className="h-6 overflow-hidden relative w-full max-w-xl bg-slate-200 dark:bg-black/20 rounded-lg py-1 border border-slate-300 dark:border-white/5">
+                    <p key={activeNewsIndex} className="text-sm text-slate-700 dark:text-slate-300 font-mono animate-fade-in-up">
+                        {">"} {newsItems[activeNewsIndex]}
+                    </p>
+                </div>
             </div>
 
             {/* Main Grid */}

@@ -61,6 +61,14 @@ const FeatureCard: React.FC<{
 
 const About: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isDesktop, setIsDesktop] = React.useState(true);
+
+  React.useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -106,12 +114,14 @@ const About: React.FC = () => {
       <div ref={containerRef} className="container mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {features.map((feature, idx) => {
           let style = {};
-          if (idx === 0) { // Left: Event-Driven
-            style = { x: xLeft, rotateZ: rotateLeft, scale: scaleLeft };
-          } else if (idx === 1) { // Center: AI Settlement
-            style = { scale: scaleCenter, zIndex: 20 };
-          } else if (idx === 2) { // Right: Cross-Chain
-            style = { x: xRight, rotateZ: rotateRight, scale: scaleRight };
+          if (isDesktop) {
+            if (idx === 0) { // Left: Event-Driven
+              style = { x: xLeft, rotateZ: rotateLeft, scale: scaleLeft };
+            } else if (idx === 1) { // Center: AI Settlement
+              style = { scale: scaleCenter, zIndex: 20 };
+            } else if (idx === 2) { // Right: Cross-Chain
+              style = { x: xRight, rotateZ: rotateRight, scale: scaleRight };
+            }
           }
 
           return (

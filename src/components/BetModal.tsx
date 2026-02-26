@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Icon from "./Icon";
 import ConfirmationModal from "./ConfirmationModal";
 import { cn } from "@/lib/utils";
+import { useYellowSession } from "@/hooks/useYellowSession";
 
 // --- Authentic Crypto Icons (SVGs) ---
 const SolanaLogo = ({ className }: { className?: string }) => (
@@ -71,8 +72,22 @@ const BetModal = ({ open, onClose, marketTitle, outcome, side: initialSide, pric
   // Theme colors
   const isYes = side === 'YES';
 
-  const handleBuy = () => {
-    setShowConfirmation(true);
+  const { signOrder, isPending } = useYellowSession();
+
+  const handleBuy = async () => {
+    try {
+      // Placeholder indexing: YES=0, NO=1
+      const defaultMarketId = 1; // Prototype value
+      const outcomeIndex = side === 'YES' ? 0 : 1;
+
+      const signature = await signOrder(defaultMarketId, outcomeIndex, amount);
+
+      if (signature) {
+        setShowConfirmation(true);
+      }
+    } catch (err) {
+      console.error("User rejected signature or signing failed");
+    }
   };
 
   const handleConfirmationClose = () => {
@@ -303,16 +318,20 @@ const BetModal = ({ open, onClose, marketTitle, outcome, side: initialSide, pric
             <div className="px-4 pb-3 relative z-10">
               <button
                 onClick={handleBuy}
+                disabled={isPending}
                 className={cn(
                   "w-full py-3.5 rounded-xl font-bold text-base text-white transition-all transform hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden group shadow-lg",
-                  isYes
-                    ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
-                    : "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20"
+                  isPending ? "opacity-70 cursor-not-allowed bg-slate-500" :
+                    isYes
+                      ? "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                      : "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20"
                 )}
               >
-                <span className="relative z-10">Buy {side}</span>
+                <span className="relative z-10">
+                  {isPending ? "Waiting for Signature..." : `Sign Order to Buy ${side}`}
+                </span>
                 {/* Shimmer */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                {!isPending && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:animate-shimmer" />}
               </button>
             </div>
 

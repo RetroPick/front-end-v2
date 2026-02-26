@@ -16,6 +16,7 @@ import { Web3ModalProvider } from "@/context/Web3ModalProvider";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 
 import { LanguageProvider } from "@/context/LanguageContext";
+import { MarketProvider } from "@/context/MarketContext";
 import Activity from "./pages/Activity";
 import Leaderboard from "./pages/Leaderboard";
 import Vault from "./pages/Vault";
@@ -28,29 +29,31 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <OnboardingProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public Landing Page */}
-              <Route path="/" element={<LandingPage />} />
+          <MarketProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Public Landing Page */}
+                <Route path="/" element={<LandingPage />} />
 
-              {/* Main App Routes */}
-              <Route path="/app" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/app/market/:id" element={<MarketDetail />} />
-              <Route path="/app/portfolio" element={<Portfolio />} />
-              <Route path="/app/activity" element={<Activity />} />
-              <Route path="/app/leaderboard" element={<Leaderboard />} />
-              <Route path="/app/vault" element={<Vault />} />
-              <Route path="/app/liquidity" element={<VaultLiquidity />} />
-              <Route path="/app/vault/success" element={<VaultSuccess />} />
-              <Route path="/app/vault/:id" element={<VaultDetail />} />
+                {/* Main App Routes */}
+                <Route path="/app" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/app/market/:id" element={<MarketDetail />} />
+                <Route path="/app/portfolio" element={<Portfolio />} />
+                <Route path="/app/activity" element={<Activity />} />
+                <Route path="/app/leaderboard" element={<Leaderboard />} />
+                <Route path="/app/vault" element={<Vault />} />
+                <Route path="/app/liquidity" element={<VaultLiquidity />} />
+                <Route path="/app/vault/success" element={<VaultSuccess />} />
+                <Route path="/app/vault/:id" element={<VaultDetail />} />
 
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </MarketProvider>
         </OnboardingProvider>
       </LanguageProvider>
     </TooltipProvider>

@@ -63,13 +63,12 @@ const OutcomesTable = ({ outcomes, onBet }: OutcomesTableProps) => {
 
             {/* Probability */}
             <div className="flex flex-col items-center">
-              <span className="text-lg font-bold text-accent-cyan">{outcome.probability}%</span>
-              <div className={`flex items-center gap-0.5 text-[10px] font-bold ${
-                outcome.change > 0 ? 'text-accent-green' : outcome.change < 0 ? 'text-destructive' : 'text-muted-foreground'
-              }`}>
-                <Icon 
-                  name={outcome.change > 0 ? "arrow_upward" : outcome.change < 0 ? "arrow_downward" : "remove"} 
-                  className="text-xs" 
+              <span className="text-lg font-bold text-accent-cyan">{Math.round(outcome.probability)}%</span>
+              <div className={`flex items-center gap-0.5 text-[10px] font-bold ${outcome.change > 0 ? 'text-accent-green' : outcome.change < 0 ? 'text-destructive' : 'text-muted-foreground'
+                }`}>
+                <Icon
+                  name={outcome.change > 0 ? "arrow_upward" : outcome.change < 0 ? "arrow_downward" : "remove"}
+                  className="text-xs"
                 />
                 {Math.abs(outcome.change)}%
               </div>
@@ -81,13 +80,13 @@ const OutcomesTable = ({ outcomes, onBet }: OutcomesTableProps) => {
                 onClick={() => onBet('YES', outcome.label)}
                 className="px-3 py-2 rounded-lg text-xs font-bold bg-accent-cyan/10 hover:bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/20 hover:border-accent-cyan/40 transition-all hover:shadow-lg hover:shadow-accent-cyan/10"
               >
-                Yes {outcome.probability}¢
+                Yes {Math.round(outcome.probability)}¢
               </button>
               <button
                 onClick={() => onBet('NO', outcome.label)}
                 className="px-3 py-2 rounded-lg text-xs font-bold bg-accent-magenta/10 hover:bg-accent-magenta/20 text-accent-magenta border border-accent-magenta/20 hover:border-accent-magenta/40 transition-all hover:shadow-lg hover:shadow-accent-magenta/10"
               >
-                No {100 - outcome.probability}¢
+                No {Math.round(100 - outcome.probability)}¢
               </button>
             </div>
           </motion.div>

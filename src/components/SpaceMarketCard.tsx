@@ -1,7 +1,7 @@
 
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, MouseEvent } from "react";
+import { useState, memo , MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { Rocket, Satellite, Radio } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,7 +10,7 @@ interface SpaceMarketCardProps {
     market: Market;
 }
 
-const SpaceMarketCard = ({ market }: SpaceMarketCardProps) => {
+const SpaceMarketCard = memo(({ market }: SpaceMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -64,12 +64,12 @@ const SpaceMarketCard = ({ market }: SpaceMarketCardProps) => {
                                 <div className="flex-1">
                                     <div className="flex justify-between text-xs mb-1">
                                         <span className="text-white font-bold">{outcome.label}</span>
-                                        <span className="text-cyan-400 font-mono">{outcome.probability}%</span>
+                                        <span className="text-cyan-400 font-mono">{Math.round(outcome.probability)}%</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-cyan-500 shadow-[0_0_10px_currentColor]"
-                                            style={{ width: `${outcome.probability}%` }}
+                                            style={{ width: `${Math.round(outcome.probability)}%` }}
                                         />
                                     </div>
                                 </div>
@@ -105,6 +105,6 @@ const SpaceMarketCard = ({ market }: SpaceMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default SpaceMarketCard;

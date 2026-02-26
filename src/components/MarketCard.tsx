@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Market } from "@/types/market";
 import Icon from "./Icon";
@@ -10,7 +10,7 @@ interface MarketCardProps {
   market: Market;
 }
 
-const MarketCard = ({ market }: MarketCardProps) => {
+const MarketCard = memo(({ market }: MarketCardProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
@@ -28,7 +28,7 @@ const MarketCard = ({ market }: MarketCardProps) => {
     <>
       <div
         onClick={handleCardClick}
-        className="group relative flex flex-col w-full bg-card/60 backdrop-blur-md rounded-3xl border border-black/10 dark:border-white/5 overflow-hidden shadow-sm shadow-black/10 dark:shadow-none hover:border-black/20 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-primary/5 transition-all duration-300 cursor-pointer"
+        className="group relative flex flex-col w-full aspect-square bg-card/60 backdrop-blur-md rounded-3xl border border-black/10 dark:border-white/5 overflow-hidden shadow-sm shadow-black/10 dark:shadow-none hover:border-black/20 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-primary/5 transition-all duration-300 cursor-pointer"
       >
         {/* Image Header with Gradient Overlay */}
         <div className="relative h-48 w-full overflow-hidden">
@@ -102,7 +102,7 @@ const MarketCard = ({ market }: MarketCardProps) => {
                           {outcome.label}
                         </span>
                         <span className={cn("text-xl font-black tracking-tight", colorClass)}>
-                          {outcome.probability}%
+                          {Math.round(outcome.probability)}%
                         </span>
                       </div>
                     </button>
@@ -120,7 +120,7 @@ const MarketCard = ({ market }: MarketCardProps) => {
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-white">{outcome.probability}%</span>
+                      <span className="text-sm font-bold text-white">{Math.round(outcome.probability)}%</span>
                       <div className="flex gap-2">
                         <button
                           onClick={(e) => handleBet(e, 'YES', outcome.label)}
@@ -156,6 +156,6 @@ const MarketCard = ({ market }: MarketCardProps) => {
       )}
     </>
   );
-};
+});
 
 export default MarketCard;

@@ -1,10 +1,29 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { markets } from "@/data/markets";
+import { useMarkets } from "@/context/MarketContext";
 
-const RelatedMarkets = () => {
+interface RelatedMarketsProps {
+  currentMarket: {
+    id: string;
+    category: string;
+    title: string;
+    outcomes: { probability: number; label: string }[];
+  };
+}
+
+const RelatedMarkets = ({ currentMarket }: RelatedMarketsProps) => {
+  const { markets } = useMarkets();
   const [showAll, setShowAll] = useState(false);
-  const relatedMarkets = markets.slice(0, showAll ? 6 : 3);
+
+  // Filter to same category, excluding current
+  const filteredRelated = markets
+    .filter(m => m.category === currentMarket.category && m.id !== currentMarket.id);
+
+  const relatedMarkets = filteredRelated.slice(0, showAll ? 6 : 3);
+
+  if (filteredRelated.length === 0) {
+    return null; // Don't render if no related markets
+  }
 
   return (
     <div className="bg-card border border-border/50 rounded-2xl p-6">
@@ -24,7 +43,7 @@ const RelatedMarkets = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-accent-cyan font-bold">
-                {market.outcomes[0]?.probability}%
+                {Math.round(market.outcomes[0]?.probability || 0)}%
               </span>
               <span className="text-xs text-muted-foreground">
                 {market.outcomes[0]?.label}

@@ -1,7 +1,7 @@
 
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, memo  } from "react";
 import BetModal from "./BetModal";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -9,7 +9,7 @@ interface NeonMarketCardProps {
     market: Market;
 }
 
-const NeonMarketCard = ({ market }: NeonMarketCardProps) => {
+const NeonMarketCard = memo(({ market }: NeonMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -85,7 +85,7 @@ const NeonMarketCard = ({ market }: NeonMarketCardProps) => {
                                     </div>
 
                                     <div className="flex flex-col items-center justify-center py-1">
-                                        <span className="text-lg font-black text-slate-900 dark:text-white tracking-tighter">{outcome.probability}%</span>
+                                        <span className="text-lg font-black text-slate-900 dark:text-white tracking-tighter">{Math.round(outcome.probability)}%</span>
                                     </div>
 
                                     <div className="w-full mt-2 flex gap-1">
@@ -121,6 +121,6 @@ const NeonMarketCard = ({ market }: NeonMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default NeonMarketCard;

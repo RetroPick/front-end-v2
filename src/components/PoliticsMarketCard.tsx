@@ -1,7 +1,7 @@
 
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, memo  } from "react";
 import BetModal from "./BetModal";
 import { TrendingUp, Users, Clock, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,7 +10,7 @@ interface PoliticsMarketCardProps {
     market: Market;
 }
 
-const PoliticsMarketCard = ({ market }: PoliticsMarketCardProps) => {
+const PoliticsMarketCard = memo(({ market }: PoliticsMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
@@ -21,7 +21,7 @@ const PoliticsMarketCard = ({ market }: PoliticsMarketCardProps) => {
 
     return (
         <>
-            <div className="group relative flex flex-col w-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg shadow-black/5 hover:shadow-2xl hover:shadow-black/15 dark:hover:shadow-black/50 transition-all duration-300 transform hover:-translate-y-1">
+            <div className="group relative flex flex-col w-full aspect-square bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg shadow-black/5 hover:shadow-2xl hover:shadow-black/15 dark:hover:shadow-black/50 transition-all duration-300 transform hover:-translate-y-1">
 
                 {/* Image Section - Distinct from text to prevent clashing */}
                 <div className="relative h-48 overflow-hidden">
@@ -66,7 +66,7 @@ const PoliticsMarketCard = ({ market }: PoliticsMarketCardProps) => {
                                 {/* Label & % */}
                                 <div className="flex justify-between items-end mb-1 text-xs font-semibold">
                                     <span className="text-slate-700 dark:text-slate-300">{outcome.label}</span>
-                                    <span className="text-slate-900 dark:text-white">{outcome.probability}%</span>
+                                    <span className="text-slate-900 dark:text-white">{Math.round(outcome.probability)}%</span>
                                 </div>
 
                                 {/* Progress Bar */}
@@ -77,7 +77,7 @@ const PoliticsMarketCard = ({ market }: PoliticsMarketCardProps) => {
                                             outcome.label.toLowerCase() === 'yes' ? "bg-blue-600" :
                                                 outcome.label.toLowerCase() === 'no' ? "bg-red-500" : "bg-slate-500"
                                         )}
-                                        style={{ width: `${outcome.probability}%` }}
+                                        style={{ width: `${Math.round(outcome.probability)}%` }}
                                     />
                                 </div>
 
@@ -125,6 +125,6 @@ const PoliticsMarketCard = ({ market }: PoliticsMarketCardProps) => {
             )}
         </>
     );
-};
+});
 
 export default PoliticsMarketCard;

@@ -10,6 +10,7 @@ import {
     Coins,
     Settings,
     Moon,
+    ChevronDown,
     ChevronRight,
     Globe,
     Check
@@ -43,6 +44,7 @@ const WalletButton = () => {
     const { isOnboarded } = useOnboarding();
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const [selectedNetwork, setSelectedNetwork] = useState<'avalanche' | 'sepolia'>('avalanche');
 
     const languages: { code: Language; label: string }[] = [
         { code: 'en', label: 'English' },
@@ -67,136 +69,174 @@ const WalletButton = () => {
     }
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 bg-secondary border border-border rounded-lg px-3 py-1.5 hover:bg-secondary/80 transition-colors cursor-pointer group">
-                    <div className="flex flex-col items-end hidden md:flex">
-                        <span className="text-[9px] text-muted-foreground uppercase font-bold leading-none mb-0.5">
-                            {t('balance')}
+        <div className="flex items-center gap-2">
+            {/* Static Network Switcher */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1.5 bg-secondary border border-border rounded-lg px-2.5 py-1.5 hover:bg-secondary/80 transition-colors">
+                        <div className={cn("size-4 rounded-full sm:hidden", selectedNetwork === 'avalanche' ? "bg-red-500" : "bg-blue-500")}></div>
+                        <span className="hidden sm:inline text-xs font-bold text-foreground">
+                            {selectedNetwork === 'avalanche' ? 'Avalanche Fuji' : 'Sepolia Testnet'}
                         </span>
-                        <span className="text-xs font-bold text-accent-cyan">
-                            {balance ? `${parseFloat(formatUnits(balance.value, balance.decimals)).toFixed(4)} ${balance.symbol}` : "0.00 ETH"}
-                        </span>
-                    </div>
-
-                    <div className="size-8 bg-gradient-to-br from-gray-700 to-gray-900 border border-border rounded-full flex items-center justify-center relative shadow-sm group-hover:shadow-md transition-all">
-                        <div className="w-full h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
-                    </div>
-                </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[300px] p-0 overflow-hidden bg-popover border-border text-popover-foreground rounded-xl shadow-2xl">
-                {/* Header Section */}
-                <div className="p-4 flex items-start gap-3 relative">
-                    <div className="size-10 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                        <div className="font-bold text-base truncate">{address}</div>
-                        <div className="flex items-center gap-2 text-muted-foreground text-xs font-mono">
-                            <span>{address?.slice(0, 6)}...{address?.slice(-4)}</span>
-                            <Copy
-                                className="size-3 cursor-pointer hover:text-foreground transition-colors"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(address || "");
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground rounded-full">
-                        <Settings className="size-4" />
-                    </Button>
-                </div>
-
-                <div className="h-px bg-border/50 mx-4" />
-
-                {/* Main Menu Items */}
-                <div className="p-2 space-y-0.5">
-
-                    {isOnboarded && <WorldIDVerifier asDropdownItem />}
-
-                    <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
-                        <Coins className="mr-3 size-4 text-green-400" />
-                        <span className="font-medium">{t('rewards')}</span>
-                    </DropdownMenuItem>
-
-                    <Link to="/app/leaderboard">
-                        <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
-                            <Trophy className="mr-3 size-4 text-amber-400" />
-                            <span className="font-medium">{t('leaderboard')}</span>
-                        </DropdownMenuItem>
-                    </Link>
-
-                    {/* Dark Mode Toggle */}
-                    <DropdownMenuItem className="focus:bg-transparent rounded-lg py-2.5 px-3 flex items-center justify-between cursor-default">
-                        <div className="flex items-center">
-                            <Moon className="mr-3 size-4 text-indigo-400" />
-                            <span className="font-medium">{t('dark_mode')}</span>
-                        </div>
-                        <Switch
-                            checked={theme === 'dark'}
-                            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                            className="scale-90 data-[state=checked]:bg-blue-500"
-                        />
-                    </DropdownMenuItem>
-                </div>
-
-                <div className="h-px bg-border/50 mx-4" />
-
-                {/* Secondary Links */}
-                <div className="p-2 space-y-0.5">
-                    {[
-                        { label: t('accuracy'), key: 'Accuracy' },
-                        { label: t('support'), key: 'Support' },
-                        { label: t('documentation'), key: 'Documentation' },
-                        { label: t('help_center'), key: 'Help Center' },
-                        { label: t('terms_of_use'), key: 'Terms of Use' }
-                    ].map((item) => (
-                        <DropdownMenuItem key={item.key} className="cursor-pointer focus:bg-accent/50 rounded-lg py-2 text-muted-foreground focus:text-foreground">
-                            <span className="text-sm font-medium">{item.label}</span>
-                        </DropdownMenuItem>
-                    ))}
-                </div>
-
-                <div className="h-px bg-border/50 mx-4" />
-
-                {/* Footer Actions */}
-                <div className="p-2 space-y-0.5">
-                    <DropdownMenuSub>
-                        <DropdownMenuSubTrigger className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3 flex items-center justify-between group data-[state=open]:bg-accent/50">
-                            <div className="flex items-center text-muted-foreground group-focus:text-foreground">
-                                <Globe className="mr-2 size-4" />
-                                <span>{t('language')}</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground ml-auto mr-2">
-                                {languages.find(l => l.code === language)?.label}
-                            </span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent className="bg-popover border-border text-popover-foreground rounded-xl shadow-xl min-w-[200px]">
-                            {languages.map((lang) => (
-                                <DropdownMenuItem
-                                    key={lang.code}
-                                    onClick={() => setLanguage(lang.code)}
-                                    className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3 justify-between"
-                                >
-                                    <span className={cn("font-medium", language === lang.code && "text-accent-cyan")}>
-                                        {lang.label}
-                                    </span>
-                                    {language === lang.code && <Check className="size-4 text-accent-cyan" />}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-
+                        <ChevronDown className="size-3 text-muted-foreground" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[180px] bg-popover border-border rounded-xl shadow-xl">
                     <DropdownMenuItem
-                        onClick={() => disconnect()}
-                        className="cursor-pointer focus:bg-red-500/10 focus:text-red-500 rounded-lg py-2.5 px-3 text-red-500"
+                        onClick={() => setSelectedNetwork('avalanche')}
+                        className="cursor-pointer py-2 px-3 focus:bg-accent/50 rounded-lg justify-between"
                     >
-                        <LogOut className="mr-2 size-4" />
-                        <span className="font-medium">{t('logout')}</span>
+                        <div className="flex items-center gap-2">
+                            <div className="size-4 rounded-full bg-red-500"></div>
+                            <span className={cn("font-medium text-sm", selectedNetwork === 'avalanche' && "text-accent-cyan")}>Avalanche Fuji</span>
+                        </div>
+                        {selectedNetwork === 'avalanche' && <Check className="size-3 text-accent-cyan" />}
                     </DropdownMenuItem>
-                </div>
+                    <DropdownMenuItem
+                        onClick={() => setSelectedNetwork('sepolia')}
+                        className="cursor-pointer py-2 px-3 focus:bg-accent/50 rounded-lg justify-between"
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="size-4 rounded-full bg-blue-500"></div>
+                            <span className={cn("font-medium text-sm", selectedNetwork === 'sepolia' && "text-accent-cyan")}>Sepolia Testnet</span>
+                        </div>
+                        {selectedNetwork === 'sepolia' && <Check className="size-3 text-accent-cyan" />}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
-            </DropdownMenuContent>
-        </DropdownMenu>
+            {/* Wallet Profile */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 bg-secondary border border-border rounded-lg px-3 py-1.5 hover:bg-secondary/80 transition-colors cursor-pointer group">
+                        <div className="flex flex-col items-end hidden md:flex">
+                            <span className="text-[9px] text-muted-foreground uppercase font-bold leading-none mb-0.5">
+                                {t('balance')}
+                            </span>
+                            <span className="text-xs font-bold text-accent-cyan">
+                                {isConnected ? "1,250.00 USDC" : "0.00 USDC"}
+                            </span>
+                        </div>
+
+                        <div className="size-8 bg-gradient-to-br from-gray-700 to-gray-900 border border-border rounded-full flex items-center justify-center relative shadow-sm group-hover:shadow-md transition-all">
+                            <div className="w-full h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
+                        </div>
+                    </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[300px] p-0 overflow-hidden bg-popover border-border text-popover-foreground rounded-xl shadow-2xl">
+                    {/* Header Section */}
+                    <div className="p-4 flex items-start gap-3 relative">
+                        <div className="size-10 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                            <div className="font-bold text-base truncate">{address}</div>
+                            <div className="flex items-center gap-2 text-muted-foreground text-xs font-mono">
+                                <span>{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+                                <Copy
+                                    className="size-3 cursor-pointer hover:text-foreground transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(address || "");
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground rounded-full">
+                            <Settings className="size-4" />
+                        </Button>
+                    </div>
+
+                    <div className="h-px bg-border/50 mx-4" />
+
+                    {/* Main Menu Items */}
+                    <div className="p-2 space-y-0.5">
+
+                        {isOnboarded && <WorldIDVerifier asDropdownItem />}
+
+                        <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
+                            <Coins className="mr-3 size-4 text-green-400" />
+                            <span className="font-medium">{t('rewards')}</span>
+                        </DropdownMenuItem>
+
+                        <Link to="/app/leaderboard">
+                            <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
+                                <Trophy className="mr-3 size-4 text-amber-400" />
+                                <span className="font-medium">{t('leaderboard')}</span>
+                            </DropdownMenuItem>
+                        </Link>
+
+                        {/* Dark Mode Toggle */}
+                        <DropdownMenuItem className="focus:bg-transparent rounded-lg py-2.5 px-3 flex items-center justify-between cursor-default">
+                            <div className="flex items-center">
+                                <Moon className="mr-3 size-4 text-indigo-400" />
+                                <span className="font-medium">{t('dark_mode')}</span>
+                            </div>
+                            <Switch
+                                checked={theme === 'dark'}
+                                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                                className="scale-90 data-[state=checked]:bg-blue-500"
+                            />
+                        </DropdownMenuItem>
+                    </div>
+
+                    <div className="h-px bg-border/50 mx-4" />
+
+                    {/* Secondary Links */}
+                    <div className="p-2 space-y-0.5">
+                        {[
+                            { label: t('accuracy'), key: 'Accuracy' },
+                            { label: t('support'), key: 'Support' },
+                            { label: t('documentation'), key: 'Documentation' },
+                            { label: t('help_center'), key: 'Help Center' },
+                            { label: t('terms_of_use'), key: 'Terms of Use' }
+                        ].map((item) => (
+                            <DropdownMenuItem key={item.key} className="cursor-pointer focus:bg-accent/50 rounded-lg py-2 text-muted-foreground focus:text-foreground">
+                                <span className="text-sm font-medium">{item.label}</span>
+                            </DropdownMenuItem>
+                        ))}
+                    </div>
+
+                    <div className="h-px bg-border/50 mx-4" />
+
+                    {/* Footer Actions */}
+                    <div className="p-2 space-y-0.5">
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3 flex items-center justify-between group data-[state=open]:bg-accent/50">
+                                <div className="flex items-center text-muted-foreground group-focus:text-foreground">
+                                    <Globe className="mr-2 size-4" />
+                                    <span>{t('language')}</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground ml-auto mr-2">
+                                    {languages.find(l => l.code === language)?.label}
+                                </span>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className="bg-popover border-border text-popover-foreground rounded-xl shadow-xl min-w-[200px]">
+                                {languages.map((lang) => (
+                                    <DropdownMenuItem
+                                        key={lang.code}
+                                        onClick={() => setLanguage(lang.code)}
+                                        className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3 justify-between"
+                                    >
+                                        <span className={cn("font-medium", language === lang.code && "text-accent-cyan")}>
+                                            {lang.label}
+                                        </span>
+                                        {language === lang.code && <Check className="size-4 text-accent-cyan" />}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuItem
+                            onClick={() => disconnect()}
+                            className="cursor-pointer focus:bg-red-500/10 focus:text-red-500 rounded-lg py-2.5 px-3 text-red-500"
+                        >
+                            <LogOut className="mr-2 size-4" />
+                            <span className="font-medium">{t('logout')}</span>
+                        </DropdownMenuItem>
+                    </div>
+
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
     );
 };
 

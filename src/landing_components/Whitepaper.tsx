@@ -59,12 +59,12 @@ const Whitepaper: React.FC = () => {
 
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Navigation Sidebar */}
-          <div className="lg:col-span-3 space-y-3">
+          <div className="lg:col-span-3 flex lg:flex-col overflow-x-auto gap-3 pb-2 lg:pb-0 scrollbar-hide snap-x">
             {[
-              { id: 'foundations', label: 'LS-LMSR Foundations', icon: <Database className="w-4 h-4" /> },
-              { id: 'risk', label: 'Risk & Liquidity', icon: <ShieldCheck className="w-4 h-4" /> },
-              { id: 'settlement', label: 'Yellow Sessions & Resolution', icon: <Cpu className="w-4 h-4" /> },
-              { id: 'market-comparison', label: 'vs Order Books', icon: <Layers className="w-4 h-4" /> },
+              { id: 'foundations', label: 'LS-LMSR Foundations', icon: <Database className="w-4 h-4 shrink-0" /> },
+              { id: 'risk', label: 'Risk & Liquidity', icon: <ShieldCheck className="w-4 h-4 shrink-0" /> },
+              { id: 'settlement', label: 'Yellow Sessions', icon: <Cpu className="w-4 h-4 shrink-0" /> },
+              { id: 'market-comparison', label: 'vs Order Books', icon: <Layers className="w-4 h-4 shrink-0" /> },
             ].map((tab, index) => (
               <motion.button
                 key={tab.id}
@@ -73,13 +73,13 @@ const Whitepaper: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold transition-all border ${activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border-blue-500 scale-105'
+                className={`flex-none lg:w-full flex items-center gap-2 md:gap-3 px-4 py-3 md:px-5 md:py-4 rounded-xl text-[13px] md:text-sm font-bold transition-all border snap-start ${activeTab === tab.id
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 border-blue-500 scale-[1.02] lg:scale-105'
                   : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
                   }`}
               >
                 {tab.icon}
-                {tab.label}
+                <span className="whitespace-nowrap">{tab.label}</span>
               </motion.button>
             ))}
           </div>
@@ -255,7 +255,7 @@ const ArchitectureDiagram = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(59,130,246,0.12),transparent_60%)]" />
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
 
-      <div className="relative z-10 flex flex-wrap items-center justify-center gap-2 md:gap-4 min-h-[140px]">
+      <div className="relative z-10 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-3 md:gap-4 min-h-[140px] overflow-x-auto pb-6 pt-2 px-1 snap-x scrollbar-hide">
         {NODES.map((node, i) => (
           <React.Fragment key={node.id}>
             <motion.div

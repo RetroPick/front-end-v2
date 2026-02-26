@@ -1,31 +1,38 @@
 
-import { markets } from "@/data/markets";
+import { useMarkets } from "@/context/MarketContext";
 import CryptoMarketCard from "./CryptoMarketCard";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { fetchTrendingEvents, PolymarketEvent } from "@/lib/polymarket";
 
 const CryptoDashboard = () => {
     const { t } = useLanguage();
+    const { markets } = useMarkets();
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
+    const [newsItems, setNewsItems] = useState<string[]>(["Loading live markets data..."]);
 
     // Filter for Crypto markets
     const cryptoMarkets = markets.filter(m => m.category === "Crypto" || m.category === "Currency");
 
-    // Mock News Ticker Data
-    const newsItems = [
-        "BTC Dominance hits 58% as altcoins season delayed.",
-        "Layer 2 scaling solutions reduce gas fees by 99%.",
-        "Global hash rate reaches new all-time high.",
-        "DeFi TVL surpasses $100B milestone."
-    ];
-
     useEffect(() => {
+        // Fetch Live Polymarket News
+        const loadLiveNews = async () => {
+            const events = await fetchTrendingEvents(10, 'Crypto');
+            if (events.length > 0) {
+                setNewsItems(events.map(e => e.title));
+            } else {
+                setNewsItems(["Waiting for market events..."]);
+            }
+        };
+
+        loadLiveNews();
+
         const interval = setInterval(() => {
-            setActiveNewsIndex((prev) => (prev + 1) % newsItems.length);
+            setActiveNewsIndex((prev) => (prev + 1) % (newsItems.length || 1));
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [newsItems.length]);
 
     return (
         <div className="min-h-screen bg-white dark:bg-[#02040a] text-slate-900 dark:text-white relative overflow-hidden font-sans selection:bg-cyan-100 dark:selection:bg-cyan-500 selection:text-cyan-900 dark:selection:text-white pb-20 perspective-1000 transition-colors duration-500">
@@ -49,10 +56,10 @@ const CryptoDashboard = () => {
                 />
 
                 {/* Horizon Glow */}
-                <div className="absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-cyan-500/10 to-transparent blur-3xl opacity-50" />
+                <div className="absolute bottom-0 left-0 right-0 h-[400px] bg-gradient-to-t from-cyan-500/10 to-transparent blur-3xl opacity-50 transform-gpu" />
 
                 {/* Top Spotlight */}
-                <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-500/5 dark:bg-blue-600/10 rounded-full blur-[120px]" />
+                <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-500/5 dark:bg-blue-600/10 rounded-full blur-[120px] transform-gpu" />
             </div>
 
             <main className="max-w-7xl mx-auto px-6 py-8 relative z-10 flex flex-col items-center pt-24">
