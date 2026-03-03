@@ -14,6 +14,7 @@ const SportsDashboard = () => {
     const [activeSport, setActiveSport] = useState("All");
     const [activeNewsIndex, setActiveNewsIndex] = useState(0);
     const [newsItems, setNewsItems] = useState<string[]>(["Loading live sports events..."]);
+    const [visibleCount, setVisibleCount] = useState(10);
 
     const sportsCategories = [
         { name: "All", icon: "sports" },
@@ -111,14 +112,20 @@ const SportsDashboard = () => {
 
             {/* Main Content Grid */}
             <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 z-10 content-start pb-20 mt-20 lg:mt-32">
-                {sportsMarkets.map((market) => (
+                {sportsMarkets.slice(0, visibleCount).map((market) => (
                     <NeonMarketCard key={market.id} market={market} />
                 ))}
 
-                {/* Visual filler if needed */}
-                {sportsMarkets.length < 4 && (
-                    <>
-                    </>
+                {/* Load More */}
+                {visibleCount < sportsMarkets.length && (
+                    <div className="col-span-full flex justify-center mt-4">
+                        <button
+                            onClick={() => setVisibleCount((prev) => prev + 10)}
+                            className="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-slate-500 dark:text-slate-300 hover:text-white"
+                        >
+                            Load More ({sportsMarkets.length - visibleCount} remaining)
+                        </button>
+                    </div>
                 )}
             </main>
         </div>

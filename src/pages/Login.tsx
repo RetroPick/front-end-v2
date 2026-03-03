@@ -1,38 +1,122 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useSwitchChain, useSignTypedData, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+
+// Mocks for local testing - these would be replaced by actual contract ABIs and addresses
+const TEST_TOKEN_ADDRESS = "0x0000000000000000000000000000000000000000"; // Replace with real ERC20 Fuji address
+const SETTLEMENT_VAULT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Replace with real ChannelSettlement/Vault address
+const TEST_SESSION_ID = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+const ERC20_ABI = [
+    {
+        constant: false,
+        inputs: [
+            { name: "_spender", type: "address" },
+            { name: "_value", type: "uint256" }
+        ],
+        name: "approve",
+        outputs: [{ name: "", type: "bool" }],
+        payable: false,
+        stateMutability: "nonpayable",
+        type: "function"
+    }
+];
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+// Dialog imports removed as we use native AppKit modal
 import Icon from "@/components/Icon";
 import Logo from "@/landing_components/Logo";
+import { IDKitWidget, VerificationLevel, ISuccessResult } from '@worldcoin/idkit';
+import { useToast } from "@/components/ui/use-toast";
+import { useAppKit } from "@reown/appkit/react";
 
 const Login = () => {
-    const { isConnected } = useAccount();
-    const { connect, connectors, error } = useConnect();
+    const { isConnected, address, chain } = useAccount();
+    const { open: openAppKit } = useAppKit();
+    const { switchChain } = useSwitchChain();
+    const fujiChainId = 43113; // Avalanche Fuji Testnet
     const navigate = useNavigate();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const { toast } = useToast();
+    const [isVerified, setIsVerified] = useState(false);
+    const [isTradingEnabled, setIsTradingEnabled] = useState(false);
 
+    const { signTypedDataAsync } = useSignTypedData();
+    const { writeContractAsync: approveAsync, data: approveTxHash } = useWriteContract();
+    const { isLoading: isApproving, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({ hash: approveTxHash });
+
+    // If they are connected on exactly Fuji, and verified, push to app
     useEffect(() => {
-        if (isConnected) {
+        if (isConnected && chain?.id === fujiChainId && isVerified && isTradingEnabled) {
             navigate("/app");
         }
-    }, [isConnected, navigate]);
+    }, [isConnected, chain?.id, isVerified, isTradingEnabled, navigate]);
 
-    const handleGoogleLogin = () => {
-        console.log("Google Login clicked");
-        // Implement Google Auth logic here
+    useEffect(() => {
+        if (isApproveSuccess) {
+            setIsTradingEnabled(true);
+            toast({ title: "Trading Enabled!", description: "You are ready to trade on RetroPick." });
+        }
+    }, [isApproveSuccess, toast]);
+
+    // Removed old isConnected effect for isConnectOpen
+
+    const handleVerify = async (proof: ISuccessResult) => {
+        // In a real app, send proof to backend relayer to verify on-chain or off-chain
+        console.log("Proof received:", proof);
+        toast({
+            title: "World ID Verified!",
+            description: "You have been authenticated as a unique human.",
+        });
     };
 
-    const handleEmailLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log("Email Login:", email, password);
-        // Implement Email Auth logic here
+    const handleEnableTrading = async () => {
+        try {
+            if (!address) throw new Error("Wallet not connected");
+
+            // 1. Sign Session
+            const domain = {
+                name: "ShadowPool",
+                version: "1",
+                chainId: 43113, // Fuji
+                verifyingContract: SETTLEMENT_VAULT_ADDRESS as `0x${string}`,
+            } as const;
+
+            const types = {
+                SessionSignIn: [
+                    { name: "sessionId", type: "bytes32" },
+                    { name: "user", type: "address" },
+                ],
+            } as const;
+
+            const message = {
+                sessionId: TEST_SESSION_ID,
+                user: address as `0x${string}`,
+            } as const;
+
+            const signature = await signTypedDataAsync({ domain, types, primaryType: "SessionSignIn", message } as any);
+            console.log("Derived Session Signature:", signature);
+            toast({ title: "Session Signed", description: "You have securely entered the Yellow Session off-chain." });
+
+            // 2. Approve Token
+            await approveAsync({
+                address: TEST_TOKEN_ADDRESS as `0x${string}`,
+                abi: ERC20_ABI,
+                functionName: "approve",
+                args: [SETTLEMENT_VAULT_ADDRESS, 2n ** 256n - 1n], // Max uint256
+                account: address,
+                chain: undefined,
+            } as any);
+
+        } catch (error: any) {
+            console.error(error);
+            toast({ title: "Setup Failed", description: error.message, variant: "destructive" });
+        }
+    };
+
+    const onSuccess = () => {
+        setIsVerified(true);
     };
 
     return (
@@ -77,138 +161,99 @@ const Login = () => {
                             transition={{ delay: 0.3 }}
                         >
                             <CardTitle className="text-2xl font-bold tracking-tight text-slate-800">
-                                Welcome Back
+                                Enter RetroPick
                             </CardTitle>
                             <CardDescription className="text-slate-500">
-                                Sign in to your Retropick account
+                                Complete verification to trade instantly
                             </CardDescription>
                         </motion.div>
                     </CardHeader>
 
                     <CardContent className="space-y-4 px-8 pb-8">
-                        {/* Google Login */}
+
+                        {/* 1. Wallet Connection */}
                         <motion.div
                             initial={{ x: -20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.4 }}
                         >
                             <Button
+                                onClick={() => openAppKit()}
                                 variant="outline"
-                                className="w-full bg-white hover:bg-slate-50 text-slate-700 border-slate-200 h-11 shadow-sm hover:shadow-md transition-all duration-300 group"
-                                onClick={handleGoogleLogin}
+                                className="w-full border-2 border-dashed border-blue-200 bg-blue-50/30 text-blue-600 hover:bg-blue-50/80 hover:border-blue-300 h-14 font-medium transition-all hover:scale-[1.01]"
                             >
-                                <svg className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                                    <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                                </svg>
-                                Continue with Google
+                                <Icon name={isConnected ? "check_circle" : "account_balance_wallet"} className="mr-2 text-xl" />
+                                {isConnected ? `Connected: ${address?.slice(0, 6)}...${address?.slice(-4)}` : "1. Connect Web3 Wallet"}
                             </Button>
                         </motion.div>
 
-                        <div className="relative my-4">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-slate-200" />
-                            </div>
-                            <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-                                <span className="bg-white/50 backdrop-blur px-2 text-slate-400 font-semibold">
-                                    Or with email
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Email/Password Form */}
-                        <form onSubmit={handleEmailLogin} className="space-y-4">
+                        {/* 2. Add / Switch Network (Only shows if wrong network) */}
+                        {isConnected && chain?.id !== fujiChainId && (
                             <motion.div
                                 initial={{ x: 20, opacity: 0 }}
                                 animate={{ x: 0, opacity: 1 }}
-                                transition={{ delay: 0.5 }}
-                                className="space-y-4"
-                            >
-                                <div className="space-y-1.5 text-left group">
-                                    <Label htmlFor="email" className="text-slate-600 text-xs font-semibold ml-1 uppercase tracking-wide group-focus-within:text-blue-600 transition-colors">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="name@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        className="bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 h-11"
-                                    />
-                                </div>
-                                <div className="space-y-1.5 text-left group">
-                                    <div className="flex items-center justify-between ml-1">
-                                        <Label htmlFor="password" className="text-slate-600 text-xs font-semibold uppercase tracking-wide group-focus-within:text-blue-600 transition-colors">Password</Label>
-                                        <span className="text-xs text-blue-500 hover:text-blue-600 cursor-pointer font-medium transition-colors">Forgot?</span>
-                                    </div>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        className="bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 h-11"
-                                    />
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.6 }}
+                                transition={{ delay: 0.45 }}
                             >
                                 <Button
-                                    type="submit"
-                                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-600/25 h-11 font-semibold tracking-wide transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95"
+                                    onClick={() => switchChain({ chainId: fujiChainId })}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 h-14 font-semibold tracking-wide transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95"
                                 >
-                                    Sign In
+                                    <Icon name="swap_horiz" className="mr-2 text-xl" />
+                                    2. Switch to Avalanche Fuji
                                 </Button>
+                                <p className="text-xs text-center text-slate-400 mt-2">RetroPick runs on Avalanche Fuji Testnet.</p>
                             </motion.div>
-                        </form>
+                        )}
 
+                        {/* 3. World ID Verification */}
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.7 }}
+                            initial={{ x: 20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.5 }}
                         >
-                            <Separator className="my-6 bg-slate-100" />
+                            <IDKitWidget
+                                app_id="app_dummy_staging_id" // Replace with real World ID app_id
+                                action="login" // Action name configured in Worldcoin Developer Portal
+                                verification_level={VerificationLevel.Device}
+                                handleVerify={handleVerify}
+                                onSuccess={onSuccess}
+                            >
+                                {({ open }) => (
+                                    <Button
+                                        onClick={open}
+                                        disabled={!isConnected || chain?.id !== fujiChainId || isVerified}
+                                        className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg shadow-emerald-500/25 h-14 font-semibold tracking-wide transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                                    >
+                                        <Icon name={isVerified ? "verified_user" : "fingerprint"} className="mr-2 text-xl" />
+                                        {isVerified ? "ID Verified" : (chain?.id !== fujiChainId ? "Verify with World ID (Network Req)" : "Verify with World ID")}
+                                    </Button>
+                                )}
+                            </IDKitWidget>
 
-                            {/* Wallet Connection */}
-                            <div className="space-y-2">
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" className="w-full border-2 border-dashed border-blue-200 bg-blue-50/30 text-blue-600 hover:bg-blue-50/80 hover:border-blue-300 h-12 font-medium transition-all hover:scale-[1.01]">
-                                            <Icon name="wallet" className="mr-2 text-lg" />
-                                            Connect Web3 Wallet
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px]">
-                                        <DialogHeader>
-                                            <DialogTitle>Connect Wallet</DialogTitle>
-                                            <CardDescription>Choose a wallet to connect to Retropick</CardDescription>
-                                        </DialogHeader>
-                                        <div className="grid gap-4 py-4">
-                                            {connectors.map((connector) => (
-                                                <Button
-                                                    key={connector.uid}
-                                                    onClick={() => connect({ connector })}
-                                                    variant="outline"
-                                                    className="w-full justify-start h-14 text-base hover:bg-slate-50 transition-colors"
-                                                >
-                                                    <span className="bg-blue-100 p-2 rounded-full mr-4">
-                                                        <Icon name="wallet" className="text-blue-600" />
-                                                    </span>
-                                                    {connector.name}
-                                                </Button>
-                                            ))}
-                                        </div>
-                                        {error && (
-                                            <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded animate-shake">{error.message}</p>
-                                        )}
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
+                            {!isConnected && (
+                                <p className="text-xs text-center text-slate-400 mt-2">Connect wallet first to enable verification.</p>
+                            )}
                         </motion.div>
+
+                        {/* 4. Enable Trading */}
+                        <motion.div
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.6 }}
+                        >
+                            <Button
+                                onClick={handleEnableTrading}
+                                disabled={!isVerified || isTradingEnabled || isApproving}
+                                className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg shadow-purple-500/25 h-14 font-semibold tracking-wide transition-all hover:scale-[1.02] hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                            >
+                                <Icon name={isTradingEnabled ? "check_circle" : "security"} className="mr-2 text-xl" />
+                                {isTradingEnabled ? "Trading Enabled" : (isApproving ? "Confirming..." : "Enable Trading Onchain")}
+                            </Button>
+                            {!isVerified && (
+                                <p className="text-xs text-center text-slate-400 mt-2">Verify identity first to enable trading.</p>
+                            )}
+                        </motion.div>
+
                     </CardContent>
 
                     <CardFooter className="flex flex-col space-y-2 text-center text-sm text-slate-500 pb-8 bg-slate-50/50 border-t border-slate-100 pt-6">
@@ -217,7 +262,7 @@ const Login = () => {
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.8 }}
                         >
-                            Don't have an account? <span className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer font-bold transition-colors">Create account</span>
+                            Powered by <span className="font-bold text-slate-700">Worldcoin</span> & <span className="font-bold text-slate-700">Chainlink CRE</span>
                         </motion.div>
                     </CardFooter>
                 </Card>

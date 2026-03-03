@@ -2,7 +2,7 @@
 import { createAppKit } from '@reown/appkit/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactNode } from 'react'
-import { projectId, networks, wagmiAdapter } from '../config'
+import { projectId, networks, wagmiAdapter, customFuji } from '../config'
 import { WagmiProvider } from 'wagmi'
 
 // Setup queryClient
@@ -20,6 +20,7 @@ const metadata = {
 createAppKit({
     adapters: [wagmiAdapter],
     networks,
+    defaultNetwork: customFuji,
     projectId,
     metadata,
     enableReconnect: false, // Prevent wallet popup on page load

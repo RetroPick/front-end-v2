@@ -9,6 +9,7 @@ import TradingSidebar from "@/components/market/TradingSidebar";
 import ProbabilityChart from "@/components/market/ProbabilityChart";
 import IdeasActivityPanel from "@/components/market/IdeasActivityPanel";
 import RelatedMarkets from "@/components/market/RelatedMarkets";
+import ThemeWrapper from "@/components/themes/ThemeWrapper";
 
 const MarketDetail = () => {
   const { id } = useParams();
@@ -35,7 +36,7 @@ const MarketDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#111116]">
+    <ThemeWrapper category={market.category}>
       <Header />
 
       <main className="pt-24 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto text-slate-200">
@@ -142,7 +143,7 @@ const MarketDetail = () => {
           price={0.5}
         />
       )}
-    </div>
+    </ThemeWrapper>
   );
 };
 

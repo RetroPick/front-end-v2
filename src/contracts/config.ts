@@ -4,16 +4,18 @@ import ExecutionLedgerABI from './abi/ExecutionLedger.json';
 import MarketRegistryABI from './abi/MarketRegistry.json';
 import ChannelSettlementABI from './abi/ChannelSettlement.json';
 
-// TODO: Replace with actual deployed addresses on Avalanche Fuji (Testnet) or Sepolia
+// Verified deployed addresses on Avalanche Fuji (Testnet) V3
 export const CONTRACT_ADDRESSES = {
-    // Shared Mock USDC / Token
-    USDC: "0x5425890298aed601595a70AB815c96711a31Bc65" as const, // Example Fuji USDC Mock
+    // Shared Mock Token
+    USDC: "0x61c8d94ab8a729126a9FA41751FaD7F464604948" as const,
 
-    // Core contracts
-    CollateralVault: "0x1111111111111111111111111111111111111111" as const,
-    ExecutionLedger: "0x2222222222222222222222222222222222222222" as const,
-    MarketRegistry: "0x3333333333333333333333333333333333333333" as const,
-    ChannelSettlement: "0x4444444444444444444444444444444444444444" as const,
+    // Core contracts (V3)
+    CollateralVault: "0x792a065dD308A1Fc3d115Ea006b3093D8fBd7ea1" as const,
+    MultiAssetVault: "0x71EEA55f90c028aEE2b0F0785d015ea4e9165aBF" as const,
+    MarketRegistry: "0x3235094A8826a6205F0A0b74E2370A4AC39c6Cc2" as const,
+    ChannelSettlement: "0xFA5D0e64B0B21374690345d4A88a9748C7E22182" as const,
+    OutcomeToken1155: "0x9B413811ecfD0e0679A7Ba785de44E15E7482044" as const,
+    ExecutionLedger: "0x2222222222222222222222222222222222222222" as const, // Deprecated in V3
 };
 
 export const ABIS = {

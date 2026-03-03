@@ -12,6 +12,7 @@ const AIDashboard = () => {
     const [newsItems, setNewsItems] = useState<string[]>(["Syncing neural networks..."]);
 
     const aiMarkets = markets.filter((m) => m.category === "AI" || m.category === "Technology");
+    const [visibleCount, setVisibleCount] = useState(10);
 
     useEffect(() => {
         const loadLiveNews = async () => {
@@ -63,10 +64,22 @@ const AIDashboard = () => {
             {/* Main Grid */}
             <div className="relative z-10 container mx-auto px-4 lg:px-8 max-w-[1440px]">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {aiMarkets.map((market) => (
+                    {aiMarkets.slice(0, visibleCount).map((market) => (
                         <AIMarketCard key={market.id} market={market} />
                     ))}
                 </div>
+
+                {/* Load More */}
+                {visibleCount < aiMarkets.length && (
+                    <div className="mt-12 flex justify-center">
+                        <button
+                            onClick={() => setVisibleCount((prev) => prev + 10)}
+                            className="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-slate-400 hover:text-white"
+                        >
+                            Load More ({aiMarkets.length - visibleCount} remaining)
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="h-20" /> {/* Spacer */}

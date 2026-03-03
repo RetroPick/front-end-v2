@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAccount, useDisconnect, useConnect, useBalance } from "wagmi";
-import { formatUnits } from "viem";
+import { useAccount, useDisconnect, useBalance, useChainId } from "wagmi";
+import { formatUnits, Address } from "viem";
+import { TOKENS } from "@/constants/tokens";
+import { useVault } from "@/hooks/useVault";
 import LoginModal from "./auth/LoginModal";
 import {
     Copy,
@@ -42,6 +44,10 @@ const WalletButton = () => {
     const { theme, setTheme } = useTheme();
     const { t, language, setLanguage } = useLanguage();
     const { isOnboarded } = useOnboarding();
+    const chainId = useChainId();
+    const tokenAddresses = TOKENS[chainId] || TOKENS[1];
+    const { freeBalance } = useVault(tokenAddresses?.USDC as Address);
+    const vaultBalanceFormatted = freeBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const [selectedNetwork, setSelectedNetwork] = useState<'avalanche' | 'sepolia'>('avalanche');
@@ -114,7 +120,7 @@ const WalletButton = () => {
                                 {t('balance')}
                             </span>
                             <span className="text-xs font-bold text-accent-cyan">
-                                {isConnected ? "1,250.00 USDC" : "0.00 USDC"}
+                                {isConnected ? `${vaultBalanceFormatted} USDC` : "0.00 USDC"}
                             </span>
                         </div>
 

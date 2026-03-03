@@ -14,6 +14,7 @@ const CryptoDashboard = () => {
 
     // Filter for Crypto markets
     const cryptoMarkets = markets.filter(m => m.category === "Crypto" || m.category === "Currency");
+    const [visibleCount, setVisibleCount] = useState(10);
 
     useEffect(() => {
         // Fetch Live Polymarket News
@@ -89,10 +90,22 @@ const CryptoDashboard = () => {
 
                 {/* Crypto Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full justify-items-center">
-                    {cryptoMarkets.map((market) => (
+                    {cryptoMarkets.slice(0, visibleCount).map((market) => (
                         <CryptoMarketCard key={market.id} market={market} />
                     ))}
                 </div>
+
+                {/* Load More */}
+                {visibleCount < cryptoMarkets.length && (
+                    <div className="mt-12 flex justify-center">
+                        <button
+                            onClick={() => setVisibleCount((prev) => prev + 10)}
+                            className="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-slate-400 hover:text-white"
+                        >
+                            Load More ({cryptoMarkets.length - visibleCount} remaining)
+                        </button>
+                    </div>
+                )}
             </main>
         </div>
     );

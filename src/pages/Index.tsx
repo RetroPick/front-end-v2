@@ -6,7 +6,7 @@ import { useMarkets } from "@/context/MarketContext";
 import Icon from "@/components/Icon";
 
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 import CategoryBackground from "@/components/CategoryBackground";
 
@@ -26,7 +26,14 @@ import { useLanguage } from "@/context/LanguageContext";
 const Index = () => {
   const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("Trending");
+  const [visibleCount, setVisibleCount] = useState(10);
   const { markets, isLoading } = useMarkets();
+
+  // Reset visible count when category changes
+  const handleSetCategory = useCallback((cat: string) => {
+    setActiveCategory(cat);
+    setVisibleCount(10);
+  }, []);
 
   // Find dynamic featured market (highest volume or arbitrarily the first)
   const dynamicFeaturedMarket = markets.length > 0 ? markets.reduce((prev, current) => {
@@ -44,7 +51,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden transition-colors duration-500">
       <CategoryBackground category={activeCategory} />
-      <Header activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+      <Header activeCategory={activeCategory} setActiveCategory={handleSetCategory} />
 
       <AnimatePresence mode="wait">
         {activeCategory === "Sports" ? (
@@ -95,17 +102,22 @@ const Index = () => {
               <>
                 {/* Markets Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {filteredMarkets.map((market) => (
+                  {filteredMarkets.slice(0, visibleCount).map((market) => (
                     <MarketCard key={market.id} market={market} />
                   ))}
                 </div>
 
                 {/* Load More */}
-                <div className="mt-12 flex justify-center">
-                  <button className="px-8 py-3 bg-secondary hover:bg-secondary/80 border border-border rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground">
-                    {t('home.load_more')}
-                  </button>
-                </div>
+                {visibleCount < filteredMarkets.length && (
+                  <div className="mt-12 flex justify-center">
+                    <button
+                      onClick={() => setVisibleCount((prev) => prev + 10)}
+                      className="px-8 py-3 bg-secondary hover:bg-secondary/80 border border-border rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-muted-foreground hover:text-foreground"
+                    >
+                      {t('home.load_more')} ({filteredMarkets.length - visibleCount} remaining)
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </PageTransition>

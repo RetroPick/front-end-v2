@@ -1,7 +1,10 @@
 import { useState } from "react";
 import Icon from "@/components/Icon";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { useAccount } from "wagmi";
+import { relayerApi, BuySharesParams } from "@/lib/relayerApi";
+import { useToast } from "@/components/ui/use-toast";
+import { useYellowSession } from "@/hooks/useYellowSession";
 
 interface TradingSidebarProps {
   marketTitle: string;
@@ -21,7 +24,10 @@ const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: Trading
   const [tab, setTab] = useState<'Buy' | 'Sell'>('Buy');
   const [side, setSide] = useState<'YES' | 'NO'>('YES');
   const [amount, setAmount] = useState<string>("0");
-  const [isTokenDropdownOpen, setIsTokenDropdownOpen] = useState(false);
+  const [isTrading, setIsTrading] = useState(false);
+  const { address } = useAccount();
+  const { toast } = useToast();
+  const { signOrder } = useYellowSession();
 
   // Assuming price fetched from market outcomes, hardcoded for UI demo
   const yesPrice = 51;
@@ -30,13 +36,95 @@ const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: Trading
 
   // Polymarket colors
   const activeYesClass = "bg-[#22c55e] text-white";
-  const activeNoClass = "bg-[#ef4444] text-white"; // Assuming red for No, but screenshot shows green for Up. We'll use green/red standard.
+  const activeNoClass = "bg-[#ef4444] text-white";
   const inactiveClass = "bg-[#2b2b2b] text-slate-300 hover:bg-[#333]";
+
+  const handleTrade = async () => {
+    if (!address) {
+      toast({ title: "Wallet not connected", description: "Please connect your wallet first", variant: "destructive" });
+      return;
+    }
+
+    if (!amount || Number(amount) <= 0) return;
+
+    setIsTrading(true);
+    try {
+      // In a real flow, sessionId would be passed down from the MarketDetail context
+      // We will hardcode a test session for this implementation phase based on title Hash
+      let hashStr = 0;
+      for (let i = 0; i < marketTitle.length; i++) {
+        hashStr = (hashStr << 5) - hashStr + marketTitle.charCodeAt(i);
+        hashStr |= 0;
+      }
+      const TEST_SESSION_ID = '0x' + Math.abs(hashStr).toString(16).padStart(64, '0');
+
+      const outcomeIndex = side === 'YES' ? 0 : 1;
+      const deltaShares = Number(amount) / (currentPrice / 100);
+
+      try {
+        await fetch(`http://localhost:8790/api/session/${TEST_SESSION_ID}`);
+      } catch (err) {
+        await fetch(`http://localhost:8790/api/session/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: TEST_SESSION_ID,
+            marketId: "1",
+            vaultId: "0x1111111111111111111111111111111111111111", // mock
+            numOutcomes: 2,
+            b: 100 // LMSR liquidity param
+          })
+        });
+      }
+
+      // Ensure user has some test USDC
+      try {
+        await fetch(`http://localhost:8790/api/session/credit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: TEST_SESSION_ID,
+            userAddress: address,
+            amount: 10000 // give 10k test collateral
+          })
+        });
+      } catch (e) { }
+
+      // Get signature
+      const signature = await signOrder(1, outcomeIndex, Number(amount));
+
+      if (signature) {
+        const params: BuySharesParams = {
+          sessionId: TEST_SESSION_ID,
+          outcomeIndex: side === 'YES' ? 0 : 1,
+          delta: deltaShares,
+          userAddress: address
+        };
+        await relayerApi.buyShares(params);
+      }
+
+      toast({
+        title: "Trade Executed Successfully",
+        description: `Bought ${deltaShares.toFixed(2)} shares of ${side} off-chain.`,
+      });
+
+      // Also trigger the UI modal callback
+      onBet(side, selectedOutcome);
+    } catch (e: any) {
+      toast({
+        title: "Trade Failed",
+        description: e.message || "Unknown error executing trade off-chain.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTrading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
       {/* Trading Panel - Dark Polymarket Style */}
-      <div className="bg-[#1a1b1e] border border-[#2b2b2b] rounded-xl p-4 shadow-xl relative z-50">
+      <div className="bg-[#1a1b1e]/80 backdrop-blur-md border border-[#2b2b2b] rounded-xl p-4 shadow-xl relative z-50">
 
         {/* Header Tabs: Buy / Sell & Market Select */}
         <div className="flex items-center justify-between mb-5">
@@ -132,10 +220,11 @@ const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: Trading
 
         {/* Action Button */}
         <button
-          onClick={() => onBet(side, selectedOutcome)}
-          className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-[#0099ff] hover:bg-[#33adff] text-white transition-colors shadow-sm"
+          onClick={handleTrade}
+          disabled={isTrading}
+          className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-[#0099ff] hover:bg-[#33adff] text-white transition-colors shadow-sm disabled:opacity-50"
         >
-          Deposit
+          {isTrading ? "Executing..." : "Deposit"}
         </button>
 
         {/* Terms text */}

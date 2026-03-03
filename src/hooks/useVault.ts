@@ -41,6 +41,17 @@ export function useVault(tokenSymbol: string = "USDC") {
         }
     });
 
+    // Read Vault Free Balance
+    const { data: freeBalanceData, refetch: refetchFreeBalance } = useReadContract({
+        address: vaultAddress,
+        abi: ABIS.CollateralVault,
+        functionName: 'freeBalance',
+        args: address ? [address] : undefined,
+        query: {
+            enabled: !!address,
+        }
+    });
+
     // Write Approve
     const { writeContractAsync: writeApprove, isPending: isApproving } = useWriteContract();
 
@@ -51,6 +62,7 @@ export function useVault(tokenSymbol: string = "USDC") {
     const tokenBalance = tokenBalanceData ? Number(formatUnits(tokenBalanceData as bigint, 6)) : 0;
     const lpBalance = lpBalanceData ? Number(formatUnits(lpBalanceData as bigint, 6)) : 0; // Dummy
     const allowance = allowanceData ? Number(formatUnits(allowanceData as bigint, 6)) : 0;
+    const freeBalance = freeBalanceData ? Number(formatUnits(freeBalanceData as bigint, 6)) : 0;
 
     const approveToken = async (amountHuman: string) => {
         const amountWei = parseUnits(amountHuman, 6);
@@ -86,6 +98,7 @@ export function useVault(tokenSymbol: string = "USDC") {
         tokenBalance,
         lpBalance,
         allowance,
+        freeBalance,
         approveToken,
         isApproving,
         deposit,
@@ -94,6 +107,7 @@ export function useVault(tokenSymbol: string = "USDC") {
         refetchAll: () => {
             refetchTokenBalance();
             refetchAllowance();
+            refetchFreeBalance();
         }
     };
 }

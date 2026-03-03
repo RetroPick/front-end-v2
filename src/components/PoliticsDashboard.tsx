@@ -12,6 +12,7 @@ const PoliticsDashboard = () => {
     const [newsItems, setNewsItems] = useState<string[]>(["Fetching live political developments..."]);
 
     const politicsMarkets = markets.filter(m => m.category === "Politics" || m.category === "Elections");
+    const [visibleCount, setVisibleCount] = useState(10);
 
     useEffect(() => {
         const loadLiveNews = async () => {
@@ -86,7 +87,7 @@ const PoliticsDashboard = () => {
 
                 {/* News Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {politicsMarkets.map((market) => (
+                    {politicsMarkets.slice(0, visibleCount).map((market) => (
                         // Using the new explicit PoliticsMarketCard
                         <PoliticsMarketCard key={market.id} market={market} />
                     ))}
@@ -98,6 +99,18 @@ const PoliticsDashboard = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Load More */}
+                {visibleCount < politicsMarkets.length && (
+                    <div className="mt-12 flex justify-center">
+                        <button
+                            onClick={() => setVisibleCount((prev) => prev + 10)}
+                            className="px-8 py-3 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                        >
+                            Load More ({politicsMarkets.length - visibleCount} remaining)
+                        </button>
+                    </div>
+                )}
 
                 {/* Footer Decoration */}
                 <div className="mt-24 border-t-2 border-slate-900 dark:border-white pt-8 flex flex-col md:flex-row justify-between items-center text-slate-900 dark:text-white font-bold font-serif uppercase tracking-widest text-xs gap-4">

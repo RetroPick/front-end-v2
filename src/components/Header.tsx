@@ -10,7 +10,10 @@ import NewsTicker from "./NewsTicker";
 import retropickLogo from "@/assets/retropick-logo.png";
 import Logo from "@/landing_components/Logo";
 import { useOnboarding } from "@/context/OnboardingContext";
-
+import { useAccount, useChainId } from "wagmi";
+import { Address } from "viem";
+import { TOKENS } from "@/constants/tokens";
+import { useVault } from "@/hooks/useVault";
 
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -22,8 +25,16 @@ interface HeaderProps {
 const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
   const location = useLocation();
   const { isOnboarded } = useOnboarding();
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
   const { t } = useLanguage();
   const [localActiveCategory, setLocalActiveCategory] = useState("Trending");
+
+  // Fetch real-time Vault Balance for the Header
+  const tokenAddresses = TOKENS[chainId] || TOKENS[1];
+  const { freeBalance } = useVault(tokenAddresses?.USDC as Address);
+
+  const usdcBalance = freeBalance.toFixed(2);
 
   // Use props if provided, otherwise local state
   const currentCategory = activeCategory || localActiveCategory;
@@ -87,7 +98,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
           </div>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0 pr-2">
             <WalletButton />
           </div>
         </div>

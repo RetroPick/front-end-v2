@@ -13,6 +13,7 @@ const MacroDashboard = () => {
     const [newsItems, setNewsItems] = useState<string[]>(["Loading live macroeconomic data..."]);
 
     const macroMarkets = markets.filter((m) => m.category === "Macro" || m.category === "Economics");
+    const [visibleCount, setVisibleCount] = useState(10);
 
     useEffect(() => {
         const loadLiveNews = async () => {
@@ -63,10 +64,22 @@ const MacroDashboard = () => {
             {/* Main Grid */}
             <div className="relative z-10 container mx-auto px-4 lg:px-8 max-w-[1440px]">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {macroMarkets.map((market) => (
+                    {macroMarkets.slice(0, visibleCount).map((market) => (
                         <MacroMarketCard key={market.id} market={market} />
                     ))}
                 </div>
+
+                {/* Load More */}
+                {visibleCount < macroMarkets.length && (
+                    <div className="mt-12 flex justify-center">
+                        <button
+                            onClick={() => setVisibleCount((prev) => prev + 10)}
+                            className="px-8 py-3 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                        >
+                            Load More ({macroMarkets.length - visibleCount} remaining)
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Footer / Disclaimer */}

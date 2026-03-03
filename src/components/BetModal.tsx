@@ -5,6 +5,7 @@ import Icon from "./Icon";
 import ConfirmationModal from "./ConfirmationModal";
 import { cn } from "@/lib/utils";
 import { useYellowSession } from "@/hooks/useYellowSession";
+import { useAccount } from "wagmi";
 
 // --- Authentic Crypto Icons (SVGs) ---
 const SolanaLogo = ({ className }: { className?: string }) => (
@@ -49,6 +50,7 @@ interface BetModalProps {
 }
 
 const BetModal = ({ open, onClose, marketTitle, outcome, side: initialSide, price }: BetModalProps) => {
+  const { address } = useAccount();
   const [side, setSide] = useState<'YES' | 'NO'>(initialSide);
   const [amount, setAmount] = useState(0.65);
   const [selectedToken, setSelectedToken] = useState(TOKENS[0]); // Default SOL
@@ -76,17 +78,77 @@ const BetModal = ({ open, onClose, marketTitle, outcome, side: initialSide, pric
 
   const handleBuy = async () => {
     try {
-      // Placeholder indexing: YES=0, NO=1
-      const defaultMarketId = 1; // Prototype value
+      if (!address) {
+        alert('Please connect your wallet first!');
+        return;
+      }
+
+      // Convert market title string to a consistent pseudo-ID hex for the relayer prototype
+      let hashStr = 0;
+      for (let i = 0; i < marketTitle.length; i++) {
+        hashStr = (hashStr << 5) - hashStr + marketTitle.charCodeAt(i);
+        hashStr |= 0;
+      }
+      // Simple 64-char hex string starting with 0x for sessionId validation
+      const sessionId = '0x' + Math.abs(hashStr).toString(16).padEnd(64, '0');
       const outcomeIndex = side === 'YES' ? 0 : 1;
 
-      const signature = await signOrder(defaultMarketId, outcomeIndex, amount);
+      // Auto-create session on the fly if it doesn't exist (hackathon UX flow)
+      try {
+        await fetch(`http://localhost:8790/api/session/${sessionId}`);
+      } catch (err) {
+        await fetch(`http://localhost:8790/api/session/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            marketId: "1",
+            vaultId: "0x1111111111111111111111111111111111111111", // mock
+            numOutcomes: 2,
+            b: 100 // LMSR liquidity param
+          })
+        });
+      }
+
+      // Ensure user has some test USDC
+      try {
+        await fetch(`http://localhost:8790/api/session/credit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            userAddress: address,
+            amount: 10000 // give 10k test collateral
+          })
+        });
+      } catch (e) { }
+
+      // Sign the order for realistic UX
+      const signature = await signOrder(1, outcomeIndex, amount);
 
       if (signature) {
+        // Execute the trade against the backend relayer
+        const res = await fetch(`http://localhost:8790/api/trade/buy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            outcomeIndex,
+            delta: amount / price, // amount is in USDC, LMSR expects share delta
+            userAddress: address
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Trade failed');
+        }
+
         setShowConfirmation(true);
       }
-    } catch (err) {
-      console.error("User rejected signature or signing failed");
+    } catch (err: any) {
+      console.error("Trade failed:", err);
+      alert(`Trade Error: ${err.message || 'Unknown error'}`);
     }
   };
 

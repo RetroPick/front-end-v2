@@ -11,6 +11,21 @@ import AuthPlaceholder from "@/components/common/AuthPlaceholder";
 import { ERC20_ABI, TOKENS } from "@/constants/tokens";
 import { useExecutionLedger } from "@/hooks/useExecutionLedger";
 import { useVault } from "@/hooks/useVault";
+import { useToast } from "@/components/ui/use-toast";
+import TransactionModal from "@/components/modals/TransactionModal";
+
+// FAUCET ABI for verified Avalanche Fuji Faucet
+const FAUCET_ABI = [
+  {
+    inputs: [
+      { internalType: "address", name: "token", type: "address" }
+    ],
+    name: "claim",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  }
+] as const;
 
 // --- Authentic Crypto Icons (Colored SVGs) ---
 const SolanaLogo = ({ className }: { className?: string }) => (
@@ -67,16 +82,16 @@ const AvaxLogo = ({ className }: { className?: string }) => (
 );
 
 const MOCK_ASSETS_SEPOLIA = [
-  { symbol: "ETH", name: "Ethereum Sepolia", balance: 2.50, value: 8625.0, change: "+2.1%", IconComp: EthLogo, price: 3450.00 },
-  { symbol: "USDC", name: "USD Coin (Testnet)", balance: 300.00, value: 300.00, change: "0.0%", IconComp: UsdcLogo, price: 1.0 },
-  { symbol: "USDT", name: "Tether (Testnet)", balance: 150.00, value: 150.00, change: "0.0%", IconComp: UsdtLogo, price: 1.0 },
-  { symbol: "BTC", name: "Bitcoin", balance: 0.0042, value: 210.0, change: "+0.5%", IconComp: BtcLogo, price: 50000.00 },
+  { symbol: "ETH", name: "Ethereum Sepolia", balance: 2.50, value: 8625.0, change: "+2.1%", IconComp: EthLogo, price: 3450.00, contractAddress: null, decimals: 18 },
+  { symbol: "USDC", name: "USD Coin (Testnet)", balance: 300.00, value: 300.00, change: "0.0%", IconComp: UsdcLogo, price: 1.0, contractAddress: null, decimals: 6 },
+  { symbol: "USDT", name: "Tether (Testnet)", balance: 150.00, value: 150.00, change: "0.0%", IconComp: UsdtLogo, price: 1.0, contractAddress: null, decimals: 6 },
+  { symbol: "BTC", name: "Bitcoin", balance: 0.0042, value: 210.0, change: "+0.5%", IconComp: BtcLogo, price: 50000.00, contractAddress: null, decimals: 8 },
 ];
 
 const MOCK_ASSETS_AVALANCHE = [
-  { symbol: "AVAX", name: "Avalanche Fuji", balance: 45.20, value: 1808.0, change: "+5.4%", IconComp: AvaxLogo, price: 40.0 },
-  { symbol: "USDC", name: "USD Coin (Testnet)", balance: 1250.00, value: 1250.00, change: "0.0%", IconComp: UsdcLogo, price: 1.0 },
-  { symbol: "BTC.b", name: "Wrapped BTC", balance: 0.015, value: 750.0, change: "+1.2%", IconComp: BtcLogo, price: 50000.00 },
+  { symbol: "AVAX", name: "Avalanche Fuji", balance: 45.20, value: 1808.0, change: "+5.4%", IconComp: AvaxLogo, price: 40.0, contractAddress: null, decimals: 18 },
+  { symbol: "USDC", name: "USD Coin (Testnet)", balance: 1250.00, value: 1250.00, change: "0.0%", IconComp: UsdcLogo, price: 1.0, contractAddress: "0x61c8d94ab8a729126a9FA41751FaD7F464604948", decimals: 6 },
+  { symbol: "BTC.b", name: "Wrapped BTC", balance: 0.015, value: 750.0, change: "+1.2%", IconComp: BtcLogo, price: 50000.00, contractAddress: "0x8CA51cb13B91A6530429f154B8505c40BE0d7908", decimals: 8 },
 ];
 
 
@@ -128,27 +143,68 @@ const Portfolio = () => {
   const chainId = useChainId();
   const tokenAddresses = TOKENS[chainId] || TOKENS[1]; // Fallback to mainnet if unsupported testnet
 
-  const { deposit, withdraw, isVaultTxPending: isVaultPending } = useVault(tokenAddresses.USDC as Address);
+  const { deposit, withdraw, isVaultTxPending: isVaultPending, allowance, freeBalance, approveToken, isApproving, refetchAll: refetchVaultState } = useVault(tokenAddresses.USDC as Address);
+  const { toast } = useToast();
+  const { writeContractAsync: mintTokens, isPending: isMinting } = useWriteContract();
 
-  // Faucet Setup
-  const { writeContractAsync: mintUsdc, isPending: isMinting } = useWriteContract();
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
   const handleClaimFaucet = async () => {
-    if (!address) return;
+    if (!address || !tokenAddresses.FAUCET) {
+      toast({ title: "Faucet Unavailable", description: "No faucet contract known for this network.", variant: "destructive" });
+      return;
+    }
+
     try {
-      await (mintUsdc as any)({
-        address: tokenAddresses.USDC as Address,
-        abi: ERC20_ABI,
-        functionName: 'mint',
-        args: [address, parseUnits("1000", 6)] // Mint 1000 USDC Faucet
+      toast({ title: "Claiming USDC...", description: "Requesting testnet tokens from the smart contract." });
+      await (mintTokens as any)({
+        address: tokenAddresses.FAUCET as Address,
+        abi: FAUCET_ABI,
+        functionName: 'claim',
+        args: [
+          tokenAddresses.USDC as Address
+        ]
       });
-    } catch (error) {
+      toast({ title: "Faucet Claimed", description: "1,000 USDC Testnet tokens have been minted to your wallet." });
+      refetchErc20();
+      refetchVaultState();
+    } catch (error: any) {
       console.error("Mint failed:", error);
+      toast({ title: "Claim Failed", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleAddTokenToWallet = async (asset: any) => {
+    if (!asset.contractAddress) {
+      toast({ title: "Not Available", description: "This is a native token or no contract address is set.", variant: "destructive" });
+      return;
+    }
+    try {
+      if (window.ethereum) {
+        await (window.ethereum as any).request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: asset.contractAddress,
+              symbol: asset.symbol,
+              decimals: asset.decimals,
+            },
+          },
+        });
+        toast({ title: "Token Added", description: `${asset.symbol} was added to your Web3 wallet.` });
+      } else {
+        toast({ title: "Wallet Not Found", description: "Could not find an injected Web3 wallet to add the token to.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Failed", description: "Could not add token to wallet.", variant: "destructive" });
     }
   };
 
   // Fetch ERC20 balances in a single multicall
-  const { data: erc20Balances } = useReadContracts({
+  const { data: erc20Balances, refetch: refetchErc20 } = useReadContracts({
     contracts: [
       {
         address: tokenAddresses.USDC as Address,
@@ -196,7 +252,7 @@ const Portfolio = () => {
   const nativeBalance = balanceData?.value ? Number(formatUnits(balanceData.value, balanceData.decimals || 18)) : 0;
 
   const usdcBalanceDecimals = erc20Balances?.[1].result as number | undefined ?? 6;
-  const usdcBalanceRaw = erc20Balances?.[0].result as bigint | undefined ?? 0n;
+  const usdcBalanceRaw = (erc20Balances?.[0]?.result ?? 0n) as bigint;
   const usdcBalance = Number(formatUnits(usdcBalanceRaw, usdcBalanceDecimals));
 
   const wbtcBalanceDecimals = erc20Balances?.[3].result as number | undefined ?? 8;
@@ -207,35 +263,24 @@ const Portfolio = () => {
   const usdtBalanceRaw = erc20Balances?.[4].result as bigint | undefined ?? 0n;
   const usdtBalance = Number(formatUnits(usdtBalanceRaw, usdtBalanceDecimals));
 
-  // Determine current native token symbol
-  const nativeSymbol = chainId === 43113 || chainId === 43114 ? "AVAX" : "ETH";
-  const NativeIcon = chainId === 43113 || chainId === 43114 ? AvaxLogo : EthLogo;
-
-  // Build Real Assets Array
-  const REAL_ASSETS = [
-    { symbol: nativeSymbol, name: nativeSymbol === "AVAX" ? "Avalanche" : "Ethereum", balance: nativeBalance, value: nativeBalance * (nativeSymbol === "AVAX" ? 40 : 3450), change: "+0.0%", IconComp: NativeIcon, price: nativeSymbol === "AVAX" ? 40 : 3450 },
-    { symbol: "USDC", name: "USD Coin", balance: usdcBalance, value: usdcBalance * 1.0, change: "0.0%", IconComp: UsdcLogo, price: 1.0 },
-    { symbol: "USDT", name: "Tether", balance: usdtBalance, value: usdtBalance * 1.0, change: "0.0%", IconComp: UsdtLogo, price: 1.0 },
-    { symbol: "WBTC", name: "Wrapped BTC", balance: wbtcBalance, value: wbtcBalance * 50000.0, change: "+0.0%", IconComp: BtcLogo, price: 50000.0 },
+  // The user wants the Portfolio to strictly reflect their trading balance in the Vault, 
+  // rather than the raw tokens sitting loosely in their Web3 wallet.
+  const ASSETS = [
+    {
+      symbol: "USDC",
+      name: "RetroPick Vault",
+      balance: isConnected ? parseFloat(freeBalance.toFixed(4)) : 0,
+      value: isConnected ? freeBalance : 0,
+      change: "+0.0%",
+      IconComp: UsdcLogo,
+      price: 1.0,
+      contractAddress: null,
+      decimals: 6
+    }
   ];
 
-  // For static frontend offline preview override, keep mock data logic, but we default to REAL_ASSETS now if balances > 0 or wallet is connected
-  const isUsingRealData = isConnected || (nativeBalance > 0 || usdcBalance > 0);
-
-  const activeMockAssets = network === "Avalanche" ? MOCK_ASSETS_AVALANCHE : MOCK_ASSETS_SEPOLIA;
-
-  const ASSETS_SOURCE = isUsingRealData ? REAL_ASSETS : activeMockAssets;
-
-  const ASSETS = ASSETS_SOURCE.map((asset) => {
-    return {
-      ...asset,
-      balance: parseFloat(asset.balance.toFixed(4)),
-      value: asset.balance * asset.price
-    };
-  });
-
-  // Calculate total balance from all assets
-  const totalBalance = ASSETS.reduce((sum, asset) => sum + asset.value, 0);
+  // Calculate total balance from the Vault
+  const totalBalance = isConnected ? freeBalance : 0;
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground pb-20 overflow-x-hidden">
@@ -288,38 +333,34 @@ const Portfolio = () => {
                       {isMinting ? "Claiming..." : "Claim Faucet"}
                     </button>
                     <button
-                      onClick={() => deposit("10")} // Prototype fixed amount
-                      disabled={isVaultPending}
+                      onClick={() => setIsDepositOpen(true)}
                       className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-all shadow-sm",
-                        isVaultPending && "opacity-50 cursor-not-allowed"
+                        "flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-all shadow-sm"
                       )}
                     >
                       <Icon name="arrow_downward" className="text-xs" />
-                      Deposit 10 USDC
+                      Deposit
                     </button>
                     <button
-                      onClick={() => withdraw("10")} // Prototype fixed amount
-                      disabled={isVaultPending}
+                      onClick={() => setIsWithdrawOpen(true)}
                       className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-lg font-medium text-xs transition-all",
-                        isVaultPending && "opacity-50 cursor-not-allowed"
+                        "flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-lg font-medium text-xs transition-all"
                       )}
                     >
                       <Icon name="arrow_upward" className="text-xs" />
-                      Withdraw 10 USDC
+                      Withdraw
                     </button>
                   </div>
                 </div>
 
                 {/* Bottom: Total Balance */}
                 <div className="flex flex-col gap-1">
-                  <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Balance ({network})</h2>
+                  <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vault Balance ({network})</h2>
                   <div className="flex items-baseline gap-3">
                     <span className="text-4xl font-bold text-slate-900 dark:text-white pointer-events-none selection:bg-none">
                       {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                     </span>
-                    <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-md">+12.4%</span>
+                    {totalBalance > 0 && <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-md">Active</span>}
                   </div>
                 </div>
               </div>
@@ -358,7 +399,19 @@ const Portfolio = () => {
                             <asset.IconComp className="w-full h-full" />
                           </div>
                           <div>
-                            <div className="font-semibold text-sm text-slate-900 dark:text-white">{asset.name}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-semibold text-sm text-slate-900 dark:text-white">{asset.name}</div>
+                              {asset.contractAddress && (
+                                <button
+                                  onClick={() => handleAddTokenToWallet(asset)}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 uppercase font-bold"
+                                  title={`Add ${asset.symbol} to wallet`}
+                                >
+                                  <Icon name="add" className="text-[10px]" />
+                                  Wallet
+                                </button>
+                              )}
+                            </div>
                             <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{asset.balance} {asset.symbol}</div>
                           </div>
                         </div>
@@ -422,6 +475,58 @@ const Portfolio = () => {
           </div>
         )}
       </main>
+
+      {/* Transaction Modals */}
+      <TransactionModal
+        isOpen={isDepositOpen}
+        onClose={() => setIsDepositOpen(false)}
+        type="deposit"
+        balance={usdcBalance}
+        symbol="USDC"
+        isPending={isVaultPending || isApproving}
+        onConfirm={async (amount) => {
+          try {
+            // Check allowance first
+            if (allowance < Number(amount)) {
+              toast({ title: "Approving USDC", description: "Please approve the Vault to transfer your tokens." });
+              await approveToken(amount);
+              toast({ title: "Approved", description: "Token approved. Please confirm the deposit transaction." });
+            }
+            toast({ title: "Depositing...", description: `Depositing ${amount} USDC into the Vault.` });
+            await deposit(amount);
+            toast({ title: "Deposit Successful", description: `${amount} USDC has been deposited.` });
+            setIsDepositOpen(false);
+            refetchErc20();
+            refetchVaultState();
+          } catch (error: any) {
+            console.error(error);
+            toast({ title: "Deposit Failed", description: error?.shortMessage || error.message, variant: "destructive" });
+          }
+        }}
+      />
+
+      {/* Note: Withdraw balance limit relies on the actual `freeBalance` from Vault in this case. */}
+      <TransactionModal
+        isOpen={isWithdrawOpen}
+        onClose={() => setIsWithdrawOpen(false)}
+        type="withdraw"
+        balance={freeBalance}
+        symbol="USDC"
+        isPending={isVaultPending}
+        onConfirm={async (amount) => {
+          try {
+            toast({ title: "Withdrawing...", description: `Withdrawing ${amount} USDC from the Vault.` });
+            await withdraw(amount);
+            toast({ title: "Withdraw Successful", description: `${amount} USDC has been withdrawn to your wallet.` });
+            setIsWithdrawOpen(false);
+            refetchErc20();
+            refetchVaultState();
+          } catch (error: any) {
+            console.error(error);
+            toast({ title: "Withdraw Failed", description: error?.shortMessage || error.message, variant: "destructive" });
+          }
+        }}
+      />
 
       <Footer />
     </div>
