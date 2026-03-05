@@ -10,6 +10,7 @@ import Portfolio from "./pages/Portfolio";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import CreatorDashboard from "./pages/CreatorDashboard";
 
 import { Web3ModalProvider } from "@/context/Web3ModalProvider";
 
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/app/market/:id" element={<MarketDetail />} />
                 <Route path="/app/portfolio" element={<Portfolio />} />
+                <Route path="/app/creator" element={<CreatorDashboard />} />
                 <Route path="/app/activity" element={<Activity />} />
                 <Route path="/app/leaderboard" element={<Leaderboard />} />
                 <Route path="/app/vault" element={<Vault />} />

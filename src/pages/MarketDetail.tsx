@@ -4,7 +4,6 @@ import { useMarkets } from "@/context/MarketContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Icon from "@/components/Icon";
-import BetModal from "@/components/BetModal";
 import TradingSidebar from "@/components/market/TradingSidebar";
 import ProbabilityChart from "@/components/market/ProbabilityChart";
 import IdeasActivityPanel from "@/components/market/IdeasActivityPanel";
@@ -15,8 +14,6 @@ const MarketDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { markets } = useMarkets();
-  const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
-
   const market = markets.find(m => m.id === id) || {
     id: "bitcoin-up-or-down-5-minutes",
     title: "Bitcoin Up or Down - 5 Minutes?",
@@ -29,10 +26,6 @@ const MarketDetail = () => {
     ],
     volume: "$62,487,113",
     expiry: "Jan 31, 2025",
-  };
-
-  const handleBet = (side: 'YES' | 'NO', outcomeLabel: string) => {
-    setBetModal({ open: true, side, outcome: outcomeLabel });
   };
 
   return (
@@ -122,7 +115,6 @@ const MarketDetail = () => {
             <div className="sticky top-24">
               <TradingSidebar
                 marketTitle={market.title}
-                onBet={handleBet}
                 selectedOutcome={market.outcomes[0]?.label || "Yes"}
               />
             </div>
@@ -131,18 +123,6 @@ const MarketDetail = () => {
       </main>
 
       <Footer />
-
-      {/* Bet Modal (Fallback Mobile/Global) */}
-      {betModal && (
-        <BetModal
-          open={betModal.open}
-          onClose={() => setBetModal(null)}
-          marketTitle={market.title}
-          outcome={betModal.outcome}
-          side={betModal.side}
-          price={0.5}
-        />
-      )}
     </ThemeWrapper>
   );
 };

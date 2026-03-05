@@ -1,32 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/context/LanguageContext";
-import { sampleActivities, samplePositions, categories } from "@/data/markets";
-import { useMarkets } from "@/context/MarketContext";
 import { cn } from "@/lib/utils";
 import Icon from "@/components/Icon";
+import { relayerApi } from "@/lib/relayerApi";
+import { useAccount } from "wagmi";
 
-// Mock Data for Activity
-const mockActivity = [
-    { id: 1, market: "Bitcoin > $100k by Dec 2024", category: "Crypto", side: "YES", invested: "$500.00", price: "$0.45", return: "+$125.50", status: "OPEN", date: "2024-10-15" },
-    { id: 2, market: "Trump vs Biden 2024 Election", category: "Politics", side: "NO", invested: "$200.00", price: "$0.32", return: "-$45.00", status: "OPEN", date: "2024-09-28" },
-    { id: 3, market: "Lakers to Win NBA Finals", category: "Sports", side: "YES", invested: "$1,000.00", price: "$0.12", return: "$0.00", status: "LOST", date: "2024-06-12" },
-    { id: 4, market: "SpaceX Starship Launch Success", category: "Space", side: "YES", invested: "$350.00", price: "$0.65", return: "+$189.00", status: "WON", date: "2024-05-20" },
-    { id: 5, market: "Fed Cuts Rates in Nov", category: "Macro", side: "YES", invested: "$750.00", price: "$0.55", return: "+$220.00", status: "OPEN", date: "2024-10-01" },
-    { id: 6, market: "Ethereum > $5k by Q1 2025", category: "Crypto", side: "YES", invested: "$300.00", price: "$0.25", return: "-$10.00", status: "OPEN", date: "2024-10-18" },
-    { id: 7, market: "Gold reaches $3000/oz", category: "Commodities", side: "NO", invested: "$400.00", price: "$0.40", return: "$0.00", status: "OPEN", date: "2024-09-15" },
-];
+interface TradeRecord {
+    id: number;
+    timestamp: number;
+    sessionId: string;
+    userAddress: string;
+    action: "buy" | "sell" | "swap";
+    outcomeIndex?: number;
+    fromOutcome?: number;
+    toOutcome?: number;
+    delta: number;
+    cost: number;
+    netCost: number;
+    nonce: string;
+}
+
+const POLL_INTERVAL = 5000; // 5 seconds
 
 const Activity = () => {
     const { t } = useLanguage();
-    const { markets } = useMarkets();
-    const [activeTab, setActiveTab] = useState("global");
+    const { address, isConnected } = useAccount();
+    const [activeTab, setActiveTab] = useState<"my" | "global">("global");
+    const [trades, setTrades] = useState<TradeRecord[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-    // Filter Logic
-    const filteredData = activeTab === "All"
-        ? mockActivity
-        : mockActivity.filter(item => item.category === activeTab);
+    const fetchTrades = useCallback(async () => {
+        try {
+            let data: TradeRecord[];
+            if (activeTab === "my" && address) {
+                data = await relayerApi.getTradeHistory(address);
+            } else {
+                data = await relayerApi.getGlobalTradeHistory();
+            }
+            setTrades(data);
+            setLastRefresh(new Date());
+        } catch {
+            // Relayer might be offline; keep last known state
+        } finally {
+            setLoading(false);
+        }
+    }, [activeTab, address]);
+
+    // Initial fetch + polling
+    useEffect(() => {
+        setLoading(true);
+        fetchTrades();
+        const interval = setInterval(fetchTrades, POLL_INTERVAL);
+        return () => clearInterval(interval);
+    }, [fetchTrades]);
+
+    const formatDate = (unix: number) => {
+        const d = new Date(unix * 1000);
+        return d.toLocaleDateString("en-CA") + " " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    };
+
+    const actionLabel = (t: TradeRecord) => {
+        if (t.action === "buy") return `BUY Outcome #${t.outcomeIndex}`;
+        if (t.action === "sell") return `SELL Outcome #${t.outcomeIndex}`;
+        return `SWAP #${t.fromOutcome} → #${t.toOutcome}`;
+    };
+
+    const actionColor = (action: string) => {
+        if (action === "buy") return "bg-accent-green/10 text-accent-green";
+        if (action === "sell") return "bg-accent-red/10 text-accent-red";
+        return "bg-blue-500/10 text-blue-500";
+    };
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
@@ -34,39 +80,45 @@ const Activity = () => {
 
             <div className="container mx-auto px-4 pt-32 pb-20 max-w-6xl">
                 {/* Page Header */}
-                <div className="mb-10">
-                    <h1 className="text-4xl font-bold tracking-tight mb-2">{t('activity.title')}</h1>
-                    <p className="text-muted-foreground text-lg">{t('activity.subtitle')}</p>
+                <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold tracking-tight mb-2">{t('activity.title')}</h1>
+                        <p className="text-muted-foreground text-lg">{t('activity.subtitle')}</p>
+                    </div>
+                    {lastRefresh && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/50 shrink-0">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                            Live · {lastRefresh.toLocaleTimeString()}
+                        </div>
+                    )}
                 </div>
 
-                {/* Filters */}
-                <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
+                {/* Tabs */}
+                <div className="flex items-center gap-2 mb-8">
                     <button
-                        onClick={() => setActiveTab("All")}
+                        onClick={() => setActiveTab("global")}
                         className={cn(
                             "px-4 py-2 rounded-full text-sm font-bold transition-all border",
-                            activeTab === "All"
+                            activeTab === "global"
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
                         )}
                     >
-                        {t('activity.tab_all')}
+                        Global Feed
                     </button>
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveTab(cat)}
-                            className={cn(
-                                "px-4 py-2 rounded-full text-sm font-bold transition-all border whitespace-nowrap",
-                                activeTab === cat
-                                    ? "bg-primary text-primary-foreground border-primary"
-                                    : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
-                            )}
-                        >
-                            {/* @ts-expect-error: dynamic translation key */}
-                            {t(`categories.${cat.toLowerCase()}`)}
-                        </button>
-                    ))}
+                    <button
+                        onClick={() => setActiveTab("my")}
+                        disabled={!isConnected}
+                        className={cn(
+                            "px-4 py-2 rounded-full text-sm font-bold transition-all border",
+                            activeTab === "my"
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground",
+                            !isConnected && "opacity-50 cursor-not-allowed"
+                        )}
+                    >
+                        My Trades
+                    </button>
                 </div>
 
                 {/* Table Container */}
@@ -76,62 +128,80 @@ const Activity = () => {
                             <thead>
                                 <tr className="border-b border-border/50 bg-muted/20">
                                     <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('activity.table_date')}</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('activity.table_market')}</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">{t('activity.table_side')}</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">{t('activity.table_invested')}</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">{t('activity.table_price')}</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">{t('activity.table_return')}</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">Status</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Session</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-center">Action</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Shares (Δ)</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Cost</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Net</th>
+                                    {activeTab === "global" && (
+                                        <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Trader</th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/30">
-                                {filteredData.length > 0 ? (
-                                    filteredData.map((item) => (
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={activeTab === "global" ? 7 : 6} className="p-12 text-center text-muted-foreground">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <svg className="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <span className="text-sm">Loading trades from relayer...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : trades.length > 0 ? (
+                                    trades.map((item) => (
                                         <tr key={item.id} className="group hover:bg-muted/30 transition-colors">
-                                            <td className="p-4 text-sm font-mono text-muted-foreground whitespace-nowrap">{item.date}</td>
+                                            <td className="p-4 text-sm font-mono text-muted-foreground whitespace-nowrap">
+                                                {formatDate(item.timestamp)}
+                                            </td>
                                             <td className="p-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-base group-hover:text-primary transition-colors cursor-pointer">{item.market}</span>
-                                                    <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
-                                                        {item.category}
-                                                    </span>
-                                                </div>
+                                                <span className="font-mono text-xs bg-muted/50 px-2 py-1 rounded-md border border-border/50">
+                                                    {item.sessionId.substring(0, 10)}…
+                                                </span>
                                             </td>
                                             <td className="p-4 text-center">
                                                 <span className={cn(
                                                     "px-2 py-1 rounded-md text-xs font-bold uppercase",
-                                                    item.side === "YES" ? "bg-accent-green/10 text-accent-green" : "bg-accent-red/10 text-accent-red"
+                                                    actionColor(item.action)
                                                 )}>
-                                                    {item.side}
+                                                    {actionLabel(item)}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-right font-mono text-sm">{item.invested}</td>
-                                            <td className="p-4 text-right font-mono text-sm text-muted-foreground">{item.price}</td>
+                                            <td className="p-4 text-right font-mono text-sm">
+                                                {item.delta.toFixed(4)}
+                                            </td>
+                                            <td className="p-4 text-right font-mono text-sm text-muted-foreground">
+                                                ${Math.abs(item.cost).toFixed(4)}
+                                            </td>
                                             <td className={cn("p-4 text-right font-mono text-sm font-bold",
-                                                item.return.startsWith("+") ? "text-accent-green" : item.return.startsWith("-") ? "text-accent-red" : "text-muted-foreground"
+                                                item.netCost > 0 ? "text-accent-red" : "text-accent-green"
                                             )}>
-                                                {item.return}
+                                                {item.netCost > 0 ? `-$${item.netCost.toFixed(4)}` : `+$${Math.abs(item.netCost).toFixed(4)}`}
                                             </td>
-                                            <td className="p-4 text-center">
-                                                <span className={cn(
-                                                    "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border",
-                                                    item.status === "WON" ? "bg-accent-green/20 text-accent-green border-accent-green/30" :
-                                                        item.status === "LOST" ? "bg-accent-red/20 text-accent-red border-accent-red/30" :
-                                                            "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                                                )}>
-                                                    {/* Translate status dynamically if needed, or map it */}
-                                                    {item.status === "WON" ? t('activity.status_won') :
-                                                        item.status === "LOST" ? t('activity.status_lost') :
-                                                            t('activity.status_open')}
-                                                </span>
-                                            </td>
+                                            {activeTab === "global" && (
+                                                <td className="p-4">
+                                                    <span className="font-mono text-xs text-muted-foreground">
+                                                        {item.userAddress.substring(0, 6)}…{item.userAddress.substring(item.userAddress.length - 4)}
+                                                    </span>
+                                                </td>
+                                            )}
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
-                                            <Icon name="history" className="text-4xl opacity-20 mb-2" />
-                                            <span className="text-lg font-medium">{t('activity.no_data')}</span>
+                                        <td colSpan={activeTab === "global" ? 7 : 6} className="p-12 text-center text-muted-foreground">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <Icon name="history" className="text-4xl opacity-20 mb-2" />
+                                                <span className="text-lg font-medium">{t('activity.no_data')}</span>
+                                                <span className="text-sm text-muted-foreground/60">
+                                                    {activeTab === "my"
+                                                        ? "Execute your first trade to see it here."
+                                                        : "No trades have been executed yet."}
+                                                </span>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}

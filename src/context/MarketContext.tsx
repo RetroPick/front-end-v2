@@ -13,8 +13,21 @@ interface MarketContextType {
 const MarketContext = createContext<MarketContextType | undefined>(undefined);
 
 export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [markets, setMarkets] = useState<Market[]>(fallbackMarkets);
-    const [isLoading, setIsLoading] = useState(true);
+    // Try to load from cache immediately so user sees content instantly
+    const cachedMarkets = (() => {
+        try {
+            const raw = localStorage.getItem('retropick_markets_cache');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                // Cache valid for 5 minutes
+                if (Date.now() - parsed.ts < 5 * 60 * 1000) return parsed.data as Market[];
+            }
+        } catch { /* ignore */ }
+        return null;
+    })();
+
+    const [markets, setMarkets] = useState<Market[]>(cachedMarkets || fallbackMarkets);
+    const [isLoading, setIsLoading] = useState(!cachedMarkets); // Skip loading spinner if cache hit
     const [error, setError] = useState<string | null>(null);
 
     const loadMarkets = async () => {
@@ -22,24 +35,17 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             setIsLoading(true);
             setError(null);
 
-            let allLiveData: Market[] = [];
-            let offset = 0;
+            // Parallel fetch — 2 pages of 500 = 1000 markets max (much faster than 5 serial requests)
             const limit = 500;
-            const maxPages = 5; // Fetch up to 2500 markets
-
-            for (let i = 0; i < maxPages; i++) {
-                const batch = await fetchLiveMarkets(limit, offset);
-                if (!batch || batch.length === 0) break; // Reached the end
-                allLiveData = [...allLiveData, ...batch];
-                offset += limit;
-                // If the batch returned less than limit, we're likely at the end
-                if (batch.length < limit) break;
-            }
+            const maxPages = 2;
+            const fetches = Array.from({ length: maxPages }, (_, i) =>
+                fetchLiveMarkets(limit, i * limit)
+            );
+            const results = await Promise.all(fetches);
+            const allLiveData = results.flat();
 
             if (allLiveData.length > 0) {
-                // Merge with existing fallback to ensure all categories have SOME data if Poly API is sparse
                 const combined = [...allLiveData];
-                // Only add fallbacks for categories that didn't get any live data
                 const liveCategories = new Set(allLiveData.map(m => m.category));
 
                 fallbackMarkets.forEach(fm => {
@@ -49,6 +55,11 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                 });
 
                 setMarkets(combined);
+
+                // Persist to localStorage for instant next load
+                try {
+                    localStorage.setItem('retropick_markets_cache', JSON.stringify({ data: combined, ts: Date.now() }));
+                } catch { /* quota exceeded — ignore */ }
             } else {
                 setMarkets(fallbackMarkets);
             }

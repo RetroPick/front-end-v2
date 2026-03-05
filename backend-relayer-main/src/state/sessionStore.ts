@@ -99,3 +99,46 @@ export function getOrCreateAccount(state: SessionState, address: string): Accoun
   state.accounts.set(address.toLowerCase(), acc);
   return acc;
 }
+
+// ── Trade History (in-memory log) ──────────────────────────────────
+
+export interface TradeRecord {
+  id: number;
+  timestamp: number;       // Unix seconds
+  sessionId: string;
+  userAddress: string;
+  action: "buy" | "sell" | "swap";
+  outcomeIndex?: number;
+  fromOutcome?: number;
+  toOutcome?: number;
+  delta: number;
+  cost: number;
+  netCost: number;
+  nonce: string;
+}
+
+let tradeIdCounter = 0;
+const tradeHistory: TradeRecord[] = [];
+
+export function addTradeRecord(record: Omit<TradeRecord, "id" | "timestamp">): TradeRecord {
+  const entry: TradeRecord = {
+    ...record,
+    id: ++tradeIdCounter,
+    timestamp: Math.floor(Date.now() / 1000),
+  };
+  tradeHistory.push(entry);
+  return entry;
+}
+
+/** Get trades for a specific user address (newest first). */
+export function getTradeHistoryByAddress(address: string): TradeRecord[] {
+  return tradeHistory
+    .filter((t) => t.userAddress.toLowerCase() === address.toLowerCase())
+    .slice()
+    .reverse();
+}
+
+/** Get all trades across all users (newest first). */
+export function getGlobalTradeHistory(): TradeRecord[] {
+  return tradeHistory.slice().reverse();
+}

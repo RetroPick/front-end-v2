@@ -25,7 +25,7 @@ export async function fetchTrendingEvents(limit: number = POLYMARKET_CONFIG.NEWS
             `${POLYMARKET_CONFIG.GAMMA_API_URL}${POLYMARKET_CONFIG.ENDPOINTS.EVENTS}`,
             window.location.origin
         );
-        url.searchParams.append('limit', '500'); // Fetch more to ensure we have enough post-filtering
+        url.searchParams.append('limit', '100'); // Reduced from 500 for faster response
         url.searchParams.append('active', 'true');
         url.searchParams.append('closed', 'false');
         if (POLYMARKET_CONFIG.API_KEY) {

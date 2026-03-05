@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -13,6 +13,9 @@ import { useExecutionLedger } from "@/hooks/useExecutionLedger";
 import { useVault } from "@/hooks/useVault";
 import { useToast } from "@/components/ui/use-toast";
 import TransactionModal from "@/components/modals/TransactionModal";
+import SellModal from "@/components/modals/SellModal";
+import { useMarkets } from "@/context/MarketContext";
+import { relayerApi } from "@/lib/relayerApi";
 
 // FAUCET ABI for verified Avalanche Fuji Faucet
 const FAUCET_ABI = [
@@ -95,45 +98,113 @@ const MOCK_ASSETS_AVALANCHE = [
 ];
 
 
-const POSITIONS = [
-  { id: 1, market: "BTC > $100k", type: "Yes", amount: 200, pnl: "+$40", pnlPercent: "+20%", status: "Active", expiry: "Mar 31" },
-  { id: 2, market: "Lakers Win", type: "No", amount: 50, pnl: "-$2.5", pnlPercent: "-5%", status: "Active", expiry: "Jun 15" },
-  { id: 3, market: "Fed Cut Rates", type: "Yes", amount: 100, pnl: "$0", pnlPercent: "0%", status: "Open", expiry: "May 01" },
-];
+export interface PositionData {
+  id: string | number;
+  market: string;
+  type: string;
+  amount: number;
+  pnl: string;
+  expiry: string;
+}
 
-function PositionItem({ pos }: { pos: typeof POSITIONS[0] }) {
-  const outcomeIndex = pos.type === "Yes" ? 0 : 1;
-  const { position, isLoading } = useExecutionLedger(pos.id, outcomeIndex);
-
-  // Jika contract mengembalikan posisi aktual > 0, gunakan itu. Jika tidak, gunakan dummy amount
-  const displayAmount = position > 0 ? position : pos.amount;
+function PositionItem({ pos }: { pos: PositionData }) {
+  const displayAmount = pos.amount;
+  const [isSellOpen, setIsSellOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
-      <div className="flex items-center gap-3">
-        <div className="size-8 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-xs border border-slate-200 dark:border-white/10">
-          {pos.type}
+    <>
+      <div className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
+        <div className="flex items-center gap-3">
+          <div className="size-8 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-xs border border-slate-200 dark:border-white/10">
+            {pos.type}
+          </div>
+          <div>
+            <div className="font-semibold text-sm text-slate-900 dark:text-white truncate max-w-[150px]">{pos.market}</div>
+            <div className="text-[10px] font-medium text-slate-400">Exp: {pos.expiry}</div>
+          </div>
         </div>
-        <div>
-          <div className="font-semibold text-sm text-slate-900 dark:text-white truncate max-w-[150px]">{pos.market}</div>
-          <div className="text-[10px] font-medium text-slate-400">Exp: {pos.expiry}</div>
+        <div className="text-right flex items-center gap-4">
+          <div>
+            <div className="font-semibold text-sm text-slate-900 dark:text-white">
+              ${displayAmount.toFixed(2)}
+            </div>
+            <div className={cn("text-[10px] font-medium", pos.pnl.startsWith('+') ? "text-green-500" : "text-slate-400")}>
+              {pos.pnl}
+            </div>
+          </div>
+          <button
+            onClick={() => setIsSellOpen(true)}
+            className="opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-xs font-bold py-1.5 px-3 rounded-lg border border-rose-500/20"
+          >
+            Sell
+          </button>
         </div>
       </div>
-      <div className="text-right">
-        <div className="font-semibold text-sm text-slate-900 dark:text-white">
-          {isLoading ? "..." : `$${displayAmount}`}
-        </div>
-        <div className={cn("text-[10px] font-medium", pos.pnl.startsWith('+') ? "text-green-500" : "text-slate-400")}>
-          {pos.pnl}
-        </div>
-      </div>
-    </div>
+      <SellModal
+        open={isSellOpen}
+        onClose={() => setIsSellOpen(false)}
+        marketTitle={pos.market}
+        side={pos.type as 'YES' | 'NO'}
+        availableShares={displayAmount}
+      />
+    </>
   );
 }
 
 const Portfolio = () => {
   const { isConnected } = useAppKitAccount();
   const { address } = useAccount();
+  const { markets } = useMarkets();
+
+  const [realtimePositions, setRealtimePositions] = useState<PositionData[]>([]);
+  const [isPositionsLoading, setIsPositionsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPositions() {
+      if (!address || !isConnected) {
+        setRealtimePositions([]);
+        setIsPositionsLoading(false);
+        return;
+      }
+
+      const userPositions: PositionData[] = [];
+
+      // Grab the active markets from Context and check their sessions
+      const marketsToCheck = markets.slice(0, 30); // scan first 30 markets
+
+      for (const m of marketsToCheck) {
+        try {
+          const sessionId = relayerApi.getMarketSessionId(m.title);
+          const accState = await relayerApi.getAccountState(sessionId, address);
+
+          if (!accState?.positions) continue;
+
+          const yesSharesStr = accState.positions[0] || '0';
+          const noSharesStr = accState.positions[1] || '0';
+
+          // Based on relayer scaled shares (1e6)
+          const yesShares = Number(yesSharesStr) / 1e6;
+          const noShares = Number(noSharesStr) / 1e6;
+
+          if (yesShares > 0.01) {
+            userPositions.push({ id: m.id, market: m.title, type: "YES", amount: yesShares, pnl: "$0", expiry: m.expiry || "N/A" });
+          }
+          if (noShares > 0.01) {
+            userPositions.push({ id: m.id, market: m.title, type: "NO", amount: noShares, pnl: "$0", expiry: m.expiry || "N/A" });
+          }
+        } catch (err) {
+          // Skip markets where user has no session/account
+        }
+      }
+
+      setRealtimePositions(userPositions);
+      setIsPositionsLoading(false);
+    }
+
+    fetchPositions();
+    const interval = setInterval(fetchPositions, 5000);
+    return () => clearInterval(interval);
+  }, [address, isConnected, markets]);
 
   // Fetch native balance (ETH on mainnet/sepolia)
   const { data: balanceData } = useBalance({
@@ -245,7 +316,7 @@ const Portfolio = () => {
     }
   });
 
-  const [activeTab, setActiveTab] = useState<"assets" | "positions">("assets");
+  const [activeTab, setActiveTab] = useState<"assets" | "positions" | "lp">("assets");
   const [network, setNetwork] = useState<"Avalanche" | "Sepolia">("Avalanche");
 
   // Format real balances
@@ -388,10 +459,54 @@ const Portfolio = () => {
                     Positions
                     {activeTab === 'positions' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
                   </button>
+                  <button
+                    onClick={() => setActiveTab('lp')}
+                    className={cn(
+                      "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
+                      activeTab === 'lp' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    Posisi LP
+                    {activeTab === 'lp' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
+                  </button>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  {activeTab === 'assets' ? (
+                  {activeTab === 'lp' ? (
+                    <div className="flex flex-col gap-4 pt-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Liquidity</div>
+                          <div className="text-xl font-bold text-slate-900 dark:text-white">{totalBalance.toLocaleString()} USDC</div>
+                          <div className="text-[10px] font-medium text-green-500 mt-1 flex items-center gap-1">
+                            <span className="bg-green-500/10 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide">Active</span>
+                            Vault Pool
+                          </div>
+                        </div>
+                        <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Estimated APY</div>
+                          <div className="text-xl font-bold text-emerald-500">12.4%</div>
+                          <div className="text-[10px] font-medium text-slate-400 mt-1">Based on 24H volume</div>
+                        </div>
+                      </div>
+                      <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                        <div className="flex justify-between items-center mb-3">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase">Fees Earned</div>
+                          <div className="text-xs font-bold text-green-500">+$24.50</div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-[10px] text-slate-500 flex justify-between">
+                            <span>Trading Fees (Maker)</span>
+                            <span className="text-slate-900 dark:text-white font-medium">$18.20</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 flex justify-between">
+                            <span>Vault Rewards</span>
+                            <span className="text-slate-900 dark:text-white font-medium">$6.30</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : activeTab === 'assets' ? (
                     ASSETS.map((asset) => (
                       <div key={asset.symbol} className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
                         <div className="flex items-center gap-3">
@@ -424,9 +539,15 @@ const Portfolio = () => {
                       </div>
                     ))
                   ) : (
-                    POSITIONS.map((pos) => (
-                      <PositionItem key={pos.id} pos={pos} />
-                    ))
+                    isPositionsLoading && realtimePositions.length === 0 ? (
+                      <div className="text-center py-10 text-slate-500 font-medium text-sm">Loading positions...</div>
+                    ) : realtimePositions.length > 0 ? (
+                      realtimePositions.map((pos, i) => (
+                        <PositionItem key={`${pos.id}-${i}`} pos={pos} />
+                      ))
+                    ) : (
+                      <div className="text-center py-10 text-slate-500 font-medium text-sm">No active positions</div>
+                    )
                   )}
                 </div>
               </div>

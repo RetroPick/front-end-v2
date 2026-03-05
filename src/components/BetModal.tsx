@@ -6,6 +6,7 @@ import ConfirmationModal from "./ConfirmationModal";
 import { cn } from "@/lib/utils";
 import { useYellowSession } from "@/hooks/useYellowSession";
 import { useAccount } from "wagmi";
+import { relayerApi } from "@/lib/relayerApi";
 
 // --- Authentic Crypto Icons (SVGs) ---
 const SolanaLogo = ({ className }: { className?: string }) => (
@@ -83,65 +84,44 @@ const BetModal = ({ open, onClose, marketTitle, outcome, side: initialSide, pric
         return;
       }
 
-      // Convert market title string to a consistent pseudo-ID hex for the relayer prototype
-      let hashStr = 0;
-      for (let i = 0; i < marketTitle.length; i++) {
-        hashStr = (hashStr << 5) - hashStr + marketTitle.charCodeAt(i);
-        hashStr |= 0;
-      }
-      // Simple 64-char hex string starting with 0x for sessionId validation
-      const sessionId = '0x' + Math.abs(hashStr).toString(16).padEnd(64, '0');
+      // Convert market title      // We will hardcode a test session for this implementation phase based on title Hash
+      const sessionId = relayerApi.getMarketSessionId(marketTitle);
       const outcomeIndex = side === 'YES' ? 0 : 1;
 
       // Auto-create session on the fly if it doesn't exist (hackathon UX flow)
       try {
-        await fetch(`http://localhost:8790/api/session/${sessionId}`);
+        await relayerApi.getSession(sessionId);
       } catch (err) {
-        await fetch(`http://localhost:8790/api/session/create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            marketId: "1",
-            vaultId: "0x1111111111111111111111111111111111111111", // mock
-            numOutcomes: 2,
-            b: 100 // LMSR liquidity param
-          })
+        await relayerApi.createSession({
+          sessionId,
+          marketId: "1",
+          vaultId: "0x1111111111111111111111111111111111111111", // mock
+          numOutcomes: 2,
+          b: 100 // LMSR liquidity param
         });
       }
 
       // Ensure user has some test USDC
       try {
-        await fetch(`http://localhost:8790/api/session/credit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            userAddress: address,
-            amount: 10000 // give 10k test collateral
-          })
-        });
+        await relayerApi.creditUser(sessionId, address, 10000);
       } catch (e) { }
 
       // Sign the order for realistic UX
-      const signature = await signOrder(1, outcomeIndex, amount);
+      const deltaShares = amount / price;
+      const signature = await signOrder(sessionId, 'buy', outcomeIndex, deltaShares);
 
       if (signature) {
         // Execute the trade against the backend relayer
-        const res = await fetch(`http://localhost:8790/api/trade/buy`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            outcomeIndex,
-            delta: amount / price, // amount is in USDC, LMSR expects share delta
-            userAddress: address
-          })
+        const res = await relayerApi.buyShares({
+          sessionId,
+          outcomeIndex,
+          delta: deltaShares, // amount is in USDC, LMSR expects share delta
+          userAddress: address,
+          signature
         });
 
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Trade failed');
+        if (!res?.ok) {
+          throw new Error('Trade failed');
         }
 
         setShowConfirmation(true);

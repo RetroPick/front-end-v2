@@ -14,9 +14,15 @@ import {
   openInterest,
   type LMSRParams,
 } from "../matching/lmsr.js";
-import { createSessionState, getOrCreateAccount, hashSessionState } from "../state/sessionStore.js";
+import { createSessionState, getOrCreateAccount, hashSessionState, addTradeRecord, getTradeHistoryByAddress, getGlobalTradeHistory } from "../state/sessionStore.js";
 import { getSession, setSession } from "../state/store.js";
-import type { Hex } from "viem";
+import { type Hex, verifyTypedData } from "viem";
+
+const domain = {
+  name: "RetroPick Relayer",
+  version: "1",
+  chainId: 43113,
+};
 
 const BuySharesSchema = z.object({
   sessionId: z.string().regex(/^0x[a-fA-F0-9]+$/),
@@ -26,6 +32,7 @@ const BuySharesSchema = z.object({
   minShares: z.number().optional(),
   maxOddsImpactBps: z.number().optional(),
   userAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  signature: z.string().regex(/^0x[a-fA-F0-9]+$/),
 });
 
 const SellSharesSchema = z.object({
@@ -35,6 +42,7 @@ const SellSharesSchema = z.object({
   minReceive: z.number().optional(),
   maxOddsImpactBps: z.number().optional(),
   userAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  signature: z.string().regex(/^0x[a-fA-F0-9]+$/),
 });
 
 const SwapSharesSchema = z.object({
@@ -45,6 +53,7 @@ const SwapSharesSchema = z.object({
   maxCost: z.number().optional(),
   minReceive: z.number().optional(),
   userAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
+  signature: z.string().regex(/^0x[a-fA-F0-9]+$/),
 });
 
 const CreditSchema = z.object({
@@ -225,8 +234,32 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.message });
     }
-    const { sessionId, outcomeIndex, delta, maxCost, minShares, maxOddsImpactBps, userAddress } =
+    const { sessionId, outcomeIndex, delta, maxCost, minShares, maxOddsImpactBps, userAddress, signature } =
       parsed.data;
+
+    // EIP-712 Verification
+    const isValid = await verifyTypedData({
+      address: userAddress as Hex,
+      domain,
+      types: {
+        Order: [
+          { name: "sessionId", type: "string" },
+          { name: "action", type: "string" },
+          { name: "outcomeIndex", type: "uint256" },
+          { name: "delta", type: "string" },
+        ],
+      },
+      primaryType: "Order",
+      message: {
+        sessionId,
+        action: "buy",
+        outcomeIndex: BigInt(outcomeIndex),
+        delta: delta.toString(),
+      },
+      signature: signature as Hex,
+    });
+    if (!isValid) return reply.status(401).send({ error: "Invalid EIP-712 signature" });
+
 
     const state = getSession(sessionId as Hex);
     if (!state) return reply.status(404).send({ error: "Session not found" });
@@ -275,6 +308,18 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     state.prevStateHash = hashSessionState(state);
 
     setSession(sessionId as Hex, state);
+
+    addTradeRecord({
+      sessionId,
+      userAddress: userAddress.toLowerCase(),
+      action: "buy",
+      outcomeIndex,
+      delta,
+      cost: buyCost,
+      netCost,
+      nonce: state.nonce.toString(),
+    });
+
     return {
       ok: true,
       cost: buyCost,
@@ -289,8 +334,34 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.message });
     }
-    const { sessionId, fromOutcome, toOutcome, delta, maxCost, minReceive, userAddress } =
+    const { sessionId, fromOutcome, toOutcome, delta, maxCost, minReceive, userAddress, signature } =
       parsed.data;
+
+    // EIP-712 Verification
+    const isValid = await verifyTypedData({
+      address: userAddress as Hex,
+      domain,
+      types: {
+        Order: [
+          { name: "sessionId", type: "string" },
+          { name: "action", type: "string" },
+          { name: "fromOutcome", type: "uint256" },
+          { name: "toOutcome", type: "uint256" },
+          { name: "delta", type: "string" },
+        ],
+      },
+      primaryType: "Order",
+      message: {
+        sessionId,
+        action: "swap",
+        fromOutcome: BigInt(fromOutcome),
+        toOutcome: BigInt(toOutcome),
+        delta: delta.toString(),
+      },
+      signature: signature as Hex,
+    });
+    if (!isValid) return reply.status(401).send({ error: "Invalid EIP-712 signature" });
+
 
     const state = getSession(sessionId as Hex);
     if (!state) return reply.status(404).send({ error: "Session not found" });
@@ -336,6 +407,19 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     state.prevStateHash = hashSessionState(state);
 
     setSession(sessionId as Hex, state);
+
+    addTradeRecord({
+      sessionId,
+      userAddress: userAddress.toLowerCase(),
+      action: "swap",
+      fromOutcome,
+      toOutcome,
+      delta,
+      cost: costVal,
+      netCost: costVal > 0 ? costVal * (1 + state.feeParams.tau) : costVal,
+      nonce: state.nonce.toString(),
+    });
+
     return {
       ok: true,
       cost: costVal,
@@ -348,7 +432,31 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.message });
     }
-    const { sessionId, outcomeIndex, delta, minReceive, maxOddsImpactBps, userAddress } = parsed.data;
+    const { sessionId, outcomeIndex, delta, minReceive, maxOddsImpactBps, userAddress, signature } = parsed.data;
+
+    // EIP-712 Verification
+    const isValid = await verifyTypedData({
+      address: userAddress as Hex,
+      domain,
+      types: {
+        Order: [
+          { name: "sessionId", type: "string" },
+          { name: "action", type: "string" },
+          { name: "outcomeIndex", type: "uint256" },
+          { name: "delta", type: "string" },
+        ],
+      },
+      primaryType: "Order",
+      message: {
+        sessionId,
+        action: "sell",
+        outcomeIndex: BigInt(outcomeIndex),
+        delta: delta.toString(),
+      },
+      signature: signature as Hex,
+    });
+    if (!isValid) return reply.status(401).send({ error: "Invalid EIP-712 signature" });
+
 
     const state = getSession(sessionId as Hex);
     if (!state) return reply.status(404).send({ error: "Session not found" });
@@ -397,6 +505,18 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     state.prevStateHash = hashSessionState(state);
 
     setSession(sessionId as Hex, state);
+
+    addTradeRecord({
+      sessionId,
+      userAddress: userAddress.toLowerCase(),
+      action: "sell",
+      outcomeIndex,
+      delta,
+      cost: costVal,
+      netCost: -receiveNet,
+      nonce: state.nonce.toString(),
+    });
+
     return {
       ok: true,
       cost: costVal,
@@ -405,4 +525,21 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
       nonce: state.nonce.toString(),
     };
   });
+
+  // ── Trade History Endpoints ──────────────────────────────────
+
+  app.get(
+    "/api/history/:address",
+    async (req: FastifyRequest<{ Params: { address: string } }>, reply: FastifyReply) => {
+      const { address } = req.params;
+      return getTradeHistoryByAddress(address);
+    }
+  );
+
+  app.get(
+    "/api/history",
+    async (_req: FastifyRequest, _reply: FastifyReply) => {
+      return getGlobalTradeHistory();
+    }
+  );
 }

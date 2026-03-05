@@ -8,7 +8,6 @@ import { useYellowSession } from "@/hooks/useYellowSession";
 
 interface TradingSidebarProps {
   marketTitle: string;
-  onBet: (side: 'YES' | 'NO', outcome: string) => void;
   selectedOutcome?: string;
 }
 
@@ -20,7 +19,7 @@ const UsdcLogo = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: TradingSidebarProps) => {
+const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebarProps) => {
   const [tab, setTab] = useState<'Buy' | 'Sell'>('Buy');
   const [side, setSide] = useState<'YES' | 'NO'>('YES');
   const [amount, setAmount] = useState<string>("0");
@@ -49,58 +48,52 @@ const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: Trading
 
     setIsTrading(true);
     try {
-      // In a real flow, sessionId would be passed down from the MarketDetail context
-      // We will hardcode a test session for this implementation phase based on title Hash
-      let hashStr = 0;
-      for (let i = 0; i < marketTitle.length; i++) {
-        hashStr = (hashStr << 5) - hashStr + marketTitle.charCodeAt(i);
-        hashStr |= 0;
-      }
-      const TEST_SESSION_ID = '0x' + Math.abs(hashStr).toString(16).padStart(64, '0');
+      const TEST_SESSION_ID = relayerApi.getMarketSessionId(marketTitle);
 
       const outcomeIndex = side === 'YES' ? 0 : 1;
       const deltaShares = Number(amount) / (currentPrice / 100);
 
       try {
-        await fetch(`http://localhost:8790/api/session/${TEST_SESSION_ID}`);
+        await relayerApi.getSession(TEST_SESSION_ID);
       } catch (err) {
-        await fetch(`http://localhost:8790/api/session/create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: TEST_SESSION_ID,
-            marketId: "1",
-            vaultId: "0x1111111111111111111111111111111111111111", // mock
-            numOutcomes: 2,
-            b: 100 // LMSR liquidity param
-          })
+        await relayerApi.createSession({
+          sessionId: TEST_SESSION_ID,
+          marketId: "1",
+          vaultId: "0x1111111111111111111111111111111111111111", // mock
+          numOutcomes: 2,
+          b: 100 // LMSR liquidity param
         });
       }
 
       // Ensure user has some test USDC
       try {
-        await fetch(`http://localhost:8790/api/session/credit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: TEST_SESSION_ID,
-            userAddress: address,
-            amount: 10000 // give 10k test collateral
-          })
-        });
+        await relayerApi.creditUser(TEST_SESSION_ID, address, 10000);
       } catch (e) { }
 
       // Get signature
-      const signature = await signOrder(1, outcomeIndex, Number(amount));
+      const action = tab === 'Buy' ? 'buy' : 'sell';
+      const signature = await signOrder(TEST_SESSION_ID, action, outcomeIndex, deltaShares);
 
       if (signature) {
-        const params: BuySharesParams = {
-          sessionId: TEST_SESSION_ID,
-          outcomeIndex: side === 'YES' ? 0 : 1,
-          delta: deltaShares,
-          userAddress: address
-        };
-        await relayerApi.buyShares(params);
+        if (action === 'buy') {
+          const params: BuySharesParams = {
+            sessionId: TEST_SESSION_ID,
+            outcomeIndex: side === 'YES' ? 0 : 1,
+            delta: deltaShares,
+            userAddress: address,
+            signature
+          };
+          await relayerApi.buyShares(params);
+        } else {
+          const params = {
+            sessionId: TEST_SESSION_ID,
+            outcomeIndex: side === 'YES' ? 0 : 1,
+            delta: deltaShares,
+            userAddress: address,
+            signature
+          };
+          await relayerApi.sellShares(params);
+        }
       }
 
       toast({
@@ -108,8 +101,6 @@ const TradingSidebar = ({ marketTitle, onBet, selectedOutcome = "Yes" }: Trading
         description: `Bought ${deltaShares.toFixed(2)} shares of ${side} off-chain.`,
       });
 
-      // Also trigger the UI modal callback
-      onBet(side, selectedOutcome);
     } catch (e: any) {
       toast({
         title: "Trade Failed",

@@ -8,6 +8,17 @@ export interface BuySharesParams {
     delta: number;
     maxCost?: number;
     userAddress: string;
+    signature: string;
+}
+
+export interface SellSharesParams {
+    sessionId: string;
+    outcomeIndex: number;
+    delta: number;
+    minReceive?: number;
+    maxOddsImpactBps?: number;
+    userAddress: string;
+    signature: string;
 }
 
 export interface SwapSharesParams {
@@ -17,6 +28,7 @@ export interface SwapSharesParams {
     delta: number;
     maxCost?: number;
     userAddress: string;
+    signature: string;
 }
 
 export interface SessionConfig {
@@ -73,6 +85,19 @@ export const relayerApi = {
     },
 
     /**
+     * Execute a sell trade in the Yellow Session
+     */
+    async sellShares(params: SellSharesParams) {
+        const res = await fetch(`${RELAYER_BASE_URL}/api/trade/sell`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    /**
      * Execute a swap trade in the Yellow Session (e.g., selling YES for NO)
      */
     async swapShares(params: SwapSharesParams) {
@@ -103,6 +128,46 @@ export const relayerApi = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId, userAddress, amount })
         });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    /**
+     * Get account positions in a session
+     */
+    async getAccountState(sessionId: string, address: string) {
+        const res = await fetch(`${RELAYER_BASE_URL}/api/session/${sessionId}/account/${address}`);
+        if (!res.ok) throw new Error('Account state not found');
+        return res.json();
+    },
+
+    /**
+     * Utility to generate a consistent session string from market title
+     */
+    getMarketSessionId(marketTitle: string): string {
+        let hashStr = 0;
+        for (let i = 0; i < marketTitle.length; i++) {
+            hashStr = (hashStr << 5) - hashStr + marketTitle.charCodeAt(i);
+            hashStr |= 0;
+        }
+        // Consistent hash string padding (64 hex characters + 0x)
+        return '0x' + Math.abs(hashStr).toString(16).padEnd(64, '0');
+    },
+
+    /**
+     * Get trade history for a specific wallet address (newest first).
+     */
+    async getTradeHistory(address: string) {
+        const res = await fetch(`${RELAYER_BASE_URL}/api/history/${address}`);
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    /**
+     * Get global trade history across all users (newest first).
+     */
+    async getGlobalTradeHistory() {
+        const res = await fetch(`${RELAYER_BASE_URL}/api/history`);
         if (!res.ok) throw new Error(await res.text());
         return res.json();
     }

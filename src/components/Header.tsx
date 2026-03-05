@@ -44,6 +44,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
     { name: t('nav.markets'), path: "/app" },
     { name: t('nav.activity'), path: "/app/activity" },
     { name: t('nav.portfolio'), path: "/app/portfolio" },
+    { name: "Creator", path: "/app/creator" },
     { name: "Draft", path: "/app/vault" },
     { name: "Liquidity", path: "/app/liquidity" },
   ];

@@ -4,37 +4,57 @@ export function useYellowSession() {
     const { address } = useAccount();
     const { signTypedDataAsync, isPending, isError, isSuccess, error } = useSignTypedData();
 
-    const signOrder = async (marketId: string | number, outcomeIndex: number, amount: number) => {
-        // EIP-712 Domain for ShadowPool Yellow Sessions
+    const signOrder = async (
+        sessionId: string,
+        action: 'buy' | 'sell' | 'swap',
+        outcomeIndexOrFrom: number,
+        delta: number,
+        toOutcome?: number
+    ) => {
+        // EIP-712 Domain for RetroPick Relayer
         const domain = {
-            name: 'ShadowPool Yellow Session',
+            name: 'RetroPick Relayer',
             version: '1',
-            // chainId: 43113, // Fuji
-            verifyingContract: '0x0000000000000000000000000000000000000000' as const, // Placeholder for prototype
+            chainId: 43113,
         };
 
-        const types = {
-            Order: [
-                { name: 'marketId', type: 'uint256' },
-                { name: 'outcomeIndex', type: 'uint8' },
-                { name: 'amount', type: 'uint256' },
-                { name: 'nonce', type: 'uint256' }
-            ],
+        let types: any = {};
+        let message: any = {
+            sessionId,
+            action,
+            delta: delta.toString()
         };
 
-        const message = {
-            marketId: BigInt(marketId),
-            outcomeIndex,
-            amount: BigInt(amount * 1e18),
-            nonce: BigInt(Date.now()) // Simple nonce for prototype
-        };
+        if (action === 'swap' && toOutcome !== undefined) {
+            types = {
+                Order: [
+                    { name: 'sessionId', type: 'string' },
+                    { name: 'action', type: 'string' },
+                    { name: 'fromOutcome', type: 'uint256' },
+                    { name: 'toOutcome', type: 'uint256' },
+                    { name: 'delta', type: 'string' }
+                ]
+            };
+            message.fromOutcome = BigInt(outcomeIndexOrFrom);
+            message.toOutcome = BigInt(toOutcome);
+        } else {
+            types = {
+                Order: [
+                    { name: 'sessionId', type: 'string' },
+                    { name: 'action', type: 'string' },
+                    { name: 'outcomeIndex', type: 'uint256' },
+                    { name: 'delta', type: 'string' }
+                ]
+            };
+            message.outcomeIndex = BigInt(outcomeIndexOrFrom);
+        }
 
         try {
             const signature = await signTypedDataAsync({
                 domain,
                 types,
                 primaryType: 'Order',
-                message: message as any,
+                message,
                 account: address,
             } as any);
             return signature;
