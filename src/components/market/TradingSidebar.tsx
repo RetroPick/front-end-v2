@@ -36,7 +36,7 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
   // Polymarket colors
   const activeYesClass = "bg-[#22c55e] text-white";
   const activeNoClass = "bg-[#ef4444] text-white";
-  const inactiveClass = "bg-[#2b2b2b] text-slate-300 hover:bg-[#333]";
+  const inactiveClass = "bg-secondary text-muted-foreground hover:bg-secondary/80";
 
   const handleTrade = async () => {
     if (!address) {
@@ -112,10 +112,11 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
     }
   };
 
+  // Re-implementing the return to fix classes
   return (
     <div className="space-y-4">
       {/* Trading Panel - Dark Polymarket Style */}
-      <div className="bg-[#1a1b1e]/80 backdrop-blur-md border border-[#2b2b2b] rounded-xl p-4 shadow-xl relative z-50">
+      <div className="bg-card/80 backdrop-blur-md border border-border rounded-xl p-4 shadow-xl relative z-50">
 
         {/* Header Tabs: Buy / Sell & Market Select */}
         <div className="flex items-center justify-between mb-5">
@@ -124,7 +125,7 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
               onClick={() => setTab('Buy')}
               className={cn(
                 "text-[15px] font-bold pb-1 transition-colors",
-                tab === 'Buy' ? "text-white border-b-2 border-white" : "text-slate-500 hover:text-slate-300"
+                tab === 'Buy' ? "text-foreground border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               Buy
@@ -133,14 +134,14 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
               onClick={() => setTab('Sell')}
               className={cn(
                 "text-[15px] font-bold pb-1 transition-colors",
-                tab === 'Sell' ? "text-white border-b-2 border-white" : "text-slate-500 hover:text-slate-300"
+                tab === 'Sell' ? "text-foreground border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               Sell
             </button>
           </div>
 
-          <button className="flex items-center gap-1 text-sm font-medium text-slate-300 bg-[#2b2b2b] hover:bg-[#333] px-2.5 py-1 rounded transition-colors">
+          <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded transition-colors">
             Market
             <Icon name="expand_more" className="text-[16px]" />
           </button>
@@ -174,13 +175,13 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
         {/* Amount Input */}
         <div className="mb-4 relative">
           <div className="flex justify-between items-center mb-1">
-            <label className="text-sm font-medium text-slate-300">Amount</label>
+            <label className="text-sm font-medium text-muted-foreground">Amount</label>
             {/* Big Currency Display tied to input */}
-            <span className="text-3xl font-bold text-slate-400 absolute right-0 top-6 select-none pointer-events-none">
+            <span className="text-3xl font-bold text-muted-foreground/30 absolute right-0 top-6 select-none pointer-events-none">
               ${amount || '0'}
             </span>
           </div>
-          <div className="text-[12px] text-slate-500 mb-2">Balance $0.00</div>
+          <div className="text-[12px] text-muted-foreground mb-2">Balance $0.00</div>
 
           <input
             type="text"
@@ -190,7 +191,7 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
               setAmount(val);
             }}
             placeholder="0"
-            className="w-full bg-transparent border-b border-[#2b2b2b] text-transparent focus:outline-none py-2 text-3xl font-bold caret-white"
+            className="w-full bg-transparent border-b border-border text-foreground focus:outline-none py-2 text-3xl font-bold caret-primary"
             style={{ paddingRight: '120px' }} // Room for the fake big text
           />
 
@@ -200,12 +201,12 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
               <button
                 key={val}
                 onClick={() => setAmount((Number(amount || 0) + Number(val.replace('+', ''))).toString())}
-                className="px-2.5 py-1 rounded-md bg-[#2b2b2b] hover:bg-[#3a3a3a] text-xs font-bold text-slate-300 transition-colors"
+                className="px-2.5 py-1 rounded-md bg-secondary hover:bg-secondary/80 text-xs font-bold text-muted-foreground transition-colors"
               >
                 ${val.replace('+', '')}
               </button>
             ))}
-            <button className="px-2.5 py-1 rounded-md bg-[#2b2b2b] hover:bg-[#3a3a3a] text-xs font-bold text-slate-300 transition-colors">Max</button>
+            <button className="px-2.5 py-1 rounded-md bg-secondary hover:bg-secondary/80 text-xs font-bold text-muted-foreground transition-colors">Max</button>
           </div>
         </div>
 
@@ -213,14 +214,14 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
         <button
           onClick={handleTrade}
           disabled={isTrading}
-          className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-[#0099ff] hover:bg-[#33adff] text-white transition-colors shadow-sm disabled:opacity-50"
+          className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors shadow-sm disabled:opacity-50"
         >
           {isTrading ? "Executing..." : "Deposit"}
         </button>
 
         {/* Terms text */}
-        <div className="mt-5 text-center text-[10px] sm:text-xs text-slate-500">
-          By trading, you agree to the <a href="#" className="underline hover:text-slate-300 transition-colors">Terms of Use</a>.
+        <div className="mt-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+          By trading, you agree to the <a href="#" className="underline hover:text-foreground transition-colors">Terms of Use</a>.
         </div>
       </div>
     </div>

@@ -28,7 +28,7 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
     <>
       <div
         onClick={handleCardClick}
-        className="group relative flex flex-col w-full aspect-square bg-card/60 backdrop-blur-md rounded-3xl border border-black/10 dark:border-white/5 overflow-hidden shadow-sm shadow-black/10 dark:shadow-none hover:border-black/20 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-primary/5 transition-all duration-300 cursor-pointer"
+        className="group relative flex flex-col w-full aspect-square bg-card dark:bg-card/60 backdrop-blur-md rounded-3xl border border-black/10 dark:border-white/5 overflow-hidden shadow-sm shadow-black/10 dark:shadow-none hover:border-black/20 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-primary/5 transition-all duration-300 cursor-pointer"
       >
         {/* Image Header with Gradient Overlay */}
         <div className="relative h-48 w-full overflow-hidden">
@@ -49,7 +49,7 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
           {/* Category Badge */}
           <div className="absolute top-4 left-4 z-20">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
-              <Icon name={market.icon} className={cn("text-xs", market.iconColor || "text-foreground")} />
+              <Icon name={market.icon} className={cn("text-xs", market.iconColor || "text-white")} />
               <span className="text-[10px] font-medium tracking-wide uppercase text-white/90">
                 {t(`categories.${market.category.toLowerCase()}` as any)}
               </span>
@@ -66,10 +66,10 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
         </div>
 
         {/* Content Section */}
-        <div className="flex flex-col flex-1 p-5 -mt-12 relative z-20">
+        <div className="flex flex-col flex-1 p-5 relative z-20">
           {/* Title & Description */}
           <div className="mb-6">
-            <h3 className="text-lg font-bold leading-tight text-white mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="text-lg font-bold leading-tight text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
               {market.title}
             </h3>
             {market.description && (

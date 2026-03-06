@@ -24,6 +24,8 @@ import Vault from "./pages/Vault";
 import VaultDetail from "./pages/VaultDetail";
 import VaultLiquidity from "./pages/VaultLiquidity";
 import VaultSuccess from "./pages/VaultSuccess";
+import Resolution from "./pages/Resolution";
+import RiskSentinel from "./pages/RiskSentinel";
 
 const App = () => (
   <Web3ModalProvider>
@@ -50,6 +52,8 @@ const App = () => (
                 <Route path="/app/liquidity" element={<VaultLiquidity />} />
                 <Route path="/app/vault/success" element={<VaultSuccess />} />
                 <Route path="/app/vault/:id" element={<VaultDetail />} />
+                <Route path="/app/resolution" element={<Resolution />} />
+                <Route path="/app/risk-sentinel" element={<RiskSentinel />} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

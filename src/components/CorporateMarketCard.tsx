@@ -1,6 +1,6 @@
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, memo , MouseEvent } from "react";
+import { useState, memo, MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { Building2, TrendingUp, DollarSign } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -42,7 +42,7 @@ const CorporateMarketCard = memo(({ market }: CorporateMarketCardProps) => {
 
                 {/* Content */}
                 <div className="p-5">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight">
+                    <h3 className="text-lg font-bold text-foreground mb-2 leading-tight">
                         {market.title}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 line-clamp-2">

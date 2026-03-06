@@ -6,38 +6,39 @@ import Icon from "@/components/Icon";
 import VaultInteractionPanel from "@/components/VaultInteractionPanel";
 import VaultPerformanceChart from "@/components/VaultPerformanceChart";
 import { useMarkets } from "@/context/MarketContext";
+import { useLPVault } from "@/hooks/useLPVault";
 
 const VaultDetail = () => {
     const { id } = useParams();
-    const { markets, loading } = useMarkets();
+    const { markets } = useMarkets();
     const [timeRange, setTimeRange] = useState<"1W" | "1M" | "1Y">("1W");
 
     // Find corresponding market if it exists
     const market = markets.find(m => m.id === id);
 
-    // Mock Data simulating an Active Vault or Live Data mapping
-    const vaultData = market ? {
-        name: market.title,
-        type: market.category,
+    // On-chain ERC-4626 vault data (resolves via MarketRegistry.liquidityVaultByMarketId)
+    const marketIdNum = market ? parseInt(id || "0") : undefined;
+    const lpVault = useLPVault(marketIdNum);
+
+    // Merge on-chain vault data with market context (fallback to mock when vault not deployed)
+    const vaultData = {
+        name: lpVault.vaultName || market?.title || "USDC Market Liquidity Vault",
+        type: lpVault.hasVault ? "ERC-4626" : (market?.category || "ERC-4626"),
         asset: "USDC",
-        contract: `0x${market.id.substring(0, 4)}...${market.id.substring(market.id.length - 4)}`,
-        tvl: market.volume || 4820000,
-        sharePrice: 1.0428,
-        totalSupply: (market.volume || 4820000) * 0.95,
-        utilization: 96,
+        contract: lpVault.vaultAddress
+            ? `${lpVault.vaultAddress.slice(0, 6)}...${lpVault.vaultAddress.slice(-4)}`
+            : (market ? `0x${market.id.substring(0, 4)}...${market.id.substring(market.id.length - 4)}` : "0x8f3C...291a"),
+        tvl: lpVault.hasVault ? lpVault.totalAssets : (market?.volume || 4820000),
+        sharePrice: lpVault.hasVault ? lpVault.sharePrice : 1.0428,
+        totalSupply: lpVault.hasVault ? lpVault.totalSupply : ((Number(market?.volume) || 4820000) * 0.95),
+        utilization: lpVault.hasVault && lpVault.totalAssets > 0 && lpVault.totalSupply > 0
+            ? Math.round((lpVault.totalAssets / (lpVault.totalSupply * lpVault.sharePrice)) * 100)
+            : 96,
         apy: 12.4,
-        myBalance: 0
-    } : {
-        name: "USDC Market Liquidity Vault",
-        type: "ERC-4626",
-        asset: "USDC",
-        contract: "0x8f3C...291a",
-        tvl: 4820000,
-        sharePrice: 1.0428,
-        totalSupply: 4620000,
-        utilization: 96,
-        apy: 12.4,
-        myBalance: 12500.00
+        myBalance: lpVault.hasVault ? lpVault.userAssetsValue : 0,
+        myShares: lpVault.hasVault ? lpVault.userShares : 0,
+        vaultSymbol: lpVault.vaultSymbol || "LP-USDC",
+        isOnChain: lpVault.hasVault,
     };
 
     const transactions = [

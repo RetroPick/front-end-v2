@@ -1,7 +1,7 @@
 
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, memo  } from "react";
+import { useState, memo } from "react";
 import BetModal from "./BetModal";
 import { TrendingUp, Users, Clock, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -55,7 +55,7 @@ const PoliticsMarketCard = memo(({ market }: PoliticsMarketCardProps) => {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug mb-3 font-serif group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-lg font-bold text-foreground leading-snug mb-3 font-serif group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {market.title}
                     </h3>
 

@@ -15,7 +15,9 @@ import {
     ChevronDown,
     ChevronRight,
     Globe,
-    Check
+    Check,
+    Gavel,
+    ShieldAlert
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -167,6 +169,20 @@ const WalletButton = () => {
                             <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
                                 <Trophy className="mr-3 size-4 text-amber-400" />
                                 <span className="font-medium">{t('leaderboard')}</span>
+                            </DropdownMenuItem>
+                        </Link>
+
+                        <Link to="/app/resolution">
+                            <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
+                                <Gavel className="mr-3 size-4 text-blue-400" />
+                                <span className="font-medium">Resolution</span>
+                            </DropdownMenuItem>
+                        </Link>
+
+                        <Link to="/app/risk-sentinel">
+                            <DropdownMenuItem className="cursor-pointer focus:bg-accent/50 rounded-lg py-2.5 px-3">
+                                <ShieldAlert className="mr-3 size-4 text-red-400" />
+                                <span className="font-medium">Risk Sentinel</span>
                             </DropdownMenuItem>
                         </Link>
 

@@ -1,6 +1,6 @@
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, memo , MouseEvent } from "react";
+import { useState, memo, MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import BetModal from "./BetModal";
 import { CryptoIcon } from "./CryptoIcon";
@@ -62,7 +62,7 @@ const CryptoMarketCard = memo(({ market }: CryptoMarketCardProps) => {
                     </div>
 
                     {/* Market Title */}
-                    <h3 className="text-[16px] sm:text-[17px] font-semibold text-slate-900 dark:text-slate-100 leading-[1.3] line-clamp-3">
+                    <h3 className="text-[16px] sm:text-[17px] font-semibold text-foreground leading-[1.3] line-clamp-3">
                         {market.title}
                     </h3>
                 </div>

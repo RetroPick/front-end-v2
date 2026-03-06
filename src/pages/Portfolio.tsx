@@ -16,6 +16,7 @@ import TransactionModal from "@/components/modals/TransactionModal";
 import SellModal from "@/components/modals/SellModal";
 import { useMarkets } from "@/context/MarketContext";
 import { relayerApi } from "@/lib/relayerApi";
+import { CONTRACT_ADDRESSES } from "@/contracts/config";
 
 // FAUCET ABI for verified Avalanche Fuji Faucet
 const FAUCET_ABI = [
@@ -357,243 +358,328 @@ const Portfolio = () => {
     <div className="min-h-screen bg-background font-sans text-foreground pb-20 overflow-x-hidden">
       <Header />
 
-      <main className="pt-24 px-6 lg:px-10 w-full max-w-[1400px]">
+      <main className="pt-24 px-6 lg:px-10 w-full max-w-[1400px] mx-auto">
         {!isConnected ? (
-          <div className="mt-10 max-w-lg">
-            <AuthPlaceholder
-              title="Portfolio Locked"
-              description="Connect wallet to view assets."
-            />
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="max-w-lg">
+              <AuthPlaceholder
+                title="Portfolio Locked"
+                description="Connect wallet to view assets."
+              />
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            {/* 1. LEFT COLUMN: Balance & Lists */}
-            <div className="lg:col-span-8 flex flex-col gap-5">
+              {/* 1. LEFT COLUMN: Balance & Lists */}
+              <div className="lg:col-span-8 flex flex-col gap-5">
 
-              {/* Network Selector & Balance Card (Compact) */}
-              <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5 flex flex-col gap-6">
+                {/* Network Selector & Balance Card (Compact) */}
+                <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5 flex flex-col gap-6">
 
-                {/* Top: Network Control & Action buttons */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="flex border border-slate-200 dark:border-white/10 rounded-lg p-1 bg-white dark:bg-[#1a1b23]">
-                    <button
-                      onClick={() => setNetwork("Avalanche")}
-                      className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", network === "Avalanche" ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
-                    >
-                      Avalanche Fuji
-                    </button>
-                    <button
-                      onClick={() => setNetwork("Sepolia")}
-                      className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", network === "Sepolia" ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
-                    >
-                      Ethereum Sepolia
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleClaimFaucet}
-                      disabled={isMinting || !isConnected}
-                      className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white rounded-lg font-bold text-xs transition-all border border-emerald-500/20",
-                        isMinting && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
-                      <Icon name="water_drop" className="text-xs" />
-                      {isMinting ? "Claiming..." : "Claim Faucet"}
-                    </button>
-                    <button
-                      onClick={() => setIsDepositOpen(true)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-all shadow-sm"
-                      )}
-                    >
-                      <Icon name="arrow_downward" className="text-xs" />
-                      Deposit
-                    </button>
-                    <button
-                      onClick={() => setIsWithdrawOpen(true)}
-                      className={cn(
-                        "flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-lg font-medium text-xs transition-all"
-                      )}
-                    >
-                      <Icon name="arrow_upward" className="text-xs" />
-                      Withdraw
-                    </button>
-                  </div>
-                </div>
-
-                {/* Bottom: Total Balance */}
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vault Balance ({network})</h2>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-4xl font-bold text-slate-900 dark:text-white pointer-events-none selection:bg-none">
-                      {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
-                    </span>
-                    {totalBalance > 0 && <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-md">Active</span>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Assets / Positions List (Compact) */}
-              <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5 min-h-[360px]">
-                <div className="flex items-center gap-6 mb-4 border-b border-slate-200 dark:border-white/10 pb-1">
-                  <button
-                    onClick={() => setActiveTab('assets')}
-                    className={cn(
-                      "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
-                      activeTab === 'assets' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
-                    )}
-                  >
-                    Assets
-                    {activeTab === 'assets' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('positions')}
-                    className={cn(
-                      "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
-                      activeTab === 'positions' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
-                    )}
-                  >
-                    Positions
-                    {activeTab === 'positions' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('lp')}
-                    className={cn(
-                      "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
-                      activeTab === 'lp' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
-                    )}
-                  >
-                    Posisi LP
-                    {activeTab === 'lp' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {activeTab === 'lp' ? (
-                    <div className="flex flex-col gap-4 pt-2">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
-                          <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Liquidity</div>
-                          <div className="text-xl font-bold text-slate-900 dark:text-white">{totalBalance.toLocaleString()} USDC</div>
-                          <div className="text-[10px] font-medium text-green-500 mt-1 flex items-center gap-1">
-                            <span className="bg-green-500/10 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide">Active</span>
-                            Vault Pool
-                          </div>
-                        </div>
-                        <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
-                          <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Estimated APY</div>
-                          <div className="text-xl font-bold text-emerald-500">12.4%</div>
-                          <div className="text-[10px] font-medium text-slate-400 mt-1">Based on 24H volume</div>
-                        </div>
-                      </div>
-                      <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="text-[10px] font-bold text-slate-400 uppercase">Fees Earned</div>
-                          <div className="text-xs font-bold text-green-500">+$24.50</div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="text-[10px] text-slate-500 flex justify-between">
-                            <span>Trading Fees (Maker)</span>
-                            <span className="text-slate-900 dark:text-white font-medium">$18.20</span>
-                          </div>
-                          <div className="text-[10px] text-slate-500 flex justify-between">
-                            <span>Vault Rewards</span>
-                            <span className="text-slate-900 dark:text-white font-medium">$6.30</span>
-                          </div>
-                        </div>
-                      </div>
+                  {/* Top: Network Control & Action buttons */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex border border-slate-200 dark:border-white/10 rounded-lg p-1 bg-white dark:bg-[#1a1b23]">
+                      <button
+                        onClick={() => setNetwork("Avalanche")}
+                        className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", network === "Avalanche" ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
+                      >
+                        Avalanche Fuji
+                      </button>
+                      <button
+                        onClick={() => setNetwork("Sepolia")}
+                        className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", network === "Sepolia" ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
+                      >
+                        Ethereum Sepolia
+                      </button>
                     </div>
-                  ) : activeTab === 'assets' ? (
-                    ASSETS.map((asset) => (
-                      <div key={asset.symbol} className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 filter drop-shadow-sm">
-                            <asset.IconComp className="w-full h-full" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <div className="font-semibold text-sm text-slate-900 dark:text-white">{asset.name}</div>
-                              {asset.contractAddress && (
-                                <button
-                                  onClick={() => handleAddTokenToWallet(asset)}
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 uppercase font-bold"
-                                  title={`Add ${asset.symbol} to wallet`}
-                                >
-                                  <Icon name="add" className="text-[10px]" />
-                                  Wallet
-                                </button>
-                              )}
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleClaimFaucet}
+                        disabled={isMinting || !isConnected}
+                        className={cn(
+                          "flex items-center gap-1.5 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white rounded-lg font-bold text-xs transition-all border border-emerald-500/20",
+                          isMinting && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        <Icon name="water_drop" className="text-xs" />
+                        {isMinting ? "Claiming..." : "Claim Faucet"}
+                      </button>
+                      <button
+                        onClick={() => setIsDepositOpen(true)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-all shadow-sm"
+                        )}
+                      >
+                        <Icon name="arrow_downward" className="text-xs" />
+                        Deposit
+                      </button>
+                      <button
+                        onClick={() => setIsWithdrawOpen(true)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-lg font-medium text-xs transition-all"
+                        )}
+                      >
+                        <Icon name="arrow_upward" className="text-xs" />
+                        Withdraw
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Total Balance */}
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vault Balance ({network})</h2>
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-4xl font-bold text-slate-900 dark:text-white pointer-events-none selection:bg-none">
+                        {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                      </span>
+                      {totalBalance > 0 && <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-md">Active</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Assets / Positions List (Compact) */}
+                <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5 min-h-[360px]">
+                  <div className="flex items-center gap-6 mb-4 border-b border-slate-200 dark:border-white/10 pb-1">
+                    <button
+                      onClick={() => setActiveTab('assets')}
+                      className={cn(
+                        "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
+                        activeTab === 'assets' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
+                      )}
+                    >
+                      Assets
+                      {activeTab === 'assets' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('positions')}
+                      className={cn(
+                        "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
+                        activeTab === 'positions' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
+                      )}
+                    >
+                      Positions
+                      {activeTab === 'positions' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('lp')}
+                      className={cn(
+                        "pb-2 text-xs font-bold transition-all relative uppercase tracking-wider",
+                        activeTab === 'lp' ? "text-slate-900 dark:text-white" : "text-slate-400 hover:text-slate-600"
+                      )}
+                    >
+                      Posisi LP
+                      {activeTab === 'lp' && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-900 dark:bg-white" />}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    {activeTab === 'lp' ? (
+                      <div className="flex flex-col gap-4 pt-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Liquidity</div>
+                            <div className="text-xl font-bold text-slate-900 dark:text-white">{totalBalance.toLocaleString()} USDC</div>
+                            <div className="text-[10px] font-medium text-green-500 mt-1 flex items-center gap-1">
+                              <span className="bg-green-500/10 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide">Active</span>
+                              Vault Pool
                             </div>
-                            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{asset.balance} {asset.symbol}</div>
+                          </div>
+                          <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Estimated APY</div>
+                            <div className="text-xl font-bold text-emerald-500">12.4%</div>
+                            <div className="text-[10px] font-medium text-slate-400 mt-1">Based on 24H volume</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-semibold text-sm text-slate-900 dark:text-white">${asset.value.toFixed(2)}</div>
-                          <div className={cn("text-[10px] font-medium", asset.change.startsWith('+') ? "text-green-500" : "text-slate-400")}>
-                            {asset.change}
+                        <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="text-[10px] font-bold text-slate-400 uppercase">Fees Earned</div>
+                            <div className="text-xs font-bold text-green-500">+$24.50</div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="text-[10px] text-slate-500 flex justify-between">
+                              <span>Trading Fees (Maker)</span>
+                              <span className="text-slate-900 dark:text-white font-medium">$18.20</span>
+                            </div>
+                            <div className="text-[10px] text-slate-500 flex justify-between">
+                              <span>Vault Rewards</span>
+                              <span className="text-slate-900 dark:text-white font-medium">$6.30</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    isPositionsLoading && realtimePositions.length === 0 ? (
-                      <div className="text-center py-10 text-slate-500 font-medium text-sm">Loading positions...</div>
-                    ) : realtimePositions.length > 0 ? (
-                      realtimePositions.map((pos, i) => (
-                        <PositionItem key={`${pos.id}-${i}`} pos={pos} />
+                    ) : activeTab === 'assets' ? (
+                      ASSETS.map((asset) => (
+                        <div key={asset.symbol} className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
+                          <div className="flex items-center gap-3">
+                            <div className="size-8 filter drop-shadow-sm">
+                              <asset.IconComp className="w-full h-full" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <div className="font-semibold text-sm text-slate-900 dark:text-white">{asset.name}</div>
+                                {asset.contractAddress && (
+                                  <button
+                                    onClick={() => handleAddTokenToWallet(asset)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-500 dark:text-slate-300 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 uppercase font-bold"
+                                    title={`Add ${asset.symbol} to wallet`}
+                                  >
+                                    <Icon name="add" className="text-[10px]" />
+                                    Wallet
+                                  </button>
+                                )}
+                              </div>
+                              <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{asset.balance} {asset.symbol}</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold text-sm text-slate-900 dark:text-white">${asset.value.toFixed(2)}</div>
+                            <div className={cn("text-[10px] font-medium", asset.change.startsWith('+') ? "text-green-500" : "text-slate-400")}>
+                              {asset.change}
+                            </div>
+                          </div>
+                        </div>
                       ))
                     ) : (
-                      <div className="text-center py-10 text-slate-500 font-medium text-sm">No active positions</div>
-                    )
+                      isPositionsLoading && realtimePositions.length === 0 ? (
+                        <div className="text-center py-10 text-slate-500 font-medium text-sm">Loading positions...</div>
+                      ) : realtimePositions.length > 0 ? (
+                        realtimePositions.map((pos, i) => (
+                          <PositionItem key={`${pos.id}-${i}`} pos={pos} />
+                        ))
+                      ) : (
+                        <div className="text-center py-10 text-slate-500 font-medium text-sm">No active positions</div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* 2. RIGHT COLUMN: Stats Grid (Compact) */}
+              <div className="lg:col-span-4 grid grid-cols-2 gap-4 h-fit content-start">
+
+                {/* Active Positions Stat */}
+                <div
+                  onClick={() => setActiveTab('positions')}
+                  className={cn(
+                    "bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 cursor-pointer transition-all hover:bg-blue-50 dark:hover:bg-blue-900/10 hover:border-blue-200 dark:hover:border-blue-500/20 group",
+                    activeTab === 'positions' ? "ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-900/10" : ""
                   )}
+                >
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Active</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">3</div>
+                  <div className="text-[10px] font-medium text-blue-500 mt-0.5">$450 Value</div>
+                </div>
+
+                {/* Closed Value */}
+                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Closed PnL</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">$12k</div>
+                  <div className="text-[10px] font-medium text-green-500 mt-0.5">+$1,240</div>
+                </div>
+
+                {/* Biggest Win */}
+                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Best Win</div>
+                  <div className="text-2xl font-bold text-green-500">+$450</div>
+                  <div className="text-[10px] font-medium text-slate-400 mt-0.5">Super Bowl</div>
+                </div>
+
+                {/* Predictions */}
+                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Win Rate</div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">68%</div>
+                  <div className="text-[10px] font-medium text-purple-500 mt-0.5">124 Preds</div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Session Management section - shown when connected */}
+            <div className="mt-8 space-y-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                Session Management
+                <span className="text-[10px] font-normal text-slate-400 ml-1">Whitepaper §6</span>
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Checkpoint Signing */}
+                <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase">Checkpoint Signing</div>
+                      <div className="text-xs text-slate-500 mt-0.5">EIP-712 digest → relayer → ChannelSettlement</div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center">
+                      <span className="text-purple-500 text-sm">✍️</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Vault Free Balance</span>
+                      <span className="font-mono text-slate-900 dark:text-white">{freeBalance.toFixed(2)} USDC</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Locked Balance</span>
+                      <span className="font-mono text-yellow-500">{(totalBalance - freeBalance).toFixed(2)} USDC</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Status</span>
+                      <span className="text-green-500 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        Session Active
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 mt-3">
+                    When checkpoint is ready, the relayer will request your signature. Sign the EIP-712 digest to commit state to chain.
+                  </p>
+                </div>
+
+                {/* Exit + Dispute */}
+                <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase">Exit &amp; Dispute</div>
+                      <div className="text-xs text-slate-500 mt-0.5">Unilateral exit with latest signed state</div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
+                      <span className="text-orange-500 text-sm">🛡️</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Challenge Window</span>
+                      <span className="font-mono text-slate-900 dark:text-white">3600s (1 hour)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Settlement Contract</span>
+                      <span className="font-mono text-slate-500 text-[10px]">
+                        {`${CONTRACT_ADDRESSES.ChannelSettlement.slice(0, 6)}...${CONTRACT_ADDRESSES.ChannelSettlement.slice(-4)}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Safety</span>
+                      <span className="text-green-500">Non-custodial ✓</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400 mt-3">
+                    If the operator is unresponsive, you can force exit by submitting your latest signed state on-chain.
+                    A challenge window ensures the newest valid state wins.
+                  </p>
                 </div>
               </div>
-
             </div>
-
-            {/* 2. RIGHT COLUMN: Stats Grid (Compact) */}
-            <div className="lg:col-span-4 grid grid-cols-2 gap-4 h-fit content-start">
-
-              {/* Active Positions Stat */}
-              <div
-                onClick={() => setActiveTab('positions')}
-                className={cn(
-                  "bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 cursor-pointer transition-all hover:bg-blue-50 dark:hover:bg-blue-900/10 hover:border-blue-200 dark:hover:border-blue-500/20 group",
-                  activeTab === 'positions' ? "ring-1 ring-blue-500 bg-blue-50 dark:bg-blue-900/10" : ""
-                )}
-              >
-                <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Active</div>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">3</div>
-                <div className="text-[10px] font-medium text-blue-500 mt-0.5">$450 Value</div>
-              </div>
-
-              {/* Closed Value */}
-              <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
-                <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Closed PnL</div>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">$12k</div>
-                <div className="text-[10px] font-medium text-green-500 mt-0.5">+$1,240</div>
-              </div>
-
-              {/* Biggest Win */}
-              <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
-                <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Best Win</div>
-                <div className="text-2xl font-bold text-green-500">+$450</div>
-                <div className="text-[10px] font-medium text-slate-400 mt-0.5">Super Bowl</div>
-              </div>
-
-              {/* Predictions */}
-              <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
-                <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Win Rate</div>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">68%</div>
-                <div className="text-[10px] font-medium text-purple-500 mt-0.5">124 Preds</div>
-              </div>
-
-            </div>
-
-          </div>
+          </>
         )}
       </main>
 
@@ -650,7 +736,7 @@ const Portfolio = () => {
       />
 
       <Footer />
-    </div>
+    </div >
   );
 };
 

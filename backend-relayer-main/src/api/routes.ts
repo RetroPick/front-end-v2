@@ -15,7 +15,7 @@ import {
   type LMSRParams,
 } from "../matching/lmsr.js";
 import { createSessionState, getOrCreateAccount, hashSessionState, addTradeRecord, getTradeHistoryByAddress, getGlobalTradeHistory } from "../state/sessionStore.js";
-import { getSession, setSession } from "../state/store.js";
+import { getSession, setSession, getAllSessions } from "../state/store.js";
 import { type Hex, verifyTypedData } from "viem";
 
 const domain = {
@@ -540,6 +540,55 @@ export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
     "/api/history",
     async (_req: FastifyRequest, _reply: FastifyReply) => {
       return getGlobalTradeHistory();
+    }
+  );
+
+  // ── Checkpoint endpoints are in creRoutes.ts (GET/POST /cre/checkpoints/:sessionId) ──
+
+  // ── Risk Sentinel Endpoints ────────────────────────────────────
+
+  /**
+   * GET /api/risk/overview
+   * Returns aggregated risk metrics across all active sessions.
+   */
+  app.get(
+    "/api/risk/overview",
+    async (_req: FastifyRequest, _reply: FastifyReply) => {
+      const allSessions = getAllSessions();
+      const metrics = allSessions.map((state) => {
+        const priceVec = lmsrPrices(state.q, state.bParams);
+        const oi = openInterest(state.q);
+        const lossMax = state.bParams.b * Math.log(state.q.length || 2);
+        const maxSkew = Math.max(...priceVec) - Math.min(...priceVec);
+        const totalAccounts = state.accounts.size;
+
+        let totalBalance = 0n;
+        let maxPosition = 0n;
+        for (const [, acc] of state.accounts) {
+          totalBalance += acc.balance;
+          for (const pos of acc.positions) {
+            if (pos > maxPosition) maxPosition = pos;
+          }
+        }
+
+        return {
+          sessionId: state.sessionId,
+          marketId: state.marketId.toString(),
+          nonce: state.nonce.toString(),
+          lastTradeAt: state.lastTradeAt,
+          openInterest: oi,
+          lossMax,
+          prices: priceVec,
+          maxSkew,
+          totalAccounts,
+          totalBalance: totalBalance.toString(),
+          maxPosition: maxPosition.toString(),
+          bParams: state.bParams,
+          riskCaps: state.riskCaps,
+        };
+      });
+
+      return { sessions: metrics, count: metrics.length };
     }
   );
 }

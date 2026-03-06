@@ -5,6 +5,7 @@ import MarketRegistryABI from './abi/MarketRegistry.json';
 import ChannelSettlementABI from './abi/ChannelSettlement.json';
 import MarketDraftBoardABI from './abi/MarketDraftBoard.json';
 import DraftClaimManagerABI from './abi/DraftClaimManager.json';
+import LiquidityVaultFactoryABI from './abi/LiquidityVaultFactory.json';
 
 // Verified deployed addresses on Avalanche Fuji (Testnet) V3
 export const CONTRACT_ADDRESSES = {
@@ -29,5 +30,6 @@ export const ABIS = {
     ChannelSettlement: ChannelSettlementABI as Abi,
     MarketDraftBoard: MarketDraftBoardABI as Abi,
     DraftClaimManager: DraftClaimManagerABI as Abi,
+    LiquidityVaultFactory: LiquidityVaultFactoryABI as Abi,
     ERC20: erc20Abi
 };

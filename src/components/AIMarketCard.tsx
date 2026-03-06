@@ -1,7 +1,7 @@
 
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, memo , MouseEvent } from "react";
+import { useState, memo, MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { Cpu, Bot, Sparkles, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -50,7 +50,7 @@ const AIMarketCard = memo(({ market }: AIMarketCardProps) => {
                     {/* Content */}
                     <div className="p-5 flex-1 flex flex-col relative z-10">
                         {/* Title */}
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-purple-600 dark:group-hover:text-cyan-400 transition-colors font-sans">
+                        <h3 className="text-lg font-bold text-foreground leading-tight mb-4 group-hover:text-purple-600 dark:group-hover:text-cyan-400 transition-colors font-sans">
                             {market.title}
                         </h3>
 

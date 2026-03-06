@@ -170,5 +170,36 @@ export const relayerApi = {
         const res = await fetch(`${RELAYER_BASE_URL}/api/history`);
         if (!res.ok) throw new Error(await res.text());
         return res.json();
+    },
+
+    /**
+     * Get checkpoint spec with EIP-712 digest for signing (AppFlow §7).
+     */
+    async getCheckpoint(sessionId: string) {
+        const res = await fetch(`${RELAYER_BASE_URL}/cre/checkpoints/${sessionId}`);
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    /**
+     * Submit user signatures for checkpoint finalization.
+     */
+    async submitCheckpointSigs(sessionId: string, userSigs: Record<string, string>) {
+        const res = await fetch(`${RELAYER_BASE_URL}/cre/checkpoints/${sessionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userSigs })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+    },
+
+    /**
+     * Get risk overview across all active sessions (Layer 5 Risk Sentinel).
+     */
+    async getRiskOverview() {
+        const res = await fetch(`${RELAYER_BASE_URL}/api/risk/overview`);
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
     }
 };

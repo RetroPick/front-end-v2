@@ -1,6 +1,6 @@
 import { Market } from "@/types/market";
 import { cn } from "@/lib/utils";
-import { useState, memo , MouseEvent } from "react";
+import { useState, memo, MouseEvent } from "react";
 import BetModal from "./BetModal";
 import { TrendingUp, TrendingDown, Activity, Globe, ArrowUpRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -53,7 +53,7 @@ const MacroMarketCard = memo(({ market }: MacroMarketCardProps) => {
                     <div className="p-5 flex-1 flex flex-col relative z-10">
                         {/* Title & Badge */}
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug max-w-[85%] font-serif">
+                            <h3 className="text-lg font-bold text-foreground leading-snug max-w-[85%] font-serif">
                                 {market.title}
                             </h3>
                             <div className={cn("w-2 h-2 rounded-full", accentBg)} />

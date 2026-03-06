@@ -7,7 +7,7 @@ const AuthPlaceholder = ({ title = "Connect Wallet to View", description = "Plea
     const { open } = useAppKit();
 
     return (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-6 bg-card/50 backdrop-blur-sm border border-border/50 rounded-3xl">
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-6">
             <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 blur-[50px] rounded-full" />
                 <div className="relative bg-gradient-to-br from-gray-900 to-black border border-primary/30 p-6 rounded-full shadow-2xl shadow-primary/20">

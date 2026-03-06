@@ -32,7 +32,7 @@ const MarketDetail = () => {
     <ThemeWrapper category={market.category}>
       <Header />
 
-      <main className="pt-24 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto text-slate-200">
+      <main className="pt-24 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto text-foreground">
 
         {/* Main Grid: Left (Chart & Info) | Right (TradingSidebar) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
@@ -43,7 +43,7 @@ const MarketDetail = () => {
             {/* Market Header Row */}
             <div className="flex gap-4 items-start mb-6">
               {/* Token Logo */}
-              <div className="w-[60px] h-[60px] shrink-0 bg-[#2b2b2b] rounded-full overflow-hidden flex items-center justify-center p-0.5 border border-[#3b3b3b]">
+              <div className="w-[60px] h-[60px] shrink-0 bg-secondary rounded-full overflow-hidden flex items-center justify-center p-0.5 border border-border">
                 {market.image ? (
                   <img src={market.image} alt={market.title} className="w-full h-full object-cover rounded-full" />
                 ) : (
@@ -54,7 +54,7 @@ const MarketDetail = () => {
               {/* Title & Info */}
               <div className="flex flex-col flex-1 pl-1">
                 <div className="flex justify-between items-start">
-                  <h1 className="text-[28px] lg:text-[34px] font-bold text-white tracking-tight leading-tight max-w-[90%]">
+                  <h1 className="text-[28px] lg:text-[34px] font-bold text-foreground tracking-tight leading-tight max-w-[90%]">
                     {market.title}
                   </h1>
                 </div>
@@ -62,20 +62,20 @@ const MarketDetail = () => {
                 {/* Secondary Header Info: Price To Beat, etc. */}
                 <div className="mt-3 flex gap-8 items-center text-sm">
                   <div className="flex flex-col">
-                    <span className="text-slate-500 font-medium">Price to beat</span>
-                    <span className="text-white font-bold text-[17px] mt-0.5 flex items-center gap-1">
+                    <span className="text-muted-foreground font-medium">Price to beat</span>
+                    <span className="text-foreground font-bold text-[17px] mt-0.5 flex items-center gap-1">
                       <span className="text-green-500">Up 0¢</span>
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-slate-500 font-medium">Final price</span>
-                    <span className="text-white font-bold text-[17px] mt-0.5 whitespace-nowrap">
+                    <span className="text-muted-foreground font-medium">Final price</span>
+                    <span className="text-foreground font-bold text-[17px] mt-0.5 whitespace-nowrap">
                       Waiting ...
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-slate-500 font-medium">Vol</span>
-                    <span className="text-white font-bold text-[17px] mt-0.5">
+                    <span className="text-muted-foreground font-medium">Vol</span>
+                    <span className="text-foreground font-bold text-[17px] mt-0.5">
                       {market.volume}
                     </span>
                   </div>
@@ -89,8 +89,8 @@ const MarketDetail = () => {
             </div>
 
             {/* Rules / Extra Section */}
-            <div className="mt-8 border border-[#2b2b2b] rounded-xl p-5 bg-[#1a1b1e]">
-              <h2 className="text-lg font-bold text-white mb-2">Rules</h2>
+            <div className="mt-8 border border-border rounded-xl p-5 bg-card">
+              <h2 className="text-lg font-bold text-foreground mb-2">Rules</h2>
               <p className="text-sm text-slate-400 leading-relaxed">
                 This market will resolve to "Yes" if the referenced asset class meets the predefined conditions at the designated expiry time.
                 Trading may halt prior to the final outcome. The resolution source shall be the official API data provided by leading index providers.

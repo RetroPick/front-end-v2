@@ -94,7 +94,7 @@ const CommoditiesMarketCard = memo(({ market }: CommoditiesMarketCardProps) => {
                         <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#1a1a1a] to-transparent opacity-80" />
 
                         <div className="absolute bottom-4 left-4 right-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            <h3 className="text-xl font-serif font-bold text-slate-900 dark:text-white leading-tight drop-shadow-md">
+                            <h3 className="text-xl font-serif font-bold text-foreground leading-tight drop-shadow-md">
                                 {market.title}
                             </h3>
                         </div>

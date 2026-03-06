@@ -67,7 +67,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
               </div>
               <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Retropick</h2>
             </Link>
-            <nav className="hidden lg:flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1 border border-border/50">
+            <nav className="hidden lg:flex items-center gap-2 bg-muted/50 rounded-full px-2 py-1 border border-border/50">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
@@ -84,7 +84,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
           </div>
 
           {/* Center: Search (Hidden on small, smaller on medium) */}
-          <div className="flex-1 max-w-md relative hidden md:block mx-4">
+          <div className="flex-1 max-w-xl relative hidden md:block mx-4">
             <div className="relative group">
               <Icon
                 name="search"
