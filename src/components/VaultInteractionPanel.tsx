@@ -82,198 +82,135 @@ const VaultInteractionPanel = () => {
     const displayBalance = activeTab === "deposit" ? tokenBalance : lpBalance;
 
     return (
-        <div className="bg-white dark:bg-[#15181D] rounded-2xl border border-slate-200 dark:border-white/5 shadow-xl relative overflow-hidden">
+        <div className="space-y-4">
+            <div className="bg-card/80 backdrop-blur-md border border-border rounded-xl p-4 shadow-xl relative overflow-hidden z-0">
 
-            {/* Tabs */}
-            <div className="grid grid-cols-2 border-b border-slate-200 dark:border-white/5">
-                <button
-                    onClick={() => setActiveTab("deposit")}
-                    className={cn(
-                        "py-4 text-sm font-bold uppercase tracking-wider transition-all",
-                        activeTab === "deposit"
-                            ? "bg-blue-50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500"
-                            : "text-slate-500 dark:text-gray-500 hover:text-slate-900 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5"
-                    )}
-                >
-                    Deposit
-                </button>
-                <button
-                    onClick={() => setActiveTab("withdraw")}
-                    className={cn(
-                        "py-4 text-sm font-bold uppercase tracking-wider transition-all",
-                        activeTab === "withdraw"
-                            ? "bg-purple-50 dark:bg-purple-900/10 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500"
-                            : "text-slate-500 dark:text-gray-500 hover:text-slate-900 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5"
-                    )}
-                >
-                    Withdraw
-                </button>
-            </div>
-
-            <div className="p-6">
-                {/* Balance Display */}
-                <div className="flex justify-between items-center mb-6 text-xs">
-                    <span className="text-slate-500 dark:text-gray-500 font-medium">Available to {activeTab === "deposit" ? "Deposit" : "Withdraw"}</span>
-                    <span className="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5 px-2 py-1 rounded border border-slate-200 dark:border-white/10">
-                        {activeTab === "deposit" ? `${displayBalance.toLocaleString()} ${selectedToken}` : `${displayBalance.toLocaleString()} LP-${selectedToken}`}
-                    </span>
-                </div>
-
-                {/* Input Area */}
-                <div className="space-y-4 mb-6">
-                    <div className="relative group">
-                        <label className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider mb-1.5 block">Amount</label>
-                        <div className="relative">
-                            <input
-                                type="number"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className={cn(
-                                    "block w-full bg-slate-50 dark:bg-black/40 border rounded-xl py-4 pl-4 pr-32 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-600 text-2xl font-mono focus:ring-1 transition-all outline-none",
-                                    activeTab === "deposit"
-                                        ? "border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-blue-500"
-                                        : "border-slate-200 dark:border-white/10 focus:border-purple-500 focus:ring-purple-500"
-                                )}
-                                placeholder="0.00"
-                            />
-
-                            {/* Token Selector / Display */}
-                            <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-                                <div className="h-8 w-[1px] bg-slate-200 dark:bg-white/10"></div>
-                                {activeTab === "deposit" ? (
-                                    <div className="relative group/token">
-                                        <button className="flex items-center gap-2 px-2 py-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors">
-                                            <span className="font-bold text-sm text-slate-900 dark:text-white">{selectedToken}</span>
-                                            <Icon name="expand_more" className="text-sm text-slate-400" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <span className="font-bold text-sm text-slate-900 dark:text-white px-2">LP-{selectedToken}</span>
-                                )}
-                            </div>
-                        </div>
+                {/* Header Tabs: Deposit / Withdraw & Token Select (Buy/Sell style) */}
+                <div className="flex items-center justify-between mb-5">
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setActiveTab("deposit")}
+                            className={cn(
+                                "text-[15px] font-bold pb-1 transition-colors",
+                                activeTab === "deposit" ? "text-foreground border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            Deposit
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("withdraw")}
+                            className={cn(
+                                "text-[15px] font-bold pb-1 transition-colors",
+                                activeTab === "withdraw" ? "text-foreground border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            Withdraw
+                        </button>
                     </div>
 
-                    {/* Percentage Buttons */}
-                    <div className="flex gap-2">
-                        {["25%", "50%", "75%", "MAX"].map((percent) => (
-                            <button
-                                key={percent}
-                                onClick={percent === "MAX" ? handleMaxClick : () => {
-                                    const perc = parseInt(percent.replace("%", ""));
-                                    setAmount((displayBalance * (perc / 100)).toString());
-                                }}
-                                className={cn(
-                                    "flex-1 text-[10px] font-mono py-2 rounded-lg border transition-all",
-                                    percent === "MAX"
-                                        ? (activeTab === "deposit" ? "bg-blue-50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30" : "bg-purple-50 dark:bg-purple-900/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/30")
-                                        : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-500 border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10"
-                                )}
-                            >
-                                {percent}
-                            </button>
-                        ))}
-                    </div>
+                    <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground bg-secondary hover:bg-secondary/80 px-2.5 py-1 rounded transition-colors">
+                        {activeTab === "deposit" ? selectedToken : `LP-${selectedToken}`}
+                        <Icon name="expand_more" className="text-[16px]" />
+                    </button>
                 </div>
 
-                {/* Estimate Box */}
-                <div className="bg-slate-50 dark:bg-black/20 rounded-xl p-4 border border-slate-200 dark:border-white/5 mb-6 space-y-3">
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500 dark:text-gray-400">Receive (Est.)</span>
-                        <span className={cn(
-                            "font-mono font-bold text-lg",
-                            activeTab === "deposit" ? "text-blue-600 dark:text-blue-400" : "text-purple-600 dark:text-purple-400"
-                        )}>
-                            {amount ? (parseFloat(amount) * 1.0).toFixed(2) : "0.00"} {activeTab === "deposit" ? "LP" : selectedToken}
+                {/* Amount Input (Buy/Sell style) */}
+                <div className="mb-4 relative">
+                    <div className="flex justify-between items-center mb-1">
+                        <label className="text-sm font-medium text-muted-foreground">Amount</label>
+                        <span className="text-3xl font-bold text-muted-foreground/30 absolute right-0 top-6 select-none pointer-events-none">
+                            ${amount || "0"}
                         </span>
                     </div>
-                    <div className="w-full h-[1px] bg-slate-200 dark:bg-white/5"></div>
-                    <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400 dark:text-gray-500">Exchange Rate</span>
-                        <span className="font-mono text-slate-600 dark:text-gray-300">1 {selectedToken} = 1 LP</span>
+                    <div className="text-[12px] text-muted-foreground mb-2">
+                        Balance {activeTab === "deposit" ? `${displayBalance.toLocaleString()} ${selectedToken}` : `${displayBalance.toLocaleString()} LP`}
+                    </div>
+
+                    <input
+                        type="text"
+                        value={amount}
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, "");
+                            setAmount(val);
+                        }}
+                        placeholder="0"
+                        className="w-full bg-transparent border-b border-border text-foreground focus:outline-none py-2 text-3xl font-bold caret-primary pr-20 md:pr-[120px]"
+                    />
+
+                    {/* Quick Add Buttons (Buy/Sell style: $1, $5, $10, $100, Max) */}
+                    <div className="flex gap-2 mt-4 justify-end">
+                        {["1", "5", "10", "100"].map((val) => (
+                            <button
+                                key={val}
+                                onClick={() => setAmount((parseFloat(amount || "0") + parseFloat(val)).toString())}
+                                className="px-2.5 py-1 rounded-md bg-secondary hover:bg-secondary/80 text-xs font-bold text-muted-foreground transition-colors"
+                            >
+                                ${val}
+                            </button>
+                        ))}
+                        <button
+                            onClick={handleMaxClick}
+                            className="px-2.5 py-1 rounded-md bg-secondary hover:bg-secondary/80 text-xs font-bold text-muted-foreground transition-colors"
+                        >
+                            Max
+                        </button>
                     </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3 relative">
-                    {!isConnected ? (
-                        <button
-                            className="w-full py-4 rounded-xl font-bold text-sm shadow-lg flex justify-center items-center gap-2 transition-all bg-slate-800 text-white"
-                        >
-                            Connect Wallet
-                        </button>
-                    ) : (
-                        <>
-                            {/* Approve Step (Only for Deposit) */}
-                            {activeTab === "deposit" && (
-                                <div className="relative">
-                                    <button
-                                        onClick={step === "approve" ? handleApprove : undefined}
-                                        disabled={step !== "approve" || isProcessing}
-                                        className={cn(
-                                            "w-full py-3.5 border rounded-xl text-xs font-bold flex items-center justify-between px-4 transition-all",
-                                            step === "approve"
-                                                ? "bg-white dark:bg-[#15181D] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5"
-                                                : "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-500/30 text-green-700 dark:text-green-400 opacity-80 cursor-default"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn(
-                                                "w-6 h-6 rounded-full flex items-center justify-center border transition-all",
-                                                step === "approve"
-                                                    ? "border-slate-300 dark:border-white/20 text-slate-400"
-                                                    : "bg-green-100 dark:bg-green-500/20 border-green-500 text-green-600 dark:text-green-400"
-                                            )}>
-                                                {isApproving && step === "approve" ? (
-                                                    <Icon name="progress_activity" className="animate-spin text-xs" />
-                                                ) : step === "approve" ? (
-                                                    <span className="text-[10px]">1</span>
-                                                ) : (
-                                                    <Icon name="check" className="text-xs" />
-                                                )}
-                                            </div>
-                                            <span>1. Approve {selectedToken}</span>
-                                        </div>
-                                        {step !== "approve" && (
-                                            <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Completed</span>
-                                        )}
-                                    </button>
-                                    {/* Connector Line */}
-                                    <div className={cn(
-                                        "absolute left-[27px] top-10 bottom-[-14px] w-[1px] z-0 transition-colors",
-                                        step === "approve" ? "bg-slate-200 dark:bg-white/10" : "bg-blue-500/30"
-                                    )}></div>
-                                </div>
-                            )}
+                {/* Receive (Est.) - Buy/Sell Chance to Win style */}
+                {Number(amount) > 0 && (
+                    <div className="mb-4 py-3 px-4 rounded-lg bg-primary/10 border border-primary/20">
+                        <div className="text-sm font-medium text-muted-foreground mb-1">Receive (Est.)</div>
+                        <div className="text-lg font-bold text-foreground">
+                            {amount ? (parseFloat(amount) * 1.0).toFixed(2) : "0.00"} {activeTab === "deposit" ? "LP" : selectedToken}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">1 {selectedToken} = 1 LP</div>
+                    </div>
+                )}
 
-                            {/* Confirm Step */}
+                {/* Action Buttons */}
+                {!isConnected ? (
+                    <button className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors shadow-sm">
+                        Connect Wallet
+                    </button>
+                ) : (
+                    <>
+                        {/* Approve Step (Only for Deposit) */}
+                        {activeTab === "deposit" && needsApproval && (
                             <button
-                                onClick={handleConfirm}
-                                disabled={(activeTab === "deposit" && step === "approve") || amountVal <= 0 || isProcessing}
+                                onClick={step === "approve" ? handleApprove : undefined}
+                                disabled={step !== "approve" || isProcessing}
                                 className={cn(
-                                    "relative z-10 w-full py-4 rounded-xl font-bold text-sm shadow-lg flex justify-center items-center gap-2 transition-all transform active:scale-[0.98]",
-                                    (activeTab === "deposit" && step === "approve") || amountVal <= 0
-                                        ? "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-600 border border-slate-200 dark:border-white/5 cursor-not-allowed shadow-none"
-                                        : activeTab === "deposit"
-                                            ? "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/25"
-                                            : "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-500/25"
+                                    "w-full py-3 px-4 rounded-lg text-xs font-bold flex items-center justify-between mb-2 transition-all",
+                                    step === "approve"
+                                        ? "bg-secondary text-foreground hover:bg-secondary/80"
+                                        : "bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400"
                                 )}
                             >
-                                {isVaultTxPending && step === "confirm" ? (
-                                    <Icon name="progress_activity" className="animate-spin text-lg" />
-                                ) : (
-                                    <>
-                                        <span>{activeTab === "deposit" ? "2. Confirm Deposit" : "Confirm Withdraw"}</span>
-                                        <Icon name="arrow_forward" className="text-lg" />
-                                    </>
-                                )}
+                                <span>{step === "approve" ? "1. Approve USDC" : "1. Approve USDC"}</span>
+                                {step !== "approve" && <Icon name="check" className="text-sm" />}
                             </button>
-                        </>
-                    )}
+                        )}
 
-                    <p className="text-[10px] text-center text-slate-400 dark:text-gray-500 mt-4">
-                        By interacting, you agree to the <a href="#" className="text-blue-500 hover:underline">Risks & Terms</a>.
-                    </p>
+                        <button
+                            onClick={handleConfirm}
+                            disabled={(activeTab === "deposit" && needsApproval && step === "approve") || amountVal <= 0 || isProcessing}
+                            className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors shadow-sm disabled:opacity-50"
+                        >
+                            {isVaultTxPending && step === "confirm" ? (
+                                "Processing..."
+                            ) : activeTab === "deposit" ? (
+                                needsApproval && step === "approve" ? "Approve First" : "Deposit"
+                            ) : (
+                                "Withdraw"
+                            )}
+                        </button>
+                    </>
+                )}
+
+                {/* Terms text (Buy/Sell style) */}
+                <div className="mt-5 text-center text-[10px] sm:text-xs text-muted-foreground">
+                    By interacting, you agree to the <a href="#" className="underline hover:text-foreground transition-colors">Risks & Terms</a>.
                 </div>
             </div>
 
@@ -285,7 +222,7 @@ const VaultInteractionPanel = () => {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white dark:bg-[#15181D] rounded-2xl border border-slate-200 dark:border-white/10 p-6 w-full max-w-sm shadow-2xl text-center"
+                            className="bg-card rounded-2xl border border-border p-6 w-full max-w-sm shadow-2xl text-center"
                         >
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-4",

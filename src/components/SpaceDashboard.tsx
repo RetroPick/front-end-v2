@@ -34,7 +34,7 @@ const SpaceDashboard = () => {
     }, [newsItems.length]);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
             {/* Background: Stars */}
             {/* Light Mode: Subtle pattern / Dark Mode: Deep Space Stars */}
             <div className="absolute inset-0 z-0 pointer-events-none">

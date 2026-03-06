@@ -20,17 +20,16 @@ const NeonMarketCard = memo(({ market }: NeonMarketCardProps) => {
 
     return (
         <>
-            <div className="relative group overflow-hidden rounded-2xl bg-white dark:bg-[#0a0f1c] border border-slate-200 dark:border-blue-500/30 hover:border-blue-500/50 shadow-xl shadow-black/10 dark:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300">
+            <div className="relative group overflow-hidden isolate rounded-2xl bg-card border border-slate-200 dark:border-blue-500/30 hover:border-blue-500/50 shadow-xl shadow-black/10 dark:shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-[0_0_25px_rgba(59,130,246,0.3)] transition-all duration-300">
 
-                {/* Background Image with Overlay */}
-                <div className="absolute inset-0 z-0">
+                {/* Background Image with Overlay - -inset-px for pixel-perfect edge coverage */}
+                <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl">
                     <img
                         src={market.image}
                         alt={market.title}
-                        className="w-full h-full object-cover opacity-10 dark:opacity-40 group-hover:opacity-20 dark:group-hover:opacity-50 transition-opacity duration-500"
+                        className="absolute inset-0 w-full h-full object-cover opacity-10 dark:opacity-40 group-hover:opacity-20 dark:group-hover:opacity-50 transition-opacity duration-500"
                     />
-                    {/* Gradient: White fade for light mode, Dark fade for dark mode */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-[#050b14] dark:via-[#050b14]/80 dark:to-transparent" />
+                    <div className="absolute -inset-px bg-gradient-to-t from-white via-white/90 to-transparent dark:from-[#050b14] dark:via-[#050b14]/80 dark:to-transparent rounded-2xl" />
                 </div>
 
                 {/* Content */}

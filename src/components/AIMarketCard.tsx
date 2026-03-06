@@ -14,14 +14,14 @@ const AIMarketCard = memo(({ market }: AIMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
-    const handleBetClick = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
+    const handleBet = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
         e.stopPropagation();
         setBetModal({ open: true, side: 'YES', outcome: outcomeLabel });
     };
 
     return (
         <>
-            <div className="group relative w-full h-[340px] perspective-1000">
+            <div className="group relative w-full min-h-[280px] md:min-h-[340px] h-[280px] md:h-[340px] perspective-1000">
                 {/* Holographic Border Container */}
                 <div className="absolute inset-0 bg-transparent rounded-xl border border-purple-500/20 dark:border-purple-500/40 group-hover:border-cyan-400/50 transition-colors duration-500 overflow-hidden shadow-lg shadow-black/10 dark:shadow-[0_0_20px_rgba(168,85,247,0.15)] flex flex-col bg-white dark:bg-black/90 backdrop-blur-md">
 
@@ -29,7 +29,7 @@ const AIMarketCard = memo(({ market }: AIMarketCardProps) => {
                     <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-0 group-hover:opacity-100 dark:group-hover:animate-scan z-20 pointer-events-none" />
 
                     {/* Header: Tech Spec Look */}
-                    <div className="h-12 border-b border-purple-100 dark:border-purple-500/20 flex items-center justify-between px-4 bg-purple-50/50 dark:bg-purple-900/10">
+                    <div className="relative z-10 h-12 border-b border-purple-100 dark:border-purple-500/20 flex items-center justify-between px-4 bg-purple-50/50 dark:bg-purple-900/10">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 rounded-md bg-purple-100 dark:bg-purple-500/20">
                                 <Cpu className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -55,7 +55,7 @@ const AIMarketCard = memo(({ market }: AIMarketCardProps) => {
                         </h3>
 
                         {/* Background Grid Pattern (Subtle) */}
-                        <div className="absolute right-0 top-10 opacity-5 dark:opacity-20 pointer-events-none">
+                        <div className="absolute right-0 top-10 opacity-5 dark:opacity-20 pointer-events-none z-0">
                             <Bot className="w-32 h-32 text-purple-500" />
                         </div>
 

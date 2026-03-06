@@ -21,24 +21,25 @@ const CryptoMarketCard = memo(({ market }: CryptoMarketCardProps) => {
             : market.title.includes("Solana") || market.title.includes("SOL") ? "Solana"
                 : "General";
 
-    const handleBetClick = (e: MouseEvent<HTMLButtonElement>, side: 'YES' | 'NO', outcomeLabel: string) => {
+    const handleBet = (e: MouseEvent<HTMLButtonElement>, side: 'YES' | 'NO', outcomeLabel: string) => {
         e.stopPropagation();
         setBetModal({ open: true, side, outcome: outcomeLabel });
     };
 
     // Assumes largely binary markets (Yes/No) which is the standard for prediction markets
-    const yesOutcome = market.outcomes.find(o => o.label.toLowerCase() === 'yes' || o.id === 'yes') || market.outcomes[0];
-    const noOutcome = market.outcomes.find(o => o.label.toLowerCase() === 'no' || o.id === 'no') || market.outcomes[1];
+    const outcomes = market.outcomes ?? [];
+    const yesOutcome = outcomes.find(o => o.label.toLowerCase() === 'yes' || o.id === 'yes') || outcomes[0];
+    const noOutcome = outcomes.find(o => o.label.toLowerCase() === 'no' || o.id === 'no') || outcomes[1];
 
     // Ensure we have valid fallback values
-    const yesProb = Math.round(yesOutcome?.probability || 50);
-    const noProb = Math.round(noOutcome?.probability || 50);
+    const yesProb = Math.round(yesOutcome?.probability ?? 50);
+    const noProb = Math.round(noOutcome?.probability ?? 50);
 
     return (
         <>
             <div
                 onClick={() => navigate(`/app/market/${market.id}`)}
-                className="group relative w-full flex flex-col justify-between p-4 sm:p-5 rounded-[12px] border border-slate-200 dark:border-[#2b2b2b] bg-white dark:bg-[#1a1b1e] hover:border-slate-300 dark:hover:border-[#404040] hover:bg-slate-50 dark:hover:bg-[#1e2025] transition-colors duration-200 cursor-pointer h-full min-h-[220px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:shadow-none dark:hover:shadow-none"
+                className="group relative w-full flex flex-col justify-between p-4 sm:p-5 rounded-xl border border-border bg-card hover:border-border/80 hover:bg-card-hover transition-colors duration-200 cursor-pointer h-full min-h-[220px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:shadow-none dark:hover:shadow-none overflow-hidden isolate"
             >
 
                 {/* Top Section */}
@@ -57,7 +58,7 @@ const CryptoMarketCard = memo(({ market }: CryptoMarketCardProps) => {
 
                         {/* Volume Indicator */}
                         <span className="text-[13px] font-medium text-slate-500 dark:text-slate-400 font-sans tracking-tight">
-                            {market.volume} Vol
+                            {t('market_card.volume')}: {market.volume}
                         </span>
                     </div>
 
@@ -71,22 +72,24 @@ const CryptoMarketCard = memo(({ market }: CryptoMarketCardProps) => {
                 <div className="mt-5 flex flex-col gap-3">
                     {/* Probability split bar - ultra thin like Polymarket */}
                     <div className="w-full h-1.5 rounded-full flex overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <div className="bg-[#22c55e] transition-all duration-500" style={{ width: `${yesProb}%` }} />
-                        <div className="bg-[#ef4444] transition-all duration-500" style={{ width: `${noProb}%` }} />
+                        <div className="bg-accent-green transition-all duration-500" style={{ width: `${yesProb}%` }} />
+                        <div className="bg-destructive transition-all duration-500" style={{ width: `${noProb}%` }} />
                     </div>
 
                     {/* Betting Buttons */}
                     <div className="grid grid-cols-2 gap-2 mt-1">
                         <button
-                            onClick={(e) => handleBetClick(e, 'YES', yesOutcome?.label || 'Yes')}
-                            className="flex items-center justify-between px-3 py-2.5 rounded-[8px] bg-[#e0f2fe] dark:bg-[#0284c7]/20 text-[#0284c7] dark:text-[#38bdf8] hover:bg-[#bae6fd] dark:hover:bg-[#0284c7]/30 transition-colors font-bold text-[14px]"
+                            onClick={(e) => handleBet(e, 'YES', yesOutcome?.label || 'Yes')}
+                            aria-label={`${t('market_card.bet_yes')} ${market.title}`}
+                            className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-accent-cyan/20 text-accent-cyan hover:bg-accent-cyan/30 transition-colors font-bold text-[14px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                             <span>Yes</span>
                             <span>{yesProb}¢</span>
                         </button>
                         <button
-                            onClick={(e) => handleBetClick(e, 'NO', noOutcome?.label || 'No')}
-                            className="flex items-center justify-between px-3 py-2.5 rounded-[8px] bg-[#fee2e2] dark:bg-[#ef4444]/15 text-[#dc2626] dark:text-[#f87171] hover:bg-[#fecaca] dark:hover:bg-[#ef4444]/25 transition-colors font-bold text-[14px]"
+                            onClick={(e) => handleBet(e, 'NO', noOutcome?.label || 'No')}
+                            aria-label={`${t('market_card.bet_no')} ${market.title}`}
+                            className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors font-bold text-[14px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                             <span>No</span>
                             <span>{noProb}¢</span>

@@ -21,10 +21,10 @@ const PoliticsMarketCard = memo(({ market }: PoliticsMarketCardProps) => {
 
     return (
         <>
-            <div className="group relative flex flex-col w-full aspect-square bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg shadow-black/5 hover:shadow-2xl hover:shadow-black/15 dark:hover:shadow-black/50 transition-all duration-300 transform hover:-translate-y-1">
+            <div className="group relative flex flex-col w-full aspect-square bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden isolate shadow-lg shadow-black/5 hover:shadow-2xl hover:shadow-black/15 dark:hover:shadow-black/50 transition-all duration-300 transform hover:-translate-y-1">
 
                 {/* Image Section - Distinct from text to prevent clashing */}
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-48 overflow-hidden isolate z-0 rounded-t-xl">
                     <div className="absolute top-3 left-3 z-20">
                         <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white bg-red-600/90 shadow-sm rounded-md backdrop-blur-sm">
                             {t('dashboard.live_coverage')}
@@ -33,14 +33,14 @@ const PoliticsMarketCard = memo(({ market }: PoliticsMarketCardProps) => {
                     <img
                         src={market.image}
                         alt={market.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    {/* Minimal gradient just for bottom edge definition */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                    {/* Minimal gradient -inset-px for pixel-perfect edge coverage */}
+                    <div className="absolute -inset-px bg-gradient-to-t from-black/20 to-transparent pointer-events-none rounded-t-xl" />
                 </div>
 
                 {/* Content Section - Clean News Style */}
-                <div className="flex flex-col flex-1 p-5 relative">
+                <div className="flex flex-col flex-1 p-5 relative z-10">
                     {/* Metadata */}
                     <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mb-3 font-medium">
                         <div className="flex items-center gap-1">

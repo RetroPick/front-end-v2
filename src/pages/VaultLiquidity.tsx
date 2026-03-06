@@ -14,27 +14,33 @@ const VaultLiquidity = () => {
     const vaultMarkets = markets.slice(0, 10);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#060606] text-slate-900 dark:text-gray-100 font-sans transition-colors duration-300 pb-20">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-gray-100 font-sans transition-colors duration-300 pb-20">
             <Header />
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-10">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-40 pb-10">
 
-                {/* Header Section */}
-                <div className="mb-10">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Liquidity Provider Dashboard</h1>
-                            <p className="text-slate-500 dark:text-gray-400 max-w-2xl font-light">Manage your liquidity positions across ERC-4626 Vaults. Earn yield from trading fees.</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button className="px-5 py-2.5 text-sm font-medium flex items-center gap-2 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-all">
+                {/* Page Header */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">Liquidity Provider Dashboard</h1>
+                    <p className="text-slate-500 dark:text-gray-400 max-w-2xl font-light">Manage your liquidity positions across ERC-4626 Vaults. Earn yield from trading fees.</p>
+                </div>
+
+                {/* Second Navbar - History / New Position (connects to header) */}
+                <div className="mb-8 -mt-1">
+                    <div className="w-full bg-background/60 dark:bg-white/5 backdrop-blur-lg border border-border rounded-t-none rounded-b-2xl border-t-0 px-4 py-2 flex items-center justify-between gap-4 shadow-sm">
+                        <div className="flex gap-2">
+                            <button className="px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent transition-all shrink-0">
                                 <Icon name="history" className="text-lg" /> History
                             </button>
-                            <Link to="/app/vault/1" className="px-6 py-2.5 text-sm font-bold uppercase tracking-wider flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/50 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all duration-200 shadow-lg shadow-blue-500/10 dark:shadow-[0_0_15px_rgba(59,130,246,0.3)] rounded-xl">
+                            <Link to="/app/vault/1" className="px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all shrink-0">
                                 <Icon name="add" className="text-lg" /> New Position
                             </Link>
                         </div>
                     </div>
+                </div>
+
+                {/* Header Section */}
+                <div className="mb-10">
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -129,7 +135,7 @@ const VaultLiquidity = () => {
                                     <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                                         <td className="py-5 px-6 align-middle">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 flex items-center justify-center rounded-lg group-hover:border-blue-500/30 dark:group-hover:border-blue-500/50 transition-colors">
+                                                <div className="w-10 h-10 bg-slate-100 dark:bg-card border border-slate-200 dark:border-white/10 flex items-center justify-center rounded-lg group-hover:border-blue-500/30 dark:group-hover:border-blue-500/50 transition-colors">
                                                     <Icon name="rocket_launch" className="text-slate-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 text-base" />
                                                 </div>
                                                 <div>
@@ -150,7 +156,7 @@ const VaultLiquidity = () => {
                                     <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                                         <td className="py-5 px-6 align-middle">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 flex items-center justify-center rounded-lg group-hover:border-blue-500/30 dark:group-hover:border-blue-500/50 transition-colors">
+                                                <div className="w-10 h-10 bg-slate-100 dark:bg-card border border-slate-200 dark:border-white/10 flex items-center justify-center rounded-lg group-hover:border-blue-500/30 dark:group-hover:border-blue-500/50 transition-colors">
                                                     <Icon name="psychology" className="text-slate-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 text-base" />
                                                 </div>
                                                 <div>
@@ -171,7 +177,7 @@ const VaultLiquidity = () => {
                                     <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                                         <td className="py-5 px-6 align-middle">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 flex items-center justify-center rounded-lg group-hover:border-blue-500/30 dark:group-hover:border-blue-500/50 transition-colors">
+                                                <div className="w-10 h-10 bg-slate-100 dark:bg-card border border-slate-200 dark:border-white/10 flex items-center justify-center rounded-lg group-hover:border-blue-500/30 dark:group-hover:border-blue-500/50 transition-colors">
                                                     <Icon name="currency_bitcoin" className="text-slate-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 text-base" />
                                                 </div>
                                                 <div>
@@ -192,7 +198,7 @@ const VaultLiquidity = () => {
                             </table>
                         </div>
                         {/* Table Footer */}
-                        <div className="bg-slate-50 dark:bg-[#111111]/50 px-6 py-4 border-t border-slate-200 dark:border-white/10 text-xs text-slate-500 dark:text-gray-500 flex justify-between items-center backdrop-blur-md">
+                        <div className="bg-slate-50 dark:bg-card/50 px-6 py-4 border-t border-slate-200 dark:border-white/10 text-xs text-slate-500 dark:text-gray-500 flex justify-between items-center backdrop-blur-md">
                             <span>Total Invested Capital: <span className="font-mono font-bold text-slate-900 dark:text-gray-300">$12,200.00</span></span>
                             <span>Net APY: <span className="font-mono font-bold text-blue-600 dark:text-blue-400">~8.2%</span></span>
                         </div>
@@ -207,7 +213,7 @@ const VaultLiquidity = () => {
                             All LP Vaults
                         </h2>
                         <div className="flex flex-wrap md:flex-nowrap gap-3">
-                            <div className="flex border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#111111] rounded-lg overflow-hidden">
+                            <div className="flex border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-card rounded-lg overflow-hidden">
                                 <button
                                     onClick={() => setFilter("binary")}
                                     className={`px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-white/50 dark:hover:bg-white/5 border-r border-slate-200 dark:border-white/10 transition-colors ${filter === "binary" ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-gray-500"}`}
@@ -291,7 +297,7 @@ const VaultLiquidity = () => {
                             </table>
                         </div>
                         {/* Pagination */}
-                        <div className="px-6 py-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#111111]/50 flex items-center justify-between backdrop-blur-md">
+                        <div className="px-6 py-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-card/50 flex items-center justify-between backdrop-blur-md">
                             <div className="text-xs text-slate-500 dark:text-gray-500">
                                 Showing <span className="font-bold text-slate-900 dark:text-white">1-{vaultMarkets.length}</span> of <span className="font-bold text-slate-900 dark:text-white">{markets.length}</span> vaults
                             </div>

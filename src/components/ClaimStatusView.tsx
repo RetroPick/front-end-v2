@@ -6,7 +6,7 @@ const ClaimStatusView = () => {
         <div>
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 font-medium">
-                <Link to="/app" className="hover:text-white transition-colors">Creator Dashboard</Link>
+                <Link to="/app" className="hover:text-white transition-colors">Dashboard</Link>
                 <Icon name="chevron_right" className="text-xs" />
                 <span className="hover:text-white transition-colors cursor-pointer">Claims</span>
                 <Icon name="chevron_right" className="text-xs" />

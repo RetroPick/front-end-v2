@@ -78,7 +78,7 @@ const Activity = () => {
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
             <Header />
 
-            <div className="container mx-auto px-4 pt-32 pb-20 max-w-6xl">
+            <div className="container mx-auto px-4 pt-40 pb-20 max-w-6xl">
                 {/* Page Header */}
                 <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
@@ -93,33 +93,36 @@ const Activity = () => {
                     )}
                 </div>
 
-                {/* Tabs */}
-                <div className="flex items-center gap-2 mb-8">
-                    <button
-                        onClick={() => setActiveTab("global")}
-                        className={cn(
-                            "px-4 py-2 rounded-full text-sm font-bold transition-all border",
-                            activeTab === "global"
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
-                        )}
-                    >
-                        Global Feed
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("my")}
-                        disabled={!isConnected}
-                        className={cn(
-                            "px-4 py-2 rounded-full text-sm font-bold transition-all border",
-                            activeTab === "my"
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground",
-                            !isConnected && "opacity-50 cursor-not-allowed"
-                        )}
-                    >
-                        My Trades
-                    </button>
+                {/* Second Navbar - Global Feed / My Trades (connects to header) */}
+                <div className="mb-8 -mt-1">
+                    <div className="w-full bg-background/60 backdrop-blur-lg border border-border rounded-t-none rounded-b-2xl border-t-0 px-4 py-2 flex items-center gap-2 shadow-sm">
+                        <button
+                            onClick={() => setActiveTab("global")}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-sm font-bold transition-all shrink-0",
+                                activeTab === "global"
+                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
+                            )}
+                        >
+                            Global Feed
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("my")}
+                            disabled={!isConnected}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-sm font-bold transition-all shrink-0",
+                                activeTab === "my"
+                                    ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent",
+                                !isConnected && "opacity-50 cursor-not-allowed"
+                            )}
+                        >
+                            My Trades
+                        </button>
+                    </div>
                 </div>
+
 
                 {/* Table Container */}
                 <div className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm">

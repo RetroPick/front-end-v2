@@ -205,18 +205,18 @@
 
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #2563eb 0%, #0891b2 50%, #6366f1 100%);
+    background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent-cyan)) 50%, hsl(var(--ring)) 100%);
   }
 
   .text-gradient-animated {
     @apply inline-block bg-clip-text text-transparent bg-[length:200%_auto];
     background-image: linear-gradient(
       90deg,
-      #2563eb 0%,
-      #0891b2 25%,
-      #06b6d4 50%,
-      #6366f1 75%,
-      #8b5cf6 100%
+      hsl(var(--primary)) 0%,
+      hsl(var(--accent-cyan)) 25%,
+      hsl(var(--accent-cyan)) 50%,
+      hsl(var(--ring)) 75%,
+      hsl(var(--accent-magenta)) 100%
     );
     animation: gradient-shift 4s ease-in-out infinite, glow-pulse 2.5s ease-in-out infinite;
     filter: drop-shadow(0 0 24px rgba(59, 130, 246, 0.5)) drop-shadow(0 0 48px rgba(99, 102, 241, 0.35));

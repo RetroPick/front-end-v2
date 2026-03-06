@@ -13,7 +13,7 @@ const CorporateMarketCard = memo(({ market }: CorporateMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
-    const handleBetClick = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
+    const handleBet = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
         e.stopPropagation();
         setBetModal({ open: true, side: 'YES', outcome: outcomeLabel });
     };
@@ -23,7 +23,7 @@ const CorporateMarketCard = memo(({ market }: CorporateMarketCardProps) => {
             <div className="group relative w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl shadow-black/5 dark:shadow-black/20 transition-all duration-300 hover:-translate-y-1">
 
                 {/* Header: Ticker Tape Style */}
-                <div className="bg-slate-50 dark:bg-slate-950 px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/10 transition-colors">
+                <div className="relative z-10 bg-slate-50 dark:bg-slate-950 px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/10 transition-colors">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
                             <Building2 className="w-4 h-4" />

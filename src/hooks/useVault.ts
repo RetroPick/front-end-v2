@@ -1,73 +1,76 @@
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
-import { parseUnits, formatUnits } from 'viem';
+import { useReadContract, useWriteContract, useAccount, useChainId } from 'wagmi';
+import { parseUnits, formatUnits, type Address } from 'viem';
 import { CONTRACT_ADDRESSES, ABIS } from '@/contracts/config';
-import { useState, useEffect } from 'react';
 
-export function useVault(tokenSymbol: string = "USDC") {
+const FUJI_CHAIN_ID = 43113;
+
+export function useVault(tokenAddress?: Address) {
     const { address } = useAccount();
+    const chainId = useChainId();
 
-    // In a real scenario, map tokenSymbol to address. For now, we mock just USDC
-    const tokenAddress = CONTRACT_ADDRESSES.USDC;
+    const isFuji = chainId === FUJI_CHAIN_ID;
+    const token = tokenAddress ?? CONTRACT_ADDRESSES.USDC;
     const vaultAddress = CONTRACT_ADDRESSES.CollateralVault;
 
-    // Read Balance of Token
+    // Read Balance of Token (only on Fuji)
     const { data: tokenBalanceData, refetch: refetchTokenBalance } = useReadContract({
-        address: tokenAddress,
+        address: token,
         abi: ABIS.ERC20,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
         query: {
-            enabled: !!address,
+            enabled: !!address && isFuji,
         }
     });
 
-    // Read LP Balance (Mocked as reading some Vault state, though CollateralVault might not issue LP directly in standard way, we mimic it)
-    const { data: lpBalanceData, refetch: refetchLPBalance } = useReadContract({
-        address: tokenAddress, // Should ideally be LP token. We use dummy mapping
+    // Read LP Balance (Mocked - disabled)
+    const { refetch: refetchLPBalance } = useReadContract({
+        address: token,
         abi: ABIS.ERC20,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
-        query: { enabled: false } // Disabled for now, as we don't have an LP token address 
+        query: { enabled: false }
     });
 
-    // Read Allowance
+    // Read Allowance (only on Fuji)
     const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
-        address: tokenAddress,
+        address: token,
         abi: ABIS.ERC20,
         functionName: 'allowance',
         args: address ? [address, vaultAddress] : undefined,
         query: {
-            enabled: !!address,
+            enabled: !!address && isFuji,
         }
     });
 
-    // Read Vault Free Balance
+    // Read Vault Free Balance (only on Fuji)
     const { data: freeBalanceData, refetch: refetchFreeBalance } = useReadContract({
         address: vaultAddress,
         abi: ABIS.CollateralVault,
         functionName: 'freeBalance',
         args: address ? [address] : undefined,
         query: {
-            enabled: !!address,
+            enabled: !!address && isFuji,
         }
     });
 
-    // Write Approve
     const { writeContractAsync: writeApprove, isPending: isApproving } = useWriteContract();
-
-    // Write Deposit/Withdraw
     const { writeContractAsync: writeVault, isPending: isVaultTxPending } = useWriteContract();
 
-    // Helper to format balances (assumes 6 decimals for USDC)
     const tokenBalance = tokenBalanceData ? Number(formatUnits(tokenBalanceData as bigint, 6)) : 0;
-    const lpBalance = lpBalanceData ? Number(formatUnits(lpBalanceData as bigint, 6)) : 0; // Dummy
+    const lpBalance = 0;
     const allowance = allowanceData ? Number(formatUnits(allowanceData as bigint, 6)) : 0;
-    const freeBalance = freeBalanceData ? Number(formatUnits(freeBalanceData as bigint, 6)) : 0;
+    const freeBalance = isFuji && freeBalanceData ? Number(formatUnits(freeBalanceData as bigint, 6)) : 0;
+
+    const wrongChainError = () => {
+        throw new Error('Switch to Avalanche Fuji to use the Vault.');
+    };
 
     const approveToken = async (amountHuman: string) => {
+        if (!isFuji) wrongChainError();
         const amountWei = parseUnits(amountHuman, 6);
         return await writeApprove({
-            address: tokenAddress,
+            address: token,
             abi: ABIS.ERC20,
             functionName: 'approve',
             args: [vaultAddress, amountWei],
@@ -75,6 +78,7 @@ export function useVault(tokenSymbol: string = "USDC") {
     };
 
     const deposit = async (amountHuman: string) => {
+        if (!isFuji) wrongChainError();
         const amountWei = parseUnits(amountHuman, 6);
         return await writeVault({
             address: vaultAddress,
@@ -85,6 +89,7 @@ export function useVault(tokenSymbol: string = "USDC") {
     };
 
     const withdraw = async (amountHuman: string) => {
+        if (!isFuji) wrongChainError();
         const amountWei = parseUnits(amountHuman, 6);
         return await writeVault({
             address: vaultAddress,
@@ -104,6 +109,7 @@ export function useVault(tokenSymbol: string = "USDC") {
         deposit,
         withdraw,
         isVaultTxPending,
+        isFuji,
         refetchAll: () => {
             refetchTokenBalance();
             refetchAllowance();

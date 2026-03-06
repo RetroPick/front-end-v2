@@ -62,7 +62,7 @@ export default function RiskSentinel() {
     const coverageRatio = totalLossMax > 0 ? (freeBalance / totalLossMax) : Infinity;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#060606] text-slate-900 dark:text-gray-100 font-sans transition-colors duration-300 pb-20">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-gray-100 font-sans transition-colors duration-300 pb-20">
             <Header />
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-10">

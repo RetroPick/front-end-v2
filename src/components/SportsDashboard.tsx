@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMarkets } from "@/context/MarketContext";
 import NeonMarketCard from "./NeonMarketCard";
 import Icon from "./Icon";
+import BetaTutorialBanner from "./BetaTutorialBanner";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 import { useEffect } from "react";
@@ -57,7 +58,7 @@ const SportsDashboard = () => {
     }, [newsItems.length]);
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-screen gap-6 p-6 bg-slate-50 dark:bg-[#050b14] relative overflow-hidden transition-colors duration-500">
+        <div className="flex flex-col lg:flex-row min-h-screen gap-6 p-6 bg-background relative overflow-hidden transition-colors duration-500">
             {/* Cyberpunk Grid Background - Blue Tint */}
             <div className="absolute inset-0 z-0 pointer-events-none opacity-50 dark:opacity-100"
                 style={{
@@ -111,14 +112,17 @@ const SportsDashboard = () => {
             </aside>
 
             {/* Main Content Grid */}
-            <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 z-10 content-start pb-20 mt-20 lg:mt-32">
-                {sportsMarkets.slice(0, visibleCount).map((market) => (
-                    <NeonMarketCard key={market.id} market={market} />
-                ))}
+            <main className="flex-1 flex flex-col gap-6 z-10 content-start pb-20 mt-20 lg:mt-32">
+                <BetaTutorialBanner className="w-full" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {sportsMarkets.slice(0, visibleCount).map((market) => (
+                        <NeonMarketCard key={market.id} market={market} />
+                    ))}
+                </div>
 
                 {/* Load More */}
                 {visibleCount < sportsMarkets.length && (
-                    <div className="col-span-full flex justify-center mt-4">
+                    <div className="flex justify-center mt-4">
                         <button
                             onClick={() => setVisibleCount((prev) => prev + 10)}
                             className="px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-widest transition-all text-slate-500 dark:text-slate-300 hover:text-white"

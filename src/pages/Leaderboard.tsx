@@ -182,9 +182,13 @@ const Leaderboard = () => {
 
                 {/* Podium Section */}
                 <div className="flex justify-center items-end gap-4 mb-20 min-h-[400px]">
-                    <PodiumPlace user={top3[1]} rank={2} delay={0.2} />
-                    <PodiumPlace user={top3[0]} rank={1} delay={0.4} />
-                    <PodiumPlace user={top3[2]} rank={3} delay={0.6} />
+                    {top3.length >= 3 && (
+                        <>
+                            <PodiumPlace user={top3[1]!} rank={2} delay={0.2} />
+                            <PodiumPlace user={top3[0]!} rank={1} delay={0.4} />
+                            <PodiumPlace user={top3[2]!} rank={3} delay={0.6} />
+                        </>
+                    )}
                 </div>
 
                 {/* List Header */}

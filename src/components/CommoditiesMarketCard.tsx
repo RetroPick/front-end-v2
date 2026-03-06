@@ -62,7 +62,7 @@ const CommoditiesMarketCard = memo(({ market }: CommoditiesMarketCardProps) => {
 
     const commodityImage = getCommodityImage();
 
-    const handleBetClick = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
+    const handleBet = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
         e.stopPropagation();
         setBetModal({ open: true, side: 'YES', outcome: outcomeLabel });
     };
@@ -70,10 +70,10 @@ const CommoditiesMarketCard = memo(({ market }: CommoditiesMarketCardProps) => {
     return (
         <>
             <div className="group relative w-full h-[360px] perspective-1000">
-                <div className={cn("absolute inset-0 bg-white dark:bg-[#1a1a1a] rounded-t-xl rounded-b-lg border-2 shadow-lg shadow-black/10 dark:shadow-black/60 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1", borderColor)}>
+                <div className={cn("absolute inset-0 bg-card rounded-t-xl rounded-b-lg border-2 overflow-hidden isolate shadow-lg shadow-black/10 dark:shadow-black/60 flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1", borderColor)}>
 
                     {/* Header: Industrial Tag */}
-                    <div className={cn("h-10 flex items-center justify-between px-4 border-b", themeBg, borderColor)}>
+                    <div className={cn("relative z-10 h-10 flex items-center justify-between px-4 border-b", themeBg, borderColor)}>
                         <div className="flex items-center gap-2">
                             <Box className={cn("w-4 h-4", themeColor)} />
                             <span className={cn("text-xs font-bold uppercase tracking-widest", themeColor)}>
@@ -83,15 +83,15 @@ const CommoditiesMarketCard = memo(({ market }: CommoditiesMarketCardProps) => {
                         <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">{t('dashboard.futures')}</span>
                     </div>
 
-                    {/* Image Section (Split) */}
-                    <div className="relative h-40 overflow-hidden">
+                    {/* Image Section (Split) - -inset-px for pixel-perfect edge coverage */}
+                    <div className="relative h-40 overflow-hidden rounded-t-xl">
                         <img
                             src={commodityImage}
                             alt={market.title}
-                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-105 group-hover:scale-110"
+                            className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-105 group-hover:scale-110"
                             onError={(e) => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80"; }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#1a1a1a] to-transparent opacity-80" />
+                        <div className="absolute -inset-px bg-gradient-to-t from-white dark:from-[#1a1a1a] to-transparent opacity-80 rounded-t-xl" />
 
                         <div className="absolute bottom-4 left-4 right-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <h3 className="text-xl font-serif font-bold text-foreground leading-tight drop-shadow-md">

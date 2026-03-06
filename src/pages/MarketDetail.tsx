@@ -9,6 +9,7 @@ import ProbabilityChart from "@/components/market/ProbabilityChart";
 import IdeasActivityPanel from "@/components/market/IdeasActivityPanel";
 import RelatedMarkets from "@/components/market/RelatedMarkets";
 import ThemeWrapper from "@/components/themes/ThemeWrapper";
+import BetaTutorialBanner from "@/components/BetaTutorialBanner";
 
 const MarketDetail = () => {
   const { id } = useParams();
@@ -32,13 +33,24 @@ const MarketDetail = () => {
     <ThemeWrapper category={market.category}>
       <Header />
 
-      <main className="pt-24 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto text-foreground">
+      <main className="pt-36 pb-12 px-4 lg:px-8 max-w-[1440px] mx-auto text-foreground relative z-0">
 
-        {/* Main Grid: Left (Chart & Info) | Right (TradingSidebar) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+        <BetaTutorialBanner className="mb-6" />
 
-          {/* Left Column (Main Content) */}
-          <div className="lg:col-span-8 flex flex-col pt-4">
+        {/* Go Back */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-6"
+          aria-label="Go back"
+        >
+          <Icon name="arrow_back" className="text-lg" />
+          Back to Markets
+        </button>
+
+        {/* Two-column on desktop: main content | sidebar. Both in same scroll flow. */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
+          {/* Left: Chart & Info */}
+          <div className="flex-1 flex flex-col pt-2 min-w-0">
 
             {/* Market Header Row */}
             <div className="flex gap-4 items-start mb-6">
@@ -109,10 +121,9 @@ const MarketDetail = () => {
 
           </div>
 
-          {/* Right Column (Sidebar) */}
-          <div className="lg:col-span-4 lg:pt-4">
-            {/* Sticky Trading Sidebar Area */}
-            <div className="sticky top-24">
+          {/* Right: Buy/Sell Sidebar - sticky with gap below navbar when scrolling */}
+          <div className="w-full lg:w-[380px] lg:shrink-0 lg:pt-2 lg:order-2 lg:self-start lg:sticky lg:top-36">
+            <div>
               <TradingSidebar
                 marketTitle={market.title}
                 selectedOutcome={market.outcomes[0]?.label || "Yes"}

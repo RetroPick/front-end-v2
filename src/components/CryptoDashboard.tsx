@@ -36,7 +36,7 @@ const CryptoDashboard = () => {
     }, [newsItems.length]);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#02040a] text-slate-900 dark:text-white relative overflow-hidden font-sans selection:bg-cyan-100 dark:selection:bg-cyan-500 selection:text-cyan-900 dark:selection:text-white pb-20 perspective-1000 transition-colors duration-500">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans selection:bg-cyan-100 dark:selection:bg-cyan-500 selection:text-cyan-900 dark:selection:text-white pb-20 perspective-1000 transition-colors duration-500">
 
             {/* Background: Modern Cyber Grid & Atmosphere */}
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">

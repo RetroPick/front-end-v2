@@ -64,7 +64,7 @@ const Login = () => {
 
     const handleVerify = async (proof: ISuccessResult) => {
         // In a real app, send proof to backend relayer to verify on-chain or off-chain
-        console.log("Proof received:", proof);
+        if (import.meta.env.DEV) console.log("Proof received:", proof);
         toast({
             title: "World ID Verified!",
             description: "You have been authenticated as a unique human.",
@@ -96,7 +96,7 @@ const Login = () => {
             } as const;
 
             const signature = await signTypedDataAsync({ domain, types, primaryType: "SessionSignIn", message } as any);
-            console.log("Derived Session Signature:", signature);
+            if (import.meta.env.DEV) console.log("Derived Session Signature:", signature);
             toast({ title: "Session Signed", description: "You have securely entered the Yellow Session off-chain." });
 
             // 2. Approve Token

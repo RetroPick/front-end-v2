@@ -15,13 +15,13 @@ const WorldIDVerifier = ({ asDropdownItem }: WorldIDVerifierProps) => {
 
     const handleVerify = async (proof: ISuccessResult) => {
         // Mock verification call
-        console.log("Proof received:", proof);
+        if (import.meta.env.DEV) console.log("Proof received:", proof);
         await new Promise((resolve) => setTimeout(resolve, 2000));
         return;
     };
 
     const onSuccess = (result: ISuccessResult) => {
-        console.log("Verification successful", result);
+        if (import.meta.env.DEV) console.log("Verification successful", result);
         setVerified(true);
     };
 

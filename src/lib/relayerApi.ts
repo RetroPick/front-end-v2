@@ -120,6 +120,45 @@ export const relayerApi = {
     },
 
     /**
+     * Get quote for a buy order: chance to win and potential payout.
+     * Uses amountUsd and currentPriceCents to approximate delta, then calls quote API.
+     * @param sessionId - Session ID
+     * @param outcomeIndex - 0 for YES, 1 for NO
+     * @param amountUsd - User-entered USD amount (cost)
+     * @param currentPriceCents - Current outcome price in cents (e.g. 51 for 51¢)
+     * @returns { chanceToWin, potentialPayout, cost, netCost } or null if session not found
+     */
+    async getQuote(
+        sessionId: string,
+        outcomeIndex: number,
+        amountUsd: number,
+        currentPriceCents: number
+    ): Promise<{ chanceToWin: number; potentialPayout: number; cost: number; netCost: number } | null> {
+        if (!amountUsd || amountUsd <= 0 || !currentPriceCents || currentPriceCents <= 0) return null;
+        const priceAsFraction = currentPriceCents / 100;
+        const delta = amountUsd / priceAsFraction;
+        if (delta <= 0) return null;
+        try {
+            const res = await fetch(
+                `${RELAYER_BASE_URL}/api/session/${sessionId}/quote?type=buy&outcomeIndex=${outcomeIndex}&delta=${delta}`
+            );
+            if (!res.ok) return null;
+            const data = await res.json();
+            const chanceToWin = Array.isArray(data.prices) && data.prices[outcomeIndex] != null
+                ? data.prices[outcomeIndex]
+                : priceAsFraction;
+            return {
+                chanceToWin,
+                potentialPayout: delta,
+                cost: data.cost ?? amountUsd,
+                netCost: data.netCost ?? amountUsd,
+            };
+        } catch {
+            return null;
+        }
+    },
+
+    /**
      * Admin/Test route: Credit a user with mock USD balance in the session
      */
     async creditUser(sessionId: string, userAddress: string, amount: number) {

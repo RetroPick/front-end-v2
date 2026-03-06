@@ -49,7 +49,7 @@ const VaultDetail = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#060606] font-sans text-slate-900 dark:text-gray-100 transition-colors duration-300">
+        <div className="min-h-screen bg-background font-sans text-slate-900 dark:text-gray-100 transition-colors duration-300">
             <Header />
 
             {/* Background Pattern */}
@@ -62,7 +62,7 @@ const VaultDetail = () => {
 
             <main className="relative z-10 pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
                 {/* Header Section */}
-                <div className="mb-8 border-b border-slate-200 dark:border-white/10 pb-6">
+                <div className="mb-8 border-b border-border pb-6">
                     <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                         <div>
                             <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-500 mb-2">
@@ -89,10 +89,10 @@ const VaultDetail = () => {
                             </div>
                         </div>
                         <div className="flex gap-3">
-                            <button className="px-4 py-2 bg-white dark:bg-[#15181D] hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200 dark:border-white/10 text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
+                            <button className="px-4 py-2 bg-card hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-border text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
                                 <Icon name="description" className="text-base" /> Contract
                             </button>
-                            <button className="px-4 py-2 bg-white dark:bg-[#15181D] hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200 dark:border-white/10 text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
+                            <button className="px-4 py-2 bg-card hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-border text-xs font-medium flex items-center gap-2 transition-all shadow-sm">
                                 <Icon name="analytics" className="text-base" /> Analytics
                             </button>
                         </div>
@@ -105,7 +105,7 @@ const VaultDetail = () => {
                         {/* Stats Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Share Price */}
-                            <div className="bg-white dark:bg-[#15181D] p-6 rounded-2xl border border-slate-200 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-md">
+                            <div className="bg-card p-6 rounded-2xl border border-border relative overflow-hidden group shadow-sm transition-all hover:shadow-md">
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Icon name="trending_up" className="text-5xl text-blue-500" />
                                 </div>
@@ -121,7 +121,7 @@ const VaultDetail = () => {
                             </div>
 
                             {/* TVL */}
-                            <div className="bg-white dark:bg-[#15181D] p-6 rounded-2xl border border-slate-200 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-md">
+                            <div className="bg-card p-6 rounded-2xl border border-border relative overflow-hidden group shadow-sm transition-all hover:shadow-md">
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Icon name="account_balance_wallet" className="text-5xl text-slate-900 dark:text-white" />
                                 </div>
@@ -136,7 +136,7 @@ const VaultDetail = () => {
                             </div>
 
                             {/* Utilization */}
-                            <div className="bg-white dark:bg-[#15181D] p-6 rounded-2xl border border-slate-200 dark:border-white/5 relative overflow-hidden group shadow-sm transition-all hover:shadow-md">
+                            <div className="bg-card p-6 rounded-2xl border border-border relative overflow-hidden group shadow-sm transition-all hover:shadow-md">
                                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Icon name="pie_chart" className="text-5xl text-purple-500" />
                                 </div>
@@ -153,7 +153,7 @@ const VaultDetail = () => {
                         </div>
 
                         {/* Chart Area */}
-                        <div className="bg-white dark:bg-[#15181D] rounded-2xl border border-slate-200 dark:border-white/5 p-6 min-h-[300px] flex flex-col shadow-sm relative overflow-hidden">
+                        <div className="bg-card rounded-2xl border border-border p-6 min-h-[300px] flex flex-col shadow-sm relative overflow-hidden">
                             <div className="flex justify-between items-center mb-6 z-10">
                                 <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Performance (APY)</h3>
                                 <div className="flex gap-2">
@@ -177,8 +177,8 @@ const VaultDetail = () => {
                         </div>
 
                         {/* Recent Activity */}
-                        <div className="bg-white dark:bg-[#15181D] rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="px-6 py-5 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+                        <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Activity History</h3>
                                 <div className="flex gap-4 text-[11px] font-medium text-slate-500 dark:text-gray-500">
                                     <button className="text-blue-600 dark:text-blue-400 border-b border-blue-500 pb-0.5">All</button>
@@ -189,7 +189,7 @@ const VaultDetail = () => {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-sm whitespace-nowrap">
                                     <thead>
-                                        <tr className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-gray-500 border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02]">
+                                        <tr className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-gray-500 border-b border-border bg-slate-50 dark:bg-white/[0.02]">
                                             <th className="px-6 py-3 font-semibold">Tx Hash</th>
                                             <th className="px-6 py-3 font-semibold">Type</th>
                                             <th className="px-6 py-3 font-semibold text-right">Amount (USDC)</th>
@@ -215,8 +215,8 @@ const VaultDetail = () => {
                         </div>
                     </div>
 
-                    {/* Right Column: Interaction Panel */}
-                    <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+                    {/* Right Column: Interaction Panel - sticky with gap below navbar when scrolling */}
+                    <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-36">
                         <VaultInteractionPanel />
 
                         <div className="bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30 p-4 flex items-start gap-3">

@@ -113,6 +113,8 @@ export const translations = {
             chance: "Chance",
             ends: "Ends",
             bet: "Bet",
+            bet_yes: "Bet Yes",
+            bet_no: "Bet No",
             buy: "Buy",
             trade: "Trade"
         }
@@ -230,6 +232,8 @@ export const translations = {
             chance: "Peluang",
             ends: "Berakhir",
             bet: "Taruhan",
+            bet_yes: "Taruhan Ya",
+            bet_no: "Taruhan Tidak",
             buy: "Beli",
             trade: "Perdagangan"
         },
@@ -346,6 +350,8 @@ export const translations = {
             chance: "概率",
             ends: "结束于",
             bet: "投注",
+            bet_yes: "投注是",
+            bet_no: "投注否",
             buy: "购买",
             trade: "交易"
         },
@@ -462,6 +468,8 @@ export const translations = {
             chance: "संभावना",
             ends: "समाप्त",
             bet: "शर्त",
+            bet_yes: "हाँ पर शर्त",
+            bet_no: "नहीं पर शर्त",
             buy: "खरीदें",
             trade: "व्यापार"
         },
@@ -578,6 +586,8 @@ export const translations = {
             chance: "Probabilidad",
             ends: "Termina",
             bet: "Apostar",
+            bet_yes: "Apostar Sí",
+            bet_no: "Apostar No",
             buy: "Comprar",
             trade: "Comercio"
         },

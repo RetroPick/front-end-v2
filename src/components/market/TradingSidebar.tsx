@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/Icon";
 import { cn } from "@/lib/utils";
 import { useAccount } from "wagmi";
@@ -24,6 +24,8 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
   const [side, setSide] = useState<'YES' | 'NO'>('YES');
   const [amount, setAmount] = useState<string>("0");
   const [isTrading, setIsTrading] = useState(false);
+  const [chanceToWin, setChanceToWin] = useState<number | null>(null);
+  const [potentialPayout, setPotentialPayout] = useState<number | null>(null);
   const { address } = useAccount();
   const { toast } = useToast();
   const { signOrder } = useYellowSession();
@@ -33,9 +35,9 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
   const noPrice = 49;
   const currentPrice = side === 'YES' ? yesPrice : noPrice;
 
-  // Polymarket colors
-  const activeYesClass = "bg-[#22c55e] text-white";
-  const activeNoClass = "bg-[#ef4444] text-white";
+  // Design token colors for consistency
+  const activeYesClass = "bg-accent-green text-white";
+  const activeNoClass = "bg-destructive text-white";
   const inactiveClass = "bg-secondary text-muted-foreground hover:bg-secondary/80";
 
   const handleTrade = async () => {
@@ -112,11 +114,47 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
     }
   };
 
-  // Re-implementing the return to fix classes
+  // Debounced quote fetch for Chance to Win (Buy tab only)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (tab !== 'Buy') {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      setChanceToWin(null);
+      setPotentialPayout(null);
+      return;
+    }
+    const amt = Number(amount);
+    if (!amt || amt <= 0) {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+      setChanceToWin(null);
+      setPotentialPayout(null);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const sessionId = relayerApi.getMarketSessionId(marketTitle);
+      const outcomeIndex = side === 'YES' ? 0 : 1;
+      const quote = await relayerApi.getQuote(sessionId, outcomeIndex, amt, currentPrice);
+      if (quote) {
+        setChanceToWin(quote.chanceToWin);
+        setPotentialPayout(quote.potentialPayout);
+      } else {
+        setChanceToWin(currentPrice / 100);
+        setPotentialPayout(amt / (currentPrice / 100));
+      }
+      debounceRef.current = null;
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [amount, tab, side, marketTitle, currentPrice]);
+
   return (
     <div className="space-y-4">
       {/* Trading Panel - Dark Polymarket Style */}
-      <div className="bg-card/80 backdrop-blur-md border border-border rounded-xl p-4 shadow-xl relative z-50">
+      <div className="bg-card/80 backdrop-blur-md border border-border rounded-xl p-4 shadow-xl relative z-0">
 
         {/* Header Tabs: Buy / Sell & Market Select */}
         <div className="flex items-center justify-between mb-5">
@@ -191,8 +229,7 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
               setAmount(val);
             }}
             placeholder="0"
-            className="w-full bg-transparent border-b border-border text-foreground focus:outline-none py-2 text-3xl font-bold caret-primary"
-            style={{ paddingRight: '120px' }} // Room for the fake big text
+            className="w-full bg-transparent border-b border-border text-foreground focus:outline-none py-2 text-3xl font-bold caret-primary pr-20 md:pr-[120px]"
           />
 
           {/* Quick Add Buttons */}
@@ -210,13 +247,31 @@ const TradingSidebar = ({ marketTitle, selectedOutcome = "Yes" }: TradingSidebar
           </div>
         </div>
 
+        {/* Chance to Win - shown when amount > 0 (Buy tab, no approval needed) */}
+        {tab === 'Buy' && Number(amount) > 0 && (chanceToWin != null || potentialPayout != null) && (
+          <div className="mb-4 py-3 px-4 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Chance to Win</div>
+            <div className="text-lg font-bold text-foreground">
+              {chanceToWin != null && (
+                <span>{(chanceToWin * 100).toFixed(1)}%</span>
+              )}
+              {chanceToWin != null && potentialPayout != null && (
+                <span className="text-muted-foreground font-normal"> · </span>
+              )}
+              {potentialPayout != null && (
+                <span>${potentialPayout.toFixed(2)}</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Action Button */}
         <button
           onClick={handleTrade}
           disabled={isTrading}
           className="w-full py-3.5 mt-2 rounded-lg text-sm font-bold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors shadow-sm disabled:opacity-50"
         >
-          {isTrading ? "Executing..." : "Deposit"}
+          {isTrading ? "Executing..." : tab === "Buy" ? "Buy" : "Sell"}
         </button>
 
         {/* Terms text */}

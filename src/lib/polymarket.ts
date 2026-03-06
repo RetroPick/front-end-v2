@@ -205,10 +205,12 @@ export async function fetchLiveMarkets(limit: number = 100, offset: number = 0):
 
             try {
                 if (primaryMarket.outcomePrices) {
-                    const prices = JSON.parse(primaryMarket.outcomePrices);
-                    // Outcomes are usually ["Yes", "No"]
-                    yesPrice = parseFloat(prices[0]) || 0.50;
-                    noPrice = parseFloat(prices[1]) || (1 - yesPrice);
+                    const parsed = JSON.parse(primaryMarket.outcomePrices);
+                    const prices = Array.isArray(parsed) ? parsed : [];
+                    if (prices.length >= 2) {
+                        yesPrice = parseFloat(prices[0]) || 0.50;
+                        noPrice = parseFloat(prices[1]) || (1 - yesPrice);
+                    }
                 }
             } catch (e) {
                 console.error("Error parsing prices for", event.id);

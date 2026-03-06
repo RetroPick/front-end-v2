@@ -7,7 +7,7 @@
 // 7:     const corporateMarkets = markets.filter(m => m.category === "Corporate");
 // 8: 
 // 9:     return (
-// 10:         <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
+// 10:         <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
 // 11:             {/* Background: Geometric */}
 // 12:             <div className="absolute inset-0 z-0 pointer-events-none">
 // 13:                 <div className="absolute right-0 top-0 w-1/2 h-full bg-slate-100 dark:bg-slate-900 -skew-x-12 opacity-50" />
@@ -58,7 +58,7 @@ const CorporateDashboard = () => {
     }, [newsItems.length]);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
             {/* Background: Geometric */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <div className="absolute right-0 top-0 w-1/2 h-full bg-slate-100 dark:bg-slate-900 -skew-x-12 opacity-50" />

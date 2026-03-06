@@ -5,31 +5,21 @@ import Footer from "@/components/Footer";
 import Icon from "@/components/Icon";
 import { cn } from "@/lib/utils";
 import { useAppKitAccount } from "@reown/appkit/react";
-import { useAccount, useBalance, useReadContracts, useWriteContract, useChainId } from "wagmi";
-import { formatUnits, parseUnits, Address } from "viem";
+import { useAccount, useBalance, useReadContracts, useChainId, useSwitchChain } from "wagmi";
+import { formatUnits, Address } from "viem";
 import AuthPlaceholder from "@/components/common/AuthPlaceholder";
 import { ERC20_ABI, TOKENS } from "@/constants/tokens";
-import { useExecutionLedger } from "@/hooks/useExecutionLedger";
 import { useVault } from "@/hooks/useVault";
+import { useFaucet } from "@/hooks/useFaucet";
 import { useToast } from "@/components/ui/use-toast";
 import TransactionModal from "@/components/modals/TransactionModal";
 import SellModal from "@/components/modals/SellModal";
 import { useMarkets } from "@/context/MarketContext";
 import { relayerApi } from "@/lib/relayerApi";
 import { CONTRACT_ADDRESSES } from "@/contracts/config";
+import { Link } from "react-router-dom";
 
-// FAUCET ABI for verified Avalanche Fuji Faucet
-const FAUCET_ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "token", type: "address" }
-    ],
-    name: "claim",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  }
-] as const;
+const FUJI_CHAIN_ID = 43113;
 
 // --- Authentic Crypto Icons (Colored SVGs) ---
 const SolanaLogo = ({ className }: { className?: string }) => (
@@ -114,7 +104,7 @@ function PositionItem({ pos }: { pos: PositionData }) {
 
   return (
     <>
-      <div className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
+      <div className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:border-blue-500/20 transition-all group">
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-lg bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-xs border border-slate-200 dark:border-white/10">
             {pos.type}
@@ -215,36 +205,44 @@ const Portfolio = () => {
   const chainId = useChainId();
   const tokenAddresses = TOKENS[chainId] || TOKENS[1]; // Fallback to mainnet if unsupported testnet
 
-  const { deposit, withdraw, isVaultTxPending: isVaultPending, allowance, freeBalance, approveToken, isApproving, refetchAll: refetchVaultState } = useVault(tokenAddresses.USDC as Address);
+  const { deposit, withdraw, isVaultTxPending: isVaultPending, allowance, freeBalance, approveToken, isApproving, refetchAll: refetchVaultState, isFuji } = useVault(tokenAddresses.USDC as Address);
+  const { switchChain } = useSwitchChain();
   const { toast } = useToast();
-  const { writeContractAsync: mintTokens, isPending: isMinting } = useWriteContract();
+  const {
+    canClaim,
+    amountPerClaim,
+    cooldownRemaining,
+    claim: claimFaucet,
+    isPending: isFaucetPending,
+    refetch: refetchFaucet,
+    isSupportedChain: isFaucetAvailable,
+  } = useFaucet(tokenAddresses.USDC as Address);
 
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
   const handleClaimFaucet = async () => {
-    if (!address || !tokenAddresses.FAUCET) {
-      toast({ title: "Faucet Unavailable", description: "No faucet contract known for this network.", variant: "destructive" });
+    if (!isFaucetAvailable) {
+      toast({ title: "Faucet Unavailable", description: "Switch to Avalanche Fuji to claim testnet tokens.", variant: "destructive" });
       return;
     }
-
     try {
       toast({ title: "Claiming USDC...", description: "Requesting testnet tokens from the smart contract." });
-      await (mintTokens as any)({
-        address: tokenAddresses.FAUCET as Address,
-        abi: FAUCET_ABI,
-        functionName: 'claim',
-        args: [
-          tokenAddresses.USDC as Address
-        ]
-      });
-      toast({ title: "Faucet Claimed", description: "1,000 USDC Testnet tokens have been minted to your wallet." });
+      await claimFaucet();
+      toast({ title: "Faucet Claimed", description: `${amountPerClaim.toLocaleString()} USDC Testnet tokens have been minted to your wallet.` });
       refetchErc20();
       refetchVaultState();
-    } catch (error: any) {
-      console.error("Mint failed:", error);
-      toast({ title: "Claim Failed", description: error.message, variant: "destructive" });
+      refetchFaucet();
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      toast({ title: "Claim Failed", description: msg, variant: "destructive" });
     }
+  };
+
+  const formatCooldown = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return m > 0 ? `${m}m ${s}s` : `${s}s`;
   };
 
   const handleAddTokenToWallet = async (asset: any) => {
@@ -318,21 +316,21 @@ const Portfolio = () => {
   });
 
   const [activeTab, setActiveTab] = useState<"assets" | "positions" | "lp">("assets");
-  const [network, setNetwork] = useState<"Avalanche" | "Sepolia">("Avalanche");
+  const isWrongChain = !isFuji;
 
   // Format real balances
   const nativeBalance = balanceData?.value ? Number(formatUnits(balanceData.value, balanceData.decimals || 18)) : 0;
 
-  const usdcBalanceDecimals = erc20Balances?.[1].result as number | undefined ?? 6;
+  const usdcBalanceDecimals = erc20Balances?.[1]?.result as number | undefined ?? 6;
   const usdcBalanceRaw = (erc20Balances?.[0]?.result ?? 0n) as bigint;
   const usdcBalance = Number(formatUnits(usdcBalanceRaw, usdcBalanceDecimals));
 
-  const wbtcBalanceDecimals = erc20Balances?.[3].result as number | undefined ?? 8;
-  const wbtcBalanceRaw = erc20Balances?.[2].result as bigint | undefined ?? 0n;
+  const wbtcBalanceDecimals = erc20Balances?.[3]?.result as number | undefined ?? 8;
+  const wbtcBalanceRaw = (erc20Balances?.[2]?.result ?? 0n) as bigint;
   const wbtcBalance = Number(formatUnits(wbtcBalanceRaw, wbtcBalanceDecimals));
 
-  const usdtBalanceDecimals = erc20Balances?.[5].result as number | undefined ?? 6;
-  const usdtBalanceRaw = erc20Balances?.[4].result as bigint | undefined ?? 0n;
+  const usdtBalanceDecimals = erc20Balances?.[5]?.result as number | undefined ?? 6;
+  const usdtBalanceRaw = (erc20Balances?.[4]?.result ?? 0n) as bigint;
   const usdtBalance = Number(formatUnits(usdtBalanceRaw, usdtBalanceDecimals));
 
   // The user wants the Portfolio to strictly reflect their trading balance in the Vault, 
@@ -358,7 +356,63 @@ const Portfolio = () => {
     <div className="min-h-screen bg-background font-sans text-foreground pb-20 overflow-x-hidden">
       <Header />
 
-      <main className="pt-24 px-6 lg:px-10 w-full max-w-[1400px] mx-auto">
+      <main className="pt-40 px-6 lg:px-10 w-full max-w-[1400px] mx-auto">
+        {/* Second Navbar - Network & Actions (when connected, connects to header) */}
+        {isConnected && (
+          <div className="mb-6 -mt-1">
+            <div className="w-full bg-background/60 backdrop-blur-lg border border-border rounded-t-none rounded-b-2xl border-t-0 px-4 py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+              <div className="flex border border-border rounded-lg p-1 bg-card">
+                <button
+                  onClick={() => switchChain?.({ chainId: FUJI_CHAIN_ID })}
+                  className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", chainId === FUJI_CHAIN_ID ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
+                >
+                  Avalanche Fuji
+                </button>
+                <button
+                  onClick={() => switchChain?.({ chainId: 11155111 })}
+                  className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", chainId === 11155111 ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
+                >
+                  Ethereum Sepolia
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleClaimFaucet}
+                  disabled={isFaucetPending || !isConnected || !isFaucetAvailable || !canClaim}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white rounded-lg font-bold text-xs transition-all border border-emerald-500/20",
+                    (isFaucetPending || !isFaucetAvailable || !canClaim) && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Icon name="water_drop" className="text-xs" />
+                  {isFaucetPending ? "Claiming..." : cooldownRemaining > 0 ? `Next in ${formatCooldown(cooldownRemaining)}` : `Claim ${amountPerClaim.toLocaleString()} USDC`}
+                </button>
+                <button
+                  onClick={() => !isWrongChain && setIsDepositOpen(true)}
+                  disabled={isWrongChain}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-all shadow-sm",
+                    isWrongChain && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Icon name="arrow_downward" className="text-xs" />
+                  Deposit
+                </button>
+                <button
+                  onClick={() => !isWrongChain && setIsWithdrawOpen(true)}
+                  disabled={isWrongChain}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-lg font-medium text-xs transition-all",
+                    isWrongChain && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <Icon name="arrow_upward" className="text-xs" />
+                  Withdraw
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {!isConnected ? (
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="max-w-lg">
@@ -375,68 +429,42 @@ const Portfolio = () => {
               {/* 1. LEFT COLUMN: Balance & Lists */}
               <div className="lg:col-span-8 flex flex-col gap-5">
 
-                {/* Network Selector & Balance Card (Compact) */}
+                {/* Balance Card (Compact) - Network & actions moved to second navbar */}
                 <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-100 dark:border-white/5 flex flex-col gap-6">
 
-                  {/* Top: Network Control & Action buttons */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex border border-slate-200 dark:border-white/10 rounded-lg p-1 bg-white dark:bg-[#1a1b23]">
+                  {/* Wrong-chain banner */}
+                  {isWrongChain && (
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <p className="text-sm text-amber-700 dark:text-amber-400">
+                        Switch to Avalanche Fuji to use Vault and Faucet.
+                      </p>
                       <button
-                        onClick={() => setNetwork("Avalanche")}
-                        className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", network === "Avalanche" ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
+                        onClick={() => switchChain?.({ chainId: FUJI_CHAIN_ID })}
+                        className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-all"
                       >
-                        Avalanche Fuji
-                      </button>
-                      <button
-                        onClick={() => setNetwork("Sepolia")}
-                        className={cn("px-4 py-1.5 rounded-md text-xs font-bold transition-all", network === "Sepolia" ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-white")}
-                      >
-                        Ethereum Sepolia
+                        Switch to Fuji
                       </button>
                     </div>
+                  )}
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleClaimFaucet}
-                        disabled={isMinting || !isConnected}
-                        className={cn(
-                          "flex items-center gap-1.5 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white rounded-lg font-bold text-xs transition-all border border-emerald-500/20",
-                          isMinting && "opacity-50 cursor-not-allowed"
-                        )}
-                      >
-                        <Icon name="water_drop" className="text-xs" />
-                        {isMinting ? "Claiming..." : "Claim Faucet"}
-                      </button>
-                      <button
-                        onClick={() => setIsDepositOpen(true)}
-                        className={cn(
-                          "flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-xs transition-all shadow-sm"
-                        )}
-                      >
-                        <Icon name="arrow_downward" className="text-xs" />
-                        Deposit
-                      </button>
-                      <button
-                        onClick={() => setIsWithdrawOpen(true)}
-                        className={cn(
-                          "flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-lg font-medium text-xs transition-all"
-                        )}
-                      >
-                        <Icon name="arrow_upward" className="text-xs" />
-                        Withdraw
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Bottom: Total Balance */}
+                  {/* Total Balance */}
                   <div className="flex flex-col gap-1">
-                    <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vault Balance ({network})</h2>
+                    <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Vault Balance ({chainId === FUJI_CHAIN_ID ? "Avalanche Fuji" : chainId === 11155111 ? "Sepolia" : "Wrong network"})</h2>
                     <div className="flex items-baseline gap-3">
                       <span className="text-4xl font-bold text-slate-900 dark:text-white pointer-events-none selection:bg-none">
                         {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                       </span>
                       {totalBalance > 0 && <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-md">Active</span>}
                     </div>
+                    {totalBalance > 0 && (
+                      <Link
+                        to="/app"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all border border-emerald-600/50 hover:border-emerald-500 shadow-lg shadow-emerald-500/20"
+                      >
+                        <Icon name="trending_up" className="text-base" />
+                        You are ready, Trade Now!
+                      </Link>
+                    )}
                   </div>
                 </div>
 
@@ -479,7 +507,7 @@ const Portfolio = () => {
                     {activeTab === 'lp' ? (
                       <div className="flex flex-col gap-4 pt-2">
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                          <div className="bg-card border border-border rounded-xl p-4">
                             <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Liquidity</div>
                             <div className="text-xl font-bold text-slate-900 dark:text-white">{totalBalance.toLocaleString()} USDC</div>
                             <div className="text-[10px] font-medium text-green-500 mt-1 flex items-center gap-1">
@@ -487,13 +515,13 @@ const Portfolio = () => {
                               Vault Pool
                             </div>
                           </div>
-                          <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                          <div className="bg-card border border-border rounded-xl p-4">
                             <div className="text-[10px] font-bold text-slate-400 uppercase mb-1">Estimated APY</div>
                             <div className="text-xl font-bold text-emerald-500">12.4%</div>
                             <div className="text-[10px] font-medium text-slate-400 mt-1">Based on 24H volume</div>
                           </div>
                         </div>
-                        <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl p-4">
+                        <div className="bg-card border border-border rounded-xl p-4">
                           <div className="flex justify-between items-center mb-3">
                             <div className="text-[10px] font-bold text-slate-400 uppercase">Fees Earned</div>
                             <div className="text-xs font-bold text-green-500">+$24.50</div>
@@ -512,7 +540,7 @@ const Portfolio = () => {
                       </div>
                     ) : activeTab === 'assets' ? (
                       ASSETS.map((asset) => (
-                        <div key={asset.symbol} className="flex items-center justify-between p-3 bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-xl hover:border-blue-500/20 transition-all group">
+                        <div key={asset.symbol} className="flex items-center justify-between p-3 bg-card border border-border rounded-xl hover:border-blue-500/20 transition-all group">
                           <div className="flex items-center gap-3">
                             <div className="size-8 filter drop-shadow-sm">
                               <asset.IconComp className="w-full h-full" />
@@ -609,7 +637,7 @@ const Portfolio = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Checkpoint Signing */}
-                <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-2xl p-5">
+                <div className="bg-card border border-border rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase">Checkpoint Signing</div>
@@ -644,7 +672,7 @@ const Portfolio = () => {
                 </div>
 
                 {/* Exit + Dispute */}
-                <div className="bg-white dark:bg-[#1a1b23] border border-slate-100 dark:border-white/5 rounded-2xl p-5">
+                <div className="bg-card border border-border rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase">Exit &amp; Dispute</div>

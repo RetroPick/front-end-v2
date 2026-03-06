@@ -64,7 +64,7 @@ const DraftVaultView = ({ vaultData }: { vaultData: any }) => {
 
                 {/* Right Column: Interaction Panel (Claim & Seed) */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white dark:bg-[#15181D] rounded-2xl border border-slate-200 dark:border-white/5 p-6 shadow-sm">
+                    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                             <Icon name="rocket_launch" className="text-blue-500" />
                             Actions

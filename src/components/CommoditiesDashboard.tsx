@@ -8,7 +8,7 @@
 // 7:     const commodityMarkets = markets.filter(m => m.category === "Commodities");
 // 8: 
 // 9:     return (
-// 10:         <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#121212] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
+// 10:         <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
 // 11:             {/* Background: Industrial Noise */}
 // 12:             <div className="absolute inset-0 z-0 pointer-events-none opacity-5 dark:opacity-10 bg-[url('https://www.transparenttextures.com/patterns/brushed-alum.png')]" />
 // 13: 
@@ -57,7 +57,7 @@ const CommoditiesDashboard = () => {
     }, [newsItems.length]);
 
     return (
-        <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#121212] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
             {/* Background: Industrial Noise */}
             <div className="absolute inset-0 z-0 pointer-events-none opacity-5 dark:opacity-10 bg-[url('https://www.transparenttextures.com/patterns/brushed-alum.png')]" />
 

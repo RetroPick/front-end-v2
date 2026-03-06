@@ -83,7 +83,7 @@ export default function TransactionModal({
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="w-full max-w-md bg-white dark:bg-[#1a1b23] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden pointer-events-auto"
+                            className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl overflow-hidden pointer-events-auto"
                         >
                             {/* Header */}
                             <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-white/5">

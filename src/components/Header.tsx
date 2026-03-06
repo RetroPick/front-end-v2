@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { categories } from "@/data/markets";
 import Icon from "./Icon";
@@ -40,34 +41,42 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
   const currentCategory = activeCategory || localActiveCategory;
   const setCategory = setActiveCategory || setLocalActiveCategory;
 
+  const showCategoryBar =
+    ["/app", "/app/activity", "/app/portfolio", "/app/vault", "/app/liquidity"].includes(location.pathname) &&
+    !new RegExp("^/app/vault/[^/]+$").test(location.pathname);
+
   const navItems = [
     { name: t('nav.markets'), path: "/app" },
     { name: t('nav.activity'), path: "/app/activity" },
     { name: t('nav.portfolio'), path: "/app/portfolio" },
-    { name: "Creator", path: "/app/creator" },
     { name: "Draft", path: "/app/vault" },
     { name: "Liquidity", path: "/app/liquidity" },
   ];
 
-  return (
+  const headerContent = (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[60] pointer-events-auto">
+      <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-auto pb-2">
         <NewsTicker className="h-8 border-b border-white/5 opacity-90 hover:opacity-100 transition-opacity" />
       </div>
 
-      <header className="fixed top-8 left-0 right-0 z-50 flex flex-col items-center gap-3 pointer-events-none px-4">
-        {/* Main Navbar Pill */}
-        <div className="w-full max-w-7xl h-16 px-4 pr-2 bg-background/80 backdrop-blur-xl border border-border rounded-full shadow-lg flex items-center justify-between pointer-events-auto transition-all duration-300 hover:bg-background/90 hover:border-foreground/10">
+      <header className="fixed top-12 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-4">
+        {/* Combined Navbar: Main nav + Category bar in one wireframe */}
+        <div className="w-full max-w-7xl rounded-t-2xl border border-border border-b-0 bg-background/80 backdrop-blur-xl shadow-lg overflow-hidden pointer-events-auto transition-all duration-300 hover:bg-background/90 hover:border-foreground/10">
+          {/* Main Navbar - top section */}
+          <div className="relative h-16 px-4 flex items-center">
 
-          {/* Left: Logo & Nav */}
-          <div className="flex items-center gap-8 pl-2">
-            <Link to="/app" className="flex items-center gap-3 group">
-              <div className="group-hover:scale-110 transition-transform duration-300">
-                <Logo className="size-10 shadow-md shadow-blue-500/20 rounded-xl" />
-              </div>
-              <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Retropick</h2>
-            </Link>
-            <nav className="hidden lg:flex items-center gap-2 bg-muted/50 rounded-full px-2 py-1 border border-border/50">
+            {/* Left: Logo - flex-1 for balance */}
+            <div className="flex items-center flex-1 min-w-0 justify-start pr-4">
+              <Link to="/app" className="flex items-center gap-3 group shrink-0">
+                <div className="group-hover:scale-110 transition-transform duration-300">
+                  <Logo className="size-10 shadow-md shadow-blue-500/20 rounded-xl" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Retropick</h2>
+              </Link>
+            </div>
+
+            {/* Center: Nav (absolutely centered) */}
+            <nav className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:flex items-center gap-2 bg-muted/50 rounded-full px-2 py-1 border border-border/50">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
@@ -81,39 +90,22 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
                 </Link>
               ))}
             </nav>
-          </div>
 
-          {/* Center: Search (Hidden on small, smaller on medium) */}
-          <div className="flex-1 max-w-xl relative hidden md:block mx-4">
-            <div className="relative group">
-              <Icon
-                name="search"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors"
-              />
-              <input
-                type="text"
-                placeholder={t('nav.search_placeholder')}
-                className="w-full bg-muted/50 border border-border rounded-full px-12 py-2 text-sm text-foreground focus:bg-background focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:outline-none transition-all placeholder:text-muted-foreground/50"
-              />
+            {/* Right: Actions - flex-1 for balance with left */}
+            <div className="flex items-center justify-end flex-1 min-w-0 pl-4">
+              <WalletButton />
             </div>
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-3 shrink-0 pr-2">
-            <WalletButton />
-          </div>
-        </div>
-
-        {/* Secondary Category Pill (Only on Home/App) */}
-        {location.pathname === "/app" && (
-          <div className="w-full max-w-7xl h-12 pointer-events-auto overflow-hidden">
-            <div className="h-full px-2 bg-background/60 backdrop-blur-lg border border-border rounded-2xl flex items-center justify-center shadow-sm">
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full justify-center px-2">
+          {/* Secondary Category Bar - extends from main nav, same wireframe */}
+          {showCategoryBar && (
+            <div className="h-12 px-2 border-t border-border bg-background/60 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1 min-w-0 justify-center px-2">
                 {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => setCategory(category)}
-                    className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 ${currentCategory === category
+                    className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 shrink-0 ${currentCategory === category
                       ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
                       }`}
@@ -122,12 +114,25 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
                   </button>
                 ))}
               </div>
+              <div className="relative group shrink-0 w-40 md:w-48 lg:w-56">
+                <Icon
+                  name="search"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors text-sm"
+                />
+                <input
+                  type="text"
+                  placeholder={t('nav.search_placeholder')}
+                  className="w-full bg-muted/50 border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-foreground focus:bg-background focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:outline-none transition-all placeholder:text-muted-foreground/50"
+                />
             </div>
           </div>
         )}
-      </header >
+          </div>
+      </header>
     </>
   );
+
+  return createPortal(headerContent, document.body);
 };
 
 export default Header;

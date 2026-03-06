@@ -22,7 +22,7 @@ const MacroMarketCard = memo(({ market }: MacroMarketCardProps) => {
     const accentBg = isInflation ? "bg-red-500" : isForex ? "bg-green-500" : isGrowth ? "bg-blue-500" : "bg-amber-500";
     const ticker = isInflation ? "CPI.US" : isForex ? "USDJPY" : isGrowth ? "EU.GDP" : "MACRO";
 
-    const handleBetClick = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
+    const handleBet = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
         e.stopPropagation();
         setBetModal({ open: true, side: 'YES', outcome: outcomeLabel });
     };
@@ -31,10 +31,10 @@ const MacroMarketCard = memo(({ market }: MacroMarketCardProps) => {
         <>
             <div className="group relative w-full h-[320px] transition-all duration-300 hover:-translate-y-1">
                 {/* Main Card Container */}
-                <div className="absolute inset-0 bg-white dark:bg-[#0c1220] rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg shadow-black/10 dark:shadow-black/60 overflow-hidden flex flex-col">
+                <div className="absolute inset-0 bg-card rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg shadow-black/10 dark:shadow-black/60 overflow-hidden flex flex-col">
 
                     {/* Header: Financial Strip */}
-                    <div className="h-10 border-b border-slate-100 dark:border-white/5 flex items-center justify-between px-4 bg-slate-50/50 dark:bg-white/2">
+                    <div className="relative z-10 h-10 border-b border-slate-100 dark:border-white/5 flex items-center justify-between px-4 bg-slate-50/50 dark:bg-white/2">
                         <div className="flex items-center gap-2">
                             <span className={cn("text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400", accentColor)}>
                                 {ticker}
@@ -68,7 +68,7 @@ const MacroMarketCard = memo(({ market }: MacroMarketCardProps) => {
                                         <span className={cn("font-bold", accentColor)}>{Math.round(outcome.probability)}%</span>
                                     </div>
                                     <div className="relative h-6 w-full bg-slate-100 dark:bg-white/5 rounded-sm overflow-hidden flex items-center cursor-pointer"
-                                        onClick={(e) => handleBetClick(e as any, outcome.label)}>
+                                        onClick={(e) => handleBet(e as any, outcome.label)}>
 
                                         {/* Progress Bar */}
                                         <div
@@ -98,7 +98,7 @@ const MacroMarketCard = memo(({ market }: MacroMarketCardProps) => {
                     </div>
 
                     {/* Decorative Background Elements (The "Cool" Factor) */}
-                    <div className="absolute top-1/2 right-[-20px] w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/20 dark:to-white/5 rounded-full blur-2xl pointer-events-none" />
+                    <div className="absolute top-1/2 right-[-20px] w-32 h-32 bg-gradient-to-br from-transparent to-slate-200/20 dark:to-white/5 rounded-full blur-2xl pointer-events-none z-0" />
                 </div>
             </div>
 

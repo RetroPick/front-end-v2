@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 interface ProbabilityChartProps {
   outcomes: MarketOutcome[];
   volume: string;
+  /** When true, removes the inner card frame so the chart blends into the parent (e.g. FeaturedMarket) */
+  embedded?: boolean;
 }
 
 // --- Custom Candlestick Shape ---
@@ -155,7 +157,7 @@ const CustomTooltip = ({ active, payload, label, mode }: any) => {
   return null;
 };
 
-const ProbabilityChart = ({ outcomes, volume }: ProbabilityChartProps) => {
+const ProbabilityChart = ({ outcomes, volume, embedded = false }: ProbabilityChartProps) => {
   const [timeRange, setTimeRange] = useState('1D');
   const [chartType, setChartType] = useState<'area' | 'candle'>('area'); // Default to Area (Normal)
   const [selectedOutcomeId, setSelectedOutcomeId] = useState<string>(outcomes[0]?.id);
@@ -254,7 +256,10 @@ const ProbabilityChart = ({ outcomes, volume }: ProbabilityChartProps) => {
   }, [chartData]);
 
   return (
-    <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-500">
+    <div className={cn(
+      "p-6",
+      !embedded && "bg-card border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-500"
+    )}>
 
       {/* Header / Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -320,11 +325,11 @@ const ProbabilityChart = ({ outcomes, volume }: ProbabilityChartProps) => {
         </div>
       </div>
 
-      {/* Chart Render */}
-      <div className="relative h-[300px] w-full mb-4">
+      {/* Chart Render - transparent to blend with card, no inner square */}
+      <div className="relative h-[300px] w-full mb-4 bg-transparent">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'area' ? (
-            <AreaChart data={chartData.data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart data={chartData.data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} style={{ background: 'transparent' }}>
               <defs>
                 {chartData.topOutcomes.map((outcome, i) => {
                   const color = i === 0 ? "#0EA5E9" : i === 1 ? "#10B981" : "#6B7280";
@@ -355,7 +360,7 @@ const ProbabilityChart = ({ outcomes, volume }: ProbabilityChartProps) => {
               })}
             </AreaChart>
           ) : (
-            <BarChart data={preparedCandleData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <BarChart data={preparedCandleData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }} style={{ background: 'transparent' }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.2} />
               <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#888' }} minTickGap={30} dy={10} />
               <YAxis axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} tick={{ fontSize: 10, fill: '#888' }} domain={[0, 100]} dx={-10} />

@@ -14,28 +14,27 @@ const SpaceMarketCard = memo(({ market }: SpaceMarketCardProps) => {
     const { t } = useLanguage();
     const [betModal, setBetModal] = useState<{ open: boolean; side: 'YES' | 'NO'; outcome: string } | null>(null);
 
-    const handleBetClick = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
+    const handleBet = (e: MouseEvent<HTMLButtonElement>, outcomeLabel: string) => {
         e.stopPropagation();
         setBetModal({ open: true, side: 'YES', outcome: outcomeLabel });
     };
 
     return (
         <>
-            <div className="group relative w-full h-[400px] overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-indigo-500/20 shadow-lg shadow-black/10 dark:shadow-black/50 bg-white dark:bg-black border border-slate-200 dark:border-white/10">
+            <div className="group relative w-full h-[400px] overflow-hidden isolate rounded-2xl transition-all duration-300 hover:shadow-2xl hover:shadow-black/20 dark:hover:shadow-indigo-500/20 shadow-lg shadow-black/10 dark:shadow-black/50 bg-white dark:bg-black border border-slate-200 dark:border-white/10">
 
-                {/* Background Image (Full Cover) */}
-                <div className="absolute inset-0">
+                {/* Background Image (Full Cover) - -inset-px for pixel-perfect edge coverage */}
+                <div className="absolute inset-0 z-0 overflow-hidden rounded-2xl">
                     <img
                         src={market.image}
                         alt={market.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                    <div className="absolute -inset-px bg-gradient-to-t from-black via-black/60 to-transparent rounded-2xl" />
                 </div>
 
                 {/* Content Overlay */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                <div className="absolute inset-0 p-6 flex flex-col justify-end z-10">
 
                     {/* Floating Header */}
                     <div className="absolute top-4 left-4 right-4 flex justify-between items-start">

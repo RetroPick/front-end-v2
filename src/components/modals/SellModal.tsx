@@ -123,7 +123,7 @@ const SellModal = ({ open, onClose, marketTitle, side, availableShares }: SellMo
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 30 }}
                         transition={{ type: "spring", damping: 28, stiffness: 350 }}
-                        className="relative w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#1a1b23] p-5"
+                        className="relative w-full max-w-sm rounded-2xl shadow-2xl border border-border bg-card p-5"
                     >
                         <button
                             onClick={onClose}
@@ -136,7 +136,7 @@ const SellModal = ({ open, onClose, marketTitle, side, availableShares }: SellMo
                             Sell Position
                         </h3>
 
-                        <div className="bg-slate-50 dark:bg-[#22232e] rounded-xl p-4 mb-4 border border-slate-200 dark:border-white/10">
+                        <div className="bg-muted rounded-xl p-4 mb-4 border border-border">
                             <div className="font-semibold text-slate-800 dark:text-slate-200 text-base mb-1">{marketTitle}</div>
                             <div className="flex justify-between items-center text-sm mt-3">
                                 <span className="text-slate-500">Your {side} Shares</span>
@@ -156,7 +156,7 @@ const SellModal = ({ open, onClose, marketTitle, side, availableShares }: SellMo
                                     onChange={(e) => setSharesToSell(Number(e.target.value))}
                                     className="w-full accent-rose-500"
                                 />
-                                <div className="w-16 flex-shrink-0 text-center bg-slate-100 dark:bg-[#2a2b35] font-bold text-slate-900 dark:text-white py-1 rounded-md">
+                                <div className="w-16 flex-shrink-0 text-center bg-muted font-bold text-slate-900 dark:text-white py-1 rounded-md">
                                     {sharesToSell}
                                 </div>
                             </div>

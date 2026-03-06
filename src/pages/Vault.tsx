@@ -116,25 +116,27 @@ const Vault = () => {
                 }}
             />
 
-            <main className="relative z-10 pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
+            <main className="relative z-10 pt-40 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
 
                 {/* Page Header */}
-                <div className="mb-10">
+                <div className="mb-6">
                     <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">Draft Board</h1>
-                    <p className="text-slate-500 dark:text-gray-400 text-lg max-w-2xl mb-8 font-light">
+                    <p className="text-slate-500 dark:text-gray-400 text-lg max-w-2xl font-light">
                         Review, claim, and seed AI-proposed prediction markets before they go live.
                     </p>
+                </div>
 
-                    {/* Tabs */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-200 dark:border-white/10 pb-1">
-                        <nav aria-label="Tabs" className="-mb-px flex space-x-8">
+                {/* Second Navbar - Proposed / Claimed / Published (connects to header) */}
+                <div className="mb-8 -mt-1">
+                    <div className="w-full bg-background/60 dark:bg-white/5 backdrop-blur-lg border border-border rounded-t-none rounded-b-2xl border-t-0 px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                        <nav aria-label="Tabs" className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setActiveTab("Proposed")}
                                 className={cn(
-                                    "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all",
+                                    "whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shrink-0",
                                     activeTab === "Proposed"
-                                        ? "border-blue-500 text-blue-600 dark:text-white"
-                                        : "border-transparent text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:border-slate-300 dark:hover:border-gray-700"
+                                        ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
                                 )}
                             >
                                 <Icon name="smart_toy" className={cn("text-[20px]", activeTab === "Proposed" ? "text-blue-500" : "")} />
@@ -147,10 +149,10 @@ const Vault = () => {
                             <button
                                 onClick={() => setActiveTab("Claimed")}
                                 className={cn(
-                                    "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all",
+                                    "whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shrink-0",
                                     activeTab === "Claimed"
-                                        ? "border-blue-500 text-blue-600 dark:text-white"
-                                        : "border-transparent text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:border-slate-300 dark:hover:border-gray-700"
+                                        ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
                                 )}
                             >
                                 <Icon name="lock_clock" className="text-[20px]" /> Claimed
@@ -162,10 +164,10 @@ const Vault = () => {
                             <button
                                 onClick={() => setActiveTab("Published")}
                                 className={cn(
-                                    "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-all",
+                                    "whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shrink-0",
                                     activeTab === "Published"
-                                        ? "border-blue-500 text-blue-600 dark:text-white"
-                                        : "border-transparent text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:border-slate-300 dark:hover:border-gray-700"
+                                        ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
                                 )}
                             >
                                 <Icon name="public" className="text-[20px]" /> Published
@@ -175,7 +177,7 @@ const Vault = () => {
                             </button>
                         </nav>
 
-                        <button className="hidden md:flex items-center text-sm text-slate-500 dark:text-gray-500 hover:text-slate-900 dark:hover:text-white transition-colors gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">
+                        <button className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors gap-2 px-3 py-1.5 rounded-lg hover:bg-muted shrink-0">
                             <Icon name="download" className="text-[18px]" /> Export Data
                         </button>
                     </div>
@@ -223,7 +225,7 @@ const Vault = () => {
                                     className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-blue-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none cursor-pointer"
                                 >
                                     <div className="absolute inset-0 z-0 h-48">
-                                        <img alt={market.category} className="w-full h-full object-cover opacity-90 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-105" src={market.bgImage} />
+                                        <img alt="" className="w-full h-full object-cover opacity-90 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-105" src={market.bgImage} />
                                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white dark:via-black/40 dark:to-slate-950/95" />
                                     </div>
 
@@ -292,7 +294,7 @@ const Vault = () => {
                                 className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-purple-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none"
                             >
                                 <div className="absolute inset-0 z-0 h-48">
-                                    <img alt={market.category} className="w-full h-full object-cover opacity-90 dark:opacity-40 grayscale transition-all duration-500" src={market.bgImage} />
+                                    <img alt="" className="w-full h-full object-cover opacity-90 dark:opacity-40 grayscale transition-all duration-500" src={market.bgImage} />
                                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white dark:via-black/40 dark:to-slate-950/95" />
                                 </div>
 
@@ -353,7 +355,7 @@ const Vault = () => {
                                 className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-green-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none"
                             >
                                 <div className="absolute inset-0 z-0 h-48">
-                                    <img alt={market.category} className="w-full h-full object-cover opacity-90 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-105" src={market.bgImage} />
+                                    <img alt="" className="w-full h-full object-cover opacity-90 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-105" src={market.bgImage} />
                                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white dark:via-black/40 dark:to-slate-950/95" />
                                 </div>
 
@@ -409,16 +411,16 @@ const Vault = () => {
                         </div>
                         <div>
                             <nav aria-label="Pagination" className="isolate inline-flex -space-x-px rounded-md shadow-sm">
-                                <a className="relative inline-flex items-center rounded-l-lg px-2 py-2 text-slate-400 dark:text-gray-400 ring-1 ring-inset ring-slate-300 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">
+                                <button type="button" className="relative inline-flex items-center rounded-l-lg px-2 py-2 text-slate-400 dark:text-gray-400 ring-1 ring-inset ring-slate-300 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0 focus-visible:ring-2 focus-visible:ring-ring">
                                     <span className="sr-only">Previous</span>
                                     <Icon name="chevron_left" className="text-sm" />
-                                </a>
-                                <a aria-current="page" className="relative z-10 inline-flex items-center bg-blue-50 dark:bg-blue-500/20 px-4 py-2 text-sm font-bold text-blue-600 dark:text-blue-400 ring-1 ring-inset ring-blue-500/30 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" href="#">1</a>
-                                <a className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-400 dark:text-gray-400 ring-1 ring-inset ring-slate-300 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">2</a>
-                                <a className="relative inline-flex items-center rounded-r-lg px-2 py-2 text-slate-400 dark:text-gray-400 ring-1 ring-inset ring-slate-300 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0" href="#">
+                                </button>
+                                <button type="button" aria-current="page" className="relative z-10 inline-flex items-center bg-blue-50 dark:bg-blue-500/20 px-4 py-2 text-sm font-bold text-blue-600 dark:text-blue-400 ring-1 ring-inset ring-blue-500/30 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</button>
+                                <button type="button" className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-400 dark:text-gray-400 ring-1 ring-inset ring-slate-300 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0 focus-visible:ring-2 focus-visible:ring-ring">2</button>
+                                <button type="button" className="relative inline-flex items-center rounded-r-lg px-2 py-2 text-slate-400 dark:text-gray-400 ring-1 ring-inset ring-slate-300 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-white/5 focus:z-20 focus:outline-offset-0 focus-visible:ring-2 focus-visible:ring-ring">
                                     <span className="sr-only">Next</span>
                                     <Icon name="chevron_right" className="text-sm" />
-                                </a>
+                                </button>
                             </nav>
                         </div>
                     </div>

@@ -34,7 +34,7 @@ const MacroDashboard = () => {
     }, [newsItems.length]);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#05080f] text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
+        <div className="min-h-screen bg-background text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-500">
             {/* Background: Subtle Grid + World Map Hint */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]" />

@@ -15,7 +15,8 @@ export default defineConfig(({ mode }) => ({
       '/api/polymarket': {
         target: 'https://gamma-api.polymarket.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/polymarket/, '')
+        rewrite: (path) => path.replace(/^\/api\/polymarket/, ''),
+        timeout: 60000, // 60s - Polymarket API can be slow
       }
     }
   },

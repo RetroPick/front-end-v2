@@ -28,17 +28,18 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
     <>
       <div
         onClick={handleCardClick}
-        className="group relative flex flex-col w-full aspect-square bg-card dark:bg-card/60 backdrop-blur-md rounded-3xl border border-black/10 dark:border-white/5 overflow-hidden shadow-sm shadow-black/10 dark:shadow-none hover:border-black/20 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-primary/5 transition-all duration-300 cursor-pointer"
+        className="group relative flex flex-col w-full aspect-[4/3] md:aspect-square bg-card dark:bg-card/60 backdrop-blur-md rounded-3xl border border-black/10 dark:border-white/5 overflow-hidden isolate shadow-sm shadow-black/10 dark:shadow-none hover:border-black/20 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-all duration-300 cursor-pointer"
       >
-        {/* Image Header with Gradient Overlay */}
-        <div className="relative h-48 w-full overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
-          <div className="absolute inset-0 bg-black/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
+        {/* Image Header with Gradient Overlay - -inset-0.5 for pixel-perfect edge coverage, no bleed */}
+        <div className="relative h-48 w-full overflow-hidden isolate z-0 rounded-t-3xl">
+          <div className="absolute -inset-0.5 bg-gradient-to-t from-black/85 via-black/55 via-black/30 via-black/10 to-transparent z-10 rounded-t-3xl" />
+          <div className="absolute -inset-0.5 bg-gradient-to-b from-black/15 via-transparent to-transparent z-10 group-hover:opacity-0 transition-opacity duration-500 rounded-t-3xl" />
           {market.image ? (
             <img
               src={market.image}
               alt={market.title}
-              className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+              className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out translate-z-0 backface-hidden"
+              style={{ transformOrigin: 'center center' }}
             />
           ) : (
             <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
@@ -72,7 +73,7 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
             <h3 className="text-lg font-bold leading-tight text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
               {market.title}
             </h3>
-            {market.description && (
+            {market.description && market.category !== "Commodities" && market.category !== "Metals" && (
               <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
                 {market.description}
               </p>
@@ -91,6 +92,7 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
                   return (
                     <button
                       key={outcome.id}
+                      aria-label={`${isYes ? t('market_card.bet_yes') : t('market_card.bet_no')}: ${market.title}`}
                       onClick={(e) => handleBet(e, isYes ? 'YES' : 'NO', outcome.label)}
                       className={cn(
                         "relative overflow-hidden rounded-xl border border-white/5 bg-white/5 py-3 px-4 transition-all duration-300 group/btn",
@@ -124,13 +126,15 @@ const MarketCard = memo(({ market }: MarketCardProps) => {
                       <div className="flex gap-2">
                         <button
                           onClick={(e) => handleBet(e, 'YES', outcome.label)}
-                          className="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all transform hover:scale-105"
+                          aria-label={`${t('market_card.bet_yes')} ${market.title}`}
+                          className="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           YES
                         </button>
                         <button
                           onClick={(e) => handleBet(e, 'NO', outcome.label)}
-                          className="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all transform hover:scale-105"
+                          aria-label={`${t('market_card.bet_no')} ${market.title}`}
+                          className="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           NO
                         </button>

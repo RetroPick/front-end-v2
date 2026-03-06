@@ -22,13 +22,13 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     const [password, setPassword] = useState("");
 
     const handleGoogleLogin = () => {
-        console.log("Google Login clicked");
+        if (import.meta.env.DEV) console.log("Google Login clicked");
         // Implement Google Auth logic here
     };
 
     const handleEmailLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Email Login:", email, password);
+        if (import.meta.env.DEV) console.log("Email Login:", email, password);
         // Implement Email Auth logic here
     };
 

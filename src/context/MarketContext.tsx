@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { markets as fallbackMarkets } from '@/data/markets';
 import { Market } from '@/types/market';
 import { fetchLiveMarkets } from '@/lib/polymarket';
@@ -30,13 +30,13 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [isLoading, setIsLoading] = useState(!cachedMarkets); // Skip loading spinner if cache hit
     const [error, setError] = useState<string | null>(null);
 
-    const loadMarkets = async () => {
+    const loadMarkets = useCallback(async () => {
         try {
             setIsLoading(true);
             setError(null);
 
-            // Parallel fetch — 2 pages of 500 = 1000 markets max (much faster than 5 serial requests)
-            const limit = 500;
+            // Parallel fetch — 2 pages of 200 = 400 markets (smaller requests = less timeout risk)
+            const limit = 200;
             const maxPages = 2;
             const fetches = Array.from({ length: maxPages }, (_, i) =>
                 fetchLiveMarkets(limit, i * limit)
@@ -70,7 +70,7 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         loadMarkets();
@@ -78,7 +78,7 @@ export const MarketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // Auto refresh every 3 minutes
         const intervalId = setInterval(loadMarkets, 3 * 60 * 1000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [loadMarkets]);
 
     return (
         <MarketContext.Provider value={{ markets, isLoading, error, refreshMarkets: loadMarkets }}>

@@ -89,7 +89,7 @@ export const ThemeWrapper: React.FC<ThemeWrapperProps> = ({ category, children }
     }
 
     return (
-        <div className={`min-h-screen relative w-full overflow-hidden transition-colors duration-500 ${bgClass} ${category.toLowerCase() === 'crypto' || category.toLowerCase() === 'macro' ? 'font-mono' : 'font-sans'}`}>
+        <div className={`min-h-screen relative w-full overflow-x-clip overflow-y-visible transition-colors duration-500 ${bgClass} ${category.toLowerCase() === 'crypto' || category.toLowerCase() === 'macro' ? 'font-mono' : 'font-sans'}`}>
             {effects}
             <div className="relative z-10 w-full flex flex-col min-h-screen">
                 {children}
