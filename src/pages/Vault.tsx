@@ -116,7 +116,7 @@ const Vault = () => {
                 }}
             />
 
-            <main className="relative z-10 pt-40 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
+            <main className="relative z-10 pt-56 pb-20 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
 
                 {/* Page Header */}
                 <div className="mb-6">
@@ -214,7 +214,7 @@ const Vault = () => {
                 </div>
 
                 {/* Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <AnimatePresence mode="popLayout">
                         {activeTab === "Proposed" && PROPOSED_MARKETS.map((market) => (
                             <Link to={`/app/vault/${market.id}`} key={market.id} className="contents">
@@ -222,11 +222,11 @@ const Vault = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-blue-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none cursor-pointer"
+                                    className="bg-white/95 dark:bg-slate-900/90 border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-blue-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none cursor-pointer"
                                 >
                                     <div className="absolute inset-0 z-0 h-48">
                                         <img alt="" className="w-full h-full object-cover opacity-90 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-105" src={market.bgImage} />
-                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white dark:via-black/40 dark:to-slate-950/95" />
+                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/95 dark:via-black/20 dark:to-slate-950/98" />
                                     </div>
 
                                     <div className="relative z-10 p-6 flex flex-col h-full mt-20">
@@ -241,7 +241,7 @@ const Vault = () => {
                                             <div className="flex items-center gap-2 mb-3 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
                                                 <Icon name={market.icon} className="text-[14px]" /> {market.category}
                                             </div>
-                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug mb-6 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors drop-shadow-sm line-clamp-3">
+                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug mb-6 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-3">
                                                 {market.question}
                                             </h3>
 
@@ -291,11 +291,11 @@ const Vault = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 key={market.id}
-                                className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-purple-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none"
+                                className="bg-white/95 dark:bg-slate-900/90 border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-purple-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none"
                             >
                                 <div className="absolute inset-0 z-0 h-48">
                                     <img alt="" className="w-full h-full object-cover opacity-90 dark:opacity-40 grayscale transition-all duration-500" src={market.bgImage} />
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white dark:via-black/40 dark:to-slate-950/95" />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/95 dark:via-black/20 dark:to-slate-950/98" />
                                 </div>
 
                                 <div className="relative z-10 p-6 flex flex-col h-full mt-20">
@@ -352,16 +352,16 @@ const Vault = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 key={market.id}
-                                className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-green-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none"
+                                className="bg-white/95 dark:bg-slate-900/90 border border-slate-200 dark:border-white/5 rounded-2xl p-0 hover:border-green-400/40 transition-all duration-300 group flex flex-col h-full relative overflow-hidden shadow-lg shadow-slate-200/50 dark:shadow-none"
                             >
                                 <div className="absolute inset-0 z-0 h-48">
                                     <img alt="" className="w-full h-full object-cover opacity-90 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 dark:group-hover:opacity-80 transition-all duration-500 transform group-hover:scale-105" src={market.bgImage} />
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/20 to-white dark:via-black/40 dark:to-slate-950/95" />
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-white/95 dark:via-black/20 dark:to-slate-950/98" />
                                 </div>
 
                                 <div className="relative z-10 p-6 flex flex-col h-full mt-20">
                                     <div className="absolute top-0 right-0 p-3 mt-20">
-                                        <Icon name="check_circle" className="text-green-500 drop-shadow-md text-2xl" />
+                                        <Icon name="check_circle" className="text-green-500 text-2xl" />
                                     </div>
                                     <div className="flex justify-between items-start mb-6">
                                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/20 backdrop-blur-sm shadow-sm">
@@ -374,7 +374,7 @@ const Vault = () => {
                                         <div className="flex items-center gap-2 mb-3 text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-widest">
                                             <Icon name={market.icon} className="text-[14px]" /> {market.category}
                                         </div>
-                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug mb-6 drop-shadow-sm">
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug mb-6">
                                             {market.question}
                                         </h3>
 

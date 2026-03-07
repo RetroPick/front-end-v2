@@ -78,7 +78,7 @@ const Activity = () => {
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
             <Header />
 
-            <div className="container mx-auto px-4 pt-40 pb-20 max-w-6xl">
+            <div className="container mx-auto px-4 pt-56 pb-20 max-w-6xl">
                 {/* Page Header */}
                 <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>

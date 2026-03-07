@@ -67,7 +67,7 @@ const WalletButton = () => {
             <>
                 <Button
                     onClick={() => setIsLoginOpen(true)}
-                    className="bg-accent-cyan text-background hover:bg-accent-cyan/90 font-bold"
+                    className="bg-accent-cyan text-background hover:bg-accent-cyan/90 font-bold !rounded-full px-5 py-2"
                 >
                     {t('login')}
                 </Button>
@@ -81,7 +81,7 @@ const WalletButton = () => {
             {/* Static Network Switcher */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1.5 bg-secondary border border-border rounded-lg px-2.5 py-1.5 hover:bg-secondary/80 transition-colors">
+                    <button className="flex items-center gap-1.5 bg-secondary border border-border rounded-full px-2.5 py-1.5 hover:bg-secondary/80 transition-colors">
                         <div className={cn("size-4 rounded-full sm:hidden", selectedNetwork === 'avalanche' ? "bg-red-500" : "bg-blue-500")}></div>
                         <span className="hidden sm:inline text-xs font-bold text-foreground">
                             {selectedNetwork === 'avalanche' ? 'Avalanche Fuji' : 'Sepolia Testnet'}
@@ -116,7 +116,7 @@ const WalletButton = () => {
             {/* Wallet Profile */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 bg-secondary border border-border rounded-lg px-3 py-1.5 hover:bg-secondary/80 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 bg-secondary border border-border rounded-full px-3 py-1.5 hover:bg-secondary/80 transition-colors cursor-pointer group">
                         <div className="flex flex-col items-end hidden md:flex">
                             <span className="text-[9px] text-muted-foreground uppercase font-bold leading-none mb-0.5">
                                 {t('balance')}

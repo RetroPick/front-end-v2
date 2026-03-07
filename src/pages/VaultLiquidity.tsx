@@ -17,7 +17,7 @@ const VaultLiquidity = () => {
         <div className="min-h-screen bg-background text-slate-900 dark:text-gray-100 font-sans transition-colors duration-300 pb-20">
             <Header />
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-40 pb-10">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-56 pb-10">
 
                 {/* Page Header */}
                 <div className="mb-6">

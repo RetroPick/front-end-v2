@@ -356,7 +356,7 @@ const Portfolio = () => {
     <div className="min-h-screen bg-background font-sans text-foreground pb-20 overflow-x-hidden">
       <Header />
 
-      <main className="pt-40 px-6 lg:px-10 w-full max-w-[1400px] mx-auto">
+      <main className="pt-56 px-6 lg:px-10 w-full max-w-[1400px] mx-auto">
         {/* Second Navbar - Network & Actions (when connected, connects to header) */}
         {isConnected && (
           <div className="mb-6 -mt-1">

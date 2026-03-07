@@ -18,6 +18,8 @@ import { useVault } from "@/hooks/useVault";
 
 import { useLanguage } from "@/context/LanguageContext";
 
+const VAULT_DETAIL_REGEX = /^\/app\/vault\/[^/]+$/;
+
 interface HeaderProps {
   activeCategory?: string;
   setActiveCategory?: (category: string) => void;
@@ -43,7 +45,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
 
   const showCategoryBar =
     ["/app", "/app/activity", "/app/portfolio", "/app/vault", "/app/liquidity"].includes(location.pathname) &&
-    !new RegExp("^/app/vault/[^/]+$").test(location.pathname);
+    !VAULT_DETAIL_REGEX.test(location.pathname);
 
   const navItems = [
     { name: t('nav.markets'), path: "/app" },
@@ -61,7 +63,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
 
       <header className="fixed top-12 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-4">
         {/* Combined Navbar: Main nav + Category bar in one wireframe */}
-        <div className="w-full max-w-7xl rounded-t-2xl border border-border border-b-0 bg-background/80 backdrop-blur-xl shadow-lg overflow-hidden pointer-events-auto transition-all duration-300 hover:bg-background/90 hover:border-foreground/10">
+        <div className="w-full max-w-7xl rounded-3xl border border-border bg-background/80 backdrop-blur-xl shadow-lg overflow-hidden pointer-events-auto transition-all duration-300 hover:bg-background/90 hover:border-foreground/10">
           {/* Main Navbar - top section */}
           <div className="relative h-16 px-4 flex items-center">
 
@@ -105,7 +107,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
                   <button
                     key={category}
                     onClick={() => setCategory(category)}
-                    className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 shrink-0 ${currentCategory === category
+                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 shrink-0 ${currentCategory === category
                       ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
                       }`}
@@ -114,7 +116,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
                   </button>
                 ))}
               </div>
-              <div className="relative group shrink-0 w-40 md:w-48 lg:w-56">
+              <div className="relative group shrink-0 w-40 md:w-48 lg:w-56 rounded-full overflow-hidden">
                 <Icon
                   name="search"
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors text-sm"
@@ -122,7 +124,7 @@ const Header = ({ activeCategory, setActiveCategory }: HeaderProps) => {
                 <input
                   type="text"
                   placeholder={t('nav.search_placeholder')}
-                  className="w-full bg-muted/50 border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-foreground focus:bg-background focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:outline-none transition-all placeholder:text-muted-foreground/50"
+                  className="w-full bg-muted/50 border border-border rounded-full pl-9 pr-3 py-1.5 text-xs text-foreground focus:bg-background focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:outline-none transition-all placeholder:text-muted-foreground/50"
                 />
             </div>
           </div>
