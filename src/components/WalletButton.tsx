@@ -45,7 +45,7 @@ const WalletButton = () => {
     const { data: balance } = useBalance({ address });
     const { theme, setTheme } = useTheme();
     const { t, language, setLanguage } = useLanguage();
-    const { isOnboarded } = useOnboarding();
+    const { isOnboarded, isWorldIDVerified } = useOnboarding();
     const chainId = useChainId();
     const tokenAddresses = TOKENS[chainId] || TOKENS[1];
     const { freeBalance } = useVault(tokenAddresses?.USDC as Address);
@@ -128,6 +128,11 @@ const WalletButton = () => {
 
                         <div className="size-8 bg-gradient-to-br from-gray-700 to-gray-900 border border-border rounded-full flex items-center justify-center relative shadow-sm group-hover:shadow-md transition-all">
                             <div className="w-full h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
+                            {isWorldIDVerified && (
+                                <div className="absolute -top-1 -right-1 size-3.5 bg-green-500 rounded-full border-2 border-secondary flex items-center justify-center z-10">
+                                    <Check className="size-2.5 text-white" strokeWidth={3} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </DropdownMenuTrigger>

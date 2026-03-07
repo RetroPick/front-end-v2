@@ -5,13 +5,14 @@ import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit
 import { Check, ShieldCheck, Fingerprint } from "lucide-react";
 import { Button } from "../ui/button";
 import { DropdownMenuItem } from "../ui/dropdown-menu"; // Ensure this path is correct
+import { useOnboarding } from "@/context/OnboardingContext";
 
 interface WorldIDVerifierProps {
     asDropdownItem?: boolean;
 }
 
 const WorldIDVerifier = ({ asDropdownItem }: WorldIDVerifierProps) => {
-    const [verified, setVerified] = useState(false);
+    const { isWorldIDVerified, verifyWorldID } = useOnboarding();
 
     const handleVerify = async (proof: ISuccessResult) => {
         // Mock verification call
@@ -22,10 +23,10 @@ const WorldIDVerifier = ({ asDropdownItem }: WorldIDVerifierProps) => {
 
     const onSuccess = (result: ISuccessResult) => {
         if (import.meta.env.DEV) console.log("Verification successful", result);
-        setVerified(true);
+        verifyWorldID();
     };
 
-    if (verified) {
+    if (isWorldIDVerified) {
         if (asDropdownItem) {
             return (
                 <DropdownMenuItem disabled className="cursor-default bg-green-500/10 focus:bg-green-500/10 opacity-100 rounded-lg py-2.5 px-3 flex items-center justify-between">
@@ -51,11 +52,13 @@ const WorldIDVerifier = ({ asDropdownItem }: WorldIDVerifierProps) => {
 
     return (
         <IDKitWidget
-            app_id={import.meta.env.VITE_WLD_APP_ID as `app_${string}` || "app_staging_1234567890"} // default for demo
+            // Using a generic production app_id pattern. In a real deployment, 
+            // VITE_WLD_APP_ID must be a verified app starting with "app_" (not "app_staging_").
+            app_id={(import.meta.env.VITE_WLD_APP_ID as `app_${string}`) || "app_e2e6af2e6fd42d0768e98ecdf268fbf1"}
             action={import.meta.env.VITE_WLD_ACTION || "verify-humanity"}
             onSuccess={onSuccess}
             handleVerify={handleVerify}
-            verification_level={VerificationLevel.Device} // Using Device for easier testing, can be Orb
+            verification_level={VerificationLevel.Orb} // 🔥 Enforce REAL hardware Orb verification
         >
             {({ open }) => (
                 asDropdownItem ? (

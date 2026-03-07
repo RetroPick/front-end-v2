@@ -6,6 +6,8 @@ import OnboardingModal from "@/components/auth/OnboardingModal";
 interface OnboardingContextType {
     isOnboarded: boolean;
     completeOnboarding: () => void;
+    isWorldIDVerified: boolean;
+    verifyWorldID: () => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
@@ -14,6 +16,7 @@ export const OnboardingProvider = ({ children }: { children: React.ReactNode }) 
     const { isConnected, address } = useAppKitAccount();
     const [isOnboarded, setIsOnboarded] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [isWorldIDVerified, setIsWorldIDVerified] = useState(false);
 
     // Check connection and onboarding status
     useEffect(() => {
@@ -28,9 +31,13 @@ export const OnboardingProvider = ({ children }: { children: React.ReactNode }) 
                 setIsOnboarded(false);
                 setShowModal(true);
             }
+
+            const storedWorldID = localStorage.getItem(`worldid_${address}`);
+            setIsWorldIDVerified(storedWorldID === "true");
         } else {
             setShowModal(false);
             setIsOnboarded(false);
+            setIsWorldIDVerified(false);
         }
     }, [isConnected, address]);
 
@@ -42,8 +49,15 @@ export const OnboardingProvider = ({ children }: { children: React.ReactNode }) 
         }
     };
 
+    const verifyWorldID = () => {
+        setIsWorldIDVerified(true);
+        if (address) {
+            localStorage.setItem(`worldid_${address}`, "true");
+        }
+    };
+
     return (
-        <OnboardingContext.Provider value={{ isOnboarded, completeOnboarding }}>
+        <OnboardingContext.Provider value={{ isOnboarded, completeOnboarding, isWorldIDVerified, verifyWorldID }}>
             {children}
             <OnboardingModal
                 isOpen={showModal}
