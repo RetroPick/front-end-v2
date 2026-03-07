@@ -89,7 +89,7 @@ const WalletButton = () => {
                         <ChevronDown className="size-3 text-muted-foreground" />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[180px] bg-popover border-border rounded-xl shadow-xl">
+                <DropdownMenuContent align="end" className="w-[180px] bg-popover border-border rounded-xl shadow-xl z-[10000]">
                     <DropdownMenuItem
                         onClick={() => setSelectedNetwork('avalanche')}
                         className="cursor-pointer py-2 px-3 focus:bg-accent/50 rounded-lg justify-between"
@@ -136,7 +136,7 @@ const WalletButton = () => {
                         </div>
                     </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[300px] p-0 overflow-hidden bg-popover border-border text-popover-foreground rounded-xl shadow-2xl">
+                <DropdownMenuContent align="end" className="w-[300px] p-0 overflow-hidden bg-popover border-border text-popover-foreground rounded-xl shadow-2xl z-[10000]">
                     {/* Header Section */}
                     <div className="p-4 flex items-start gap-3 relative">
                         <div className="size-10 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shrink-0" />
@@ -236,7 +236,7 @@ const WalletButton = () => {
                                     {languages.find(l => l.code === language)?.label}
                                 </span>
                             </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent className="bg-popover border-border text-popover-foreground rounded-xl shadow-xl min-w-[200px]">
+                            <DropdownMenuSubContent className="bg-popover border-border text-popover-foreground rounded-xl shadow-xl min-w-[200px] z-[10001]">
                                 {languages.map((lang) => (
                                     <DropdownMenuItem
                                         key={lang.code}
